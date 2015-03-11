@@ -10,78 +10,105 @@
  * @date Sept 30, 2014
  */
 
-#include "core/corelib.h"
+#include "core/time/abstime.h"
 
 namespace Cat {
 
 	/**
 	 * @class Clock clock.h "core/time/clock.h"
-	 * @brief A global class to store and retrieve time values.
+	 * @brief A class to store and retrieve discrete time values.
 	 *
-	 * The Clock class is a global class that is able to store and retrieve 
+	 * The Clock class is a class that is able to store and retrieve 
 	 * time values such as discrete time values that represent the current
 	 * time in a time-stepping system (such as a game).
 	 *
 	 * @author Catlin Zilinski
-	 * @version 1
-	 * @since Sept 30, 2014
+	 * @version 2
+	 * @since Mar 31, 2015
 	 */
 	class Clock {
 	  public:
 
 		/**
-		 * @brief Initialises the current discrete system time.
-		 * Stores the current discrete system time in nanoseconds and
-		 * initialises elapsed to 0.
-		 * @param p_nanoTime The time to initialise to in nanoseconds.
+		 * @brief Create a clock.
 		 */
-		static void initialiseDiscreteTime(U64 p_nanoTime);
-		
-		/**
-		 * @brief Set the current discrete system time.
-		 * This methods stores the time in nanoseconds and seconds,
-		 * as well as updates an elapsed time since the last update.
-		 * @param p_nanoTime The current time in nanoseconds.
-		 */
-		static void setDiscreteTime(U64 p_nanoTime);
+		Clock();
 
 		/**
-		 * @brief Get the current discrete time in nanoseconds.
+		 * @brief Create and initialise a clock.
+		 * @param in_time The time to initialise the clock to.
+		 */
+		Clock(const AbsTime &in_time);
+
+		/**
+		 * @return A reference to the global clock.
+		 */
+		inline static Clock& global() { return s_global; }
+
+		/**
+		 * @brief Initialise the clock to the specified time.
+		 * This method stores the current discrete time and initialises
+		 * elapsed to 0.
+		 * @param in_time The time to initialise the clock to.
+		 */
+		void initialise(const AbsTime &in_time);
+
+		/**
+		 * @brief Set the current discrete time.
+		 * This method stores the specified time and computes the difference
+		 * between the previous stored time and the new one, and stores that 
+		 * as the elapsed time.
+		 * @param in_time The time to set to.
+		 */
+		void set(const AbsTime &in_time);
+
+		/**
+		 * @return The current discrete time in microseconds.
+		 */
+		inline U64 micro() { return m_tNano / NANO_PER_MICRO; }
+
+		/**
+		 * @return The current discrete time in milliseconds.
+		 */
+		inline U64 milli() { return m_tNano / NANO_PER_MILLI; }
+
+		/**
 		 * @return The current discrete time in nanoseconds.
 		 */
-		static inline U64 discreteTimeNano() {
-			return s_dTimeNano;
-		}
+		inline U64 nano() { return m_tNano; }
 
 		/**
-		 * @brief Get the current discrete time in seconds.
 		 * @return The current discrete time in seconds.
 		 */
-		static inline F64 discreteTimeSec() {
-			return s_dTimeSec;
-		}
+		inline F64 sec64() { return m_tSec; }
 
 		/**
-		 * @brief Get the elapsed time in nanoseconds.
+		 * @return The elapsed time in microseconds.
+		 */
+		inline U64 elapsedMicro() { return m_teNano / NANO_PER_MICRO; }
+
+		/**
+		 * @return The elapsed time in milliseconds.
+		 */
+		inline U64 elapsedMilli() { return m_teNano / NANO_PER_MILLI; }
+
+		/**
 		 * @return The elapsed time in nanoseconds.
 		 */
-		static inline U64 discreteElapsedNano() {
-			return s_dElapsedNano;
-		}
+		inline U64 elapsedNano() { return m_teNano; }
 
 		/**
-		 * @brief Get the elapsed time in seconds.
 		 * @return The elapsed time in seconds.
 		 */
-		static inline F64 discreteElapsedSec() {
-			return s_dElapsedSec;
-		}
+		inline F64 elapsedSec64() { return m_teSec; }
 
 	  private:
-		static U64 s_dElapsedNano;
-		static F64 s_dElapsedSec;
-		static U64 s_dTimeNano;
-		static F64 s_dTimeSec;
+		U64 m_teNano;	/**< Elapsed time in nanoseconds */
+		F64 m_teSec;	/**< Elapsed time in seconds */
+		U64 m_tNano;	/**< Current time in nanoseconds */
+		F64 m_tSec;		/**< Current time in seconds */
+
+		static Clock s_global; /**< A global clock */
 	};
 } // namespace Cat
 
