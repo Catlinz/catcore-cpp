@@ -13,6 +13,10 @@
 
 #include <time.h>
 
+#if !defined (CLOCK_MONOTONIC) && defined(CLOCK_REALTIME)
+#define CLOCK_MONOTONIC CLOCK_REALTIME
+#endif
+
 #include "core/time/timedefs.h"
 #if defined(OS_APPLE)
 #include "core/time/osx/abstime.h"
@@ -195,7 +199,7 @@ namespace Cat {
 			t.tv_sec = (n / NANO_PER_SEC);
 			t.tv_nsec = (n - (t.tv_sec * NANO_PER_SEC));
 #else // UNIX
-			clock_gettime(CLOCK_REALTIME, &t);
+			clock_gettime(CLOCK_MONOTONIC, &t);
 #endif
 			return Time(t);
 		}
@@ -207,7 +211,7 @@ namespace Cat {
 #if defined (OS_APPLE)
 			return AbsTime::currentTimeMicro();
 #else // UNIX
-			timespec t; clock_gettime(CLOCK_REALTIME, &t); return rawToMicro(t);
+			timespec t; clock_gettime(CLOCK_MONOTONIC, &t); return rawToMicro(t);
 #endif
 		}
 
@@ -218,7 +222,7 @@ namespace Cat {
 #if defined (OS_APPLE)
 			return AbsTime::currentTimeMilli();
 #else // UNIX
-			timespec t;	clock_gettime(CLOCK_REALTIME, &t); return rawToMilli(t);
+			timespec t;	clock_gettime(CLOCK_MONOTONIC, &t); return rawToMilli(t);
 #endif
 		}
 
@@ -229,7 +233,7 @@ namespace Cat {
 #if defined (OS_APPLE)
 			return AbsTime::currentTimeNano();
 #else // UNIX
-			timespec t;	clock_gettime(CLOCK_REALTIME, &t); return rawToNano(t);
+			timespec t;	clock_gettime(CLOCK_MONOTONIC, &t); return rawToNano(t);
 #endif
 		}
 
@@ -240,7 +244,7 @@ namespace Cat {
 #if defined (OS_APPLE)
 			return AbsTime::currentTimeSec();
 #else // UNIX
-			timespec t;	clock_gettime(CLOCK_REALTIME, &t); return rawToSec(t);
+			timespec t;	clock_gettime(CLOCK_MONOTONIC, &t); return rawToSec(t);
 #endif
 		}
 
@@ -251,7 +255,7 @@ namespace Cat {
 #if defined (OS_APPLE)
 			return AbsTime::currentTimeSec64();
 #else // UNIX
-			timespec t;	clock_gettime(CLOCK_REALTIME, &t); return rawToSec64(t);
+			timespec t;	clock_gettime(CLOCK_MONOTONIC, &t); return rawToSec64(t);
 #endif
 		}
 		
@@ -350,7 +354,7 @@ namespace Cat {
 			m_time.tv_sec = (n / NANO_PER_SEC);
 			m_time.tv_nsec = (n - (m_time.tv_sec * NANO_PER_SEC));
 #else // UNIX
-			clock_gettime(CLOCK_REALTIME, &m_time);
+			clock_gettime(CLOCK_MONOTONIC, &m_time);
 #endif
 		}
 
