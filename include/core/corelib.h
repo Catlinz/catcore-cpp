@@ -78,27 +78,27 @@
  * Definition for safe delete macro for object pointers.
  */
 #define CC_SAFEDELETE(var)								\
-	if (var) {												\
-		delete var;											\
-		var = NIL;											\
+	if ((var)) {											\
+		delete (var);										\
+		(var) = NIL;										\
 	}															\
 
 /**
  * Definition for safe delete macro for arrays.
  */
 #define CC_SAFEDELETE_ARRAY(var)						\
-	if (var) {												\
-		delete[] var;										\
-		var = NIL;											\
+	if ((var)) {											\
+		delete[] (var);									\
+		(var) = NIL;										\
 	}															\
 
 /**
  * Definition for safe delete of reference counted pointers.
  */
 #define CC_SAFEDELETE_ISPTR(var)						\
-	if (var && var->release()) {						\
-		delete var;											\
-		var = NIL;											\
+	if ((var) && (var)->release()) {					\
+		delete (var);										\
+		(var) = NIL;										\
 	}															\
 	
 	
