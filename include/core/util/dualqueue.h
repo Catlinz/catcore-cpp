@@ -175,6 +175,14 @@ namespace Cat {
 			}
 			return false;
 		}
+
+		/**
+		 * @brief Swap the read and write queues (Locks).
+		 * Assumes read queue is empty and resets start and end indexes 
+		 * for new write queue.
+		 */
+		void swap();
+		
 		
 	  private:
 		T* mp_queue; /**< The actual queue */
@@ -284,6 +292,21 @@ namespace Cat {
 	Boolean DualQueue<T>::isEmpty() const {
 		return isReadEmpty() && isWriteEmpty();
 	}
+
+	template<class T>
+	void DualQueue<T>::swap() {
+		m_lock.lock();
+		/* Swap queues */
+		T* tmp = mp_read;
+		mp_read = mp_write;
+		mp_write = tmp;
+		/* Swap the read and write indices and reset write */
+		m_rStart = m_wStart;
+		m_rEnd = m_wEnd;
+		m_wStart = m_wEnd = 0;
+		m_lock.unlock();
+	}
+	
 } // namespace Cat
 
 #endif // CAT_CORE_UTIL_DUALQUEUE_H
