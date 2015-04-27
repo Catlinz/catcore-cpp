@@ -51,162 +51,132 @@ namespace cat {
 	template<typename T>
 	class CxInvasiveStrongPtr {
 	  public:		
-		/**
-		 * @brief Create a null pointer.
-		 */
-		inline CxInvasiveStrongPtr() : m_pPtr(NIL) {}
+		/** @brief Create a null pointer. */
+		inline CxInvasiveStrongPtr() : mp_ptr(0) {}
 
 		/**
 		 * @brief Create a CxInvasiveStrongPtr wrapped around a pointer.
 		 * Do NOT pass a NIL pointer to this constructor.
-		 * @param ptr The pointer to wrap around.
+		 * @param in_ptr The pointer to wrap around.
 		 */
-		inline CxInvasiveStrongPtr(T* ptr) : m_pPtr(ptr) {
-			m_pPtr->retain();
+		inline CxInvasiveStrongPtr(T *in_ptr) : mp_ptr(in_ptr) {
+			mp_ptr->retain();
 		}
 		
 		/**
 		 * @brief Copy constructor, makes sure to increment the reference count.
 		 * @param src The source object to copy from.
 		 */
-		inline CxInvasiveStrongPtr(const CxInvasiveStrongPtr<T>& src) {
-			m_pPtr = src.m_pPtr;
-			if (m_pPtr) {
-				m_pPtr->retain();
-			}			
+		inline CxInvasiveStrongPtr(const CxInvasiveStrongPtr<T> &in_src) {
+			mp_ptr = in_src.mp_ptr;
+			if (mp_ptr) { mp_ptr->retain(); }			
 		}
 
 		/**
 		 * @brief Assignment operator, makes sure to increment / decrement reference count.
-		 * @param src The source object to copy from.
+		 * @param in_src The source object to copy from.
 		 * @return A reference to the InvasiveStrongPtr.
 		 */
-		CxInvasiveStrongPtr& operator=(const CxInvasiveStrongPtr<T>& src) {
-			if (src.m_pPtr) {
-				src.m_pPtr->retain();
-			}			
+		CxInvasiveStrongPtr& operator=(const CxInvasiveStrongPtr<T> &in_src) {
+			if (in_src.mp_ptr) { in_src.mp_ptr->retain(); }			
 			releaseAndDeleteIfNeeded();
-			m_pPtr = src.m_pPtr;			
+			mp_ptr = in_src.mp_ptr;			
 			return *this;			
 		}
 
 		/**
 		 * @brief Assignment operator, makes sure to increment / decrement reference count.
-		 * @param src The object to store as a pointer.
+		 * @param in_src The object to store as a pointer.
 		 * @return A reference to the InvasiveStrongPtr.
 		 */
-		CxInvasiveStrongPtr& operator=(T* ptr) {
-			if (ptr) {
-				ptr->retain();
-			}			
+		CxInvasiveStrongPtr& operator=(T *in_ptr) {
+			if (in_ptr) { in_ptr->retain(); }			
 			releaseAndDeleteIfNeeded();
-			m_pPtr = ptr;			
+			mp_ptr = in_ptr;			
 			return *this;			
 		}
 
 		/**
 		 * @brief Overloaded equality operator.
-		 * @param other The Other pointer to compare to.
+		 * @param in_ptr The Other pointer to compare to.
 		 * @return True if the pointers point to the same object.
 		 */
-		inline CxBool operator==(const CxInvasiveStrongPtr<T>& other) const {
-			return m_pPtr == other.m_pPtr;
+		inline CxBool operator==(const CxInvasiveStrongPtr<T> &in_ptr) const {
+			return mp_ptr == in_ptr.mp_ptr;
 		}
 
 		/**
 		 * @brief Overloaded not equals operator.
-		 * @param other The Other pointer to compare to.
+		 * @param in_ptr The Other pointer to compare to.
 		 * @return True if the pointers point different objects.
 		 */
-		inline CxBool operator!=(const CxInvasiveStrongPtr<T>& other) const {
-			return m_pPtr != other.m_pPtr;
+		inline CxBool operator!=(const CxInvasiveStrongPtr<T> &in_ptr) const {
+			return mp_ptr != in_ptr.mp_ptr;
 		}	
 
-		/**
-		 * @brief Checks and decrements reference count and deletes pointer if needed.
-		 */
+		/** @brief Checks and decrements reference count and deletes pointer if needed. */
 		inline ~CxInvasiveStrongPtr() {
 		   releaseAndDeleteIfNeeded();			
 		}
 		
-		/**
-		 * @brief Overloaded pointer dereference operator.
-		 * @return The object being pointed to by this CxInvasiveStrongPtr pointer.
-		 */
-		inline const T& operator*() const {
+		/** @return The object being pointed to by this CxInvasiveStrongPtr pointer (const). */
+		inline const T & operator*() const {
 #if defined(DEBUG)
-			if (!m_pPtr) {
+			if (!mp_ptr) {
 				DERR("Trying to dereference NIL pointer!");
 			}
 #endif
-			return *m_pPtr;
+			return *mp_ptr;
 		}
 
-		inline T& operator*() {
+		/** @return The object being pointed to by this CxInvasiveStrongPtr pointer. */
+		inline T & operator*() {
 #if defined(DEBUG)
-			if (!m_pPtr) {
+			if (!mp_ptr) {
 				DERR("Trying to dereference NIL pointer!");
 			}
 #endif
-			return *m_pPtr;
+			return *mp_ptr;
 		}
 
-		/**
-		 * @brief Overload the -> operator to allow for access to an objects members.
-		 * @return The pointer.
-		 */
-		inline const T* operator->() const { return m_pPtr; }
-		inline T* operator->() { return m_pPtr; }
+	   /** @return The object being pointed to by this CxInvasiveStrongPtr pointer (const). */
+		inline const T * operator->() const { return mp_ptr; }
 
-		/**
-		 * @brief Get the pointer.
-		 * @return The actual pointer.
-		 */
-		inline T* ptr() const { return m_pPtr; }
+		/** @return The object being pointed to by this CxInvasiveStrongPtr pointer. */
+		inline T * operator->() { return mp_ptr; }
 
-		/**
-		 * @brief Get the number of references to the pointer.
-		 * @return The number of references to the pointer.
-		 */
-		inline CxI32 retainCount() const { return (m_pPtr) ? m_pPtr->retainCount() : 0; }
+	   /** @return The object being pointed to by this CxInvasiveStrongPtr pointer (const). */
+		inline T * ptr() const { return mp_ptr; }
 
-		/**
-		 * @brief Test to see if the pointer is null.
-		 * @return true If the pointer is NIL, false otherwise.
-		 */
-		inline CxBool isNull() const { return m_pPtr == NIL; }
-
-		/**
-		 * @brief Test to see if the pointer is NOT null.
-		 * @return true If the pointer is NOT NIL, false otherwise.
-		 */
-		inline CxBool notNull() const { return m_pPtr != NIL; }	
-
-		/**
-		 * @brief Set the pointer to be a NIL pointer.
-		 */
-		inline void setNull() {
-		   releaseAndDeleteIfNeeded();			
+		/** @return The number of references to the pointer. */
+		inline CxI32 retainCount() const {
+			return (mp_ptr) ? mp_ptr->retainCount() : 0;
 		}
 
-		/**
-		 * @brief Get a null pointer.
-		 * @return A null pointer.
-		 */
+		/** @return true If the pointer is null, false otherwise. */
+		inline CxBool isNull() const { return mp_ptr == 0; }
+
+		/** @return true If the pointer is NOT null, false otherwise. */
+		inline CxBool notNull() const { return mp_ptr != 0; }	
+
+		/** @brief Set the pointer to be a null pointer. */
+		inline void setNull() { releaseAndDeleteIfNeeded(); }
+
+		/** @return A null pointer. */
 		inline static CxInvasiveStrongPtr<T> nullPtr() { return CxInvasiveStrongPtr<T>(); }
 			
 	  private:
 		inline void releaseAndDeleteIfNeeded() {
-			if (m_pPtr && m_pPtr->release()) {
+			if (mp_ptr && mp_ptr->release()) {
 #if defined (DEBUG_REF_POINTERS)
 				DMSG("CxInvasiveStrongPtr count at 0 for reference, deleting pointer!");
 #endif
-				delete m_pPtr;
+				delete mp_ptr;
+				mp_ptr = 0;
 			}
-			m_pPtr = NIL;
 		}		
 		
-		T* m_pPtr;		
+		T* mp_ptr;		
 	};
 
 } // namespace cat
