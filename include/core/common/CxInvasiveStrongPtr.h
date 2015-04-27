@@ -1,47 +1,67 @@
-#ifndef CAT_CORE_UTIL_INVASIVESTRONGPTR_H
-#define CAT_CORE_UTIL_INVASIVESTRONGPTR_H
+#ifndef CX_CORE_COMMON_CXINVASIVESTRONGPTR_H
+#define CX_CORE_COMMON_CXINVASIVESTRONGPTR_H
 
 /**
- * @copyright Copyright Catlin Zilinski, 2013.  All rights reserved.
+ * @copyright Copyright Catlin Zilinski, 2015.  All rights reserved.
  *
- * @file invasivestrongptr.h
+ * @file CxInvasiveStrongPtr.h
  * @brief Contains a reference counting pointer wrapper.
  *
- * The InvasiveStrongPtr class is a strong reference counting safe pointer which assumes 
+ * The CxInvasiveStrongPtr class is a strong reference counting safe pointer which assumes 
  * certain methods on the pointer it is storing to increment and decrement the 
  * reference count, which is stored on the actual object.
  *
  * @author Catlin Zilinski
- * @date Mar 4, 2014
+ * @date Apr 27, 2014
  */
 
-#include <cstdlib>
-#include "core/corelib.h"
+#include "core/Cx.h"
 
-namespace Cat {
+/**
+ * Macros for easily making a class be an invasive strong pointer.
+ * The CX_ISTPR_METHODS goes in the public section of the class,
+ * the CX_ISTPR_FIELDS goes in the private / protected section of the class, 
+ * the CX_ISPTR_INIT goes in the constructor of the class, and 
+ * the CX_ISPTR_PTR goes after the class definition if wanted.
+ */
+#define CX_ISPTR_METHODS																\
+	inline CxBool release() { return m_retainCount.decrement() <= 0; }	\
+	inline void retain() { m_retainCount.increment(); }						\
+	inline CxI32 retainCount() const { return m_retainCount.val(); }
+
+#define CX_ISPTR_FIELDS									\
+	CxAtomicI32 m_retainCount
+
+#define CX_ISPTR_INIT									\
+	m_retainCount = CxAtomicI32()
+
+#define CX_ISPTR_PTR(isptrClassName)											\
+	typedef CxInvasiveStrongPtr<isptrClassName> isptrClassName ## Ptr
+
+namespace cat {
 
 	/**
-	 * @class InvasiveStrongPtr invasivestrongptr.h "core/util/invasivestrongptr.h"
+	 * @class CxInvasiveStrongPtr CxInvasiveStrongPtr.h "core/common/CxInvasiveStrongPtr.h"
 	 * @brief A strong reference counting safe pointer.
 	 * 
 	 * @author Catlin Zilinski
-	 * @version 1
+	 * @version 2
 	 * @since Mar 4, 2014
 	 */
 	template<typename T>
-	class InvasiveStrongPtr {
+	class CxInvasiveStrongPtr {
 	  public:		
 		/**
 		 * @brief Create a null pointer.
 		 */
-		inline InvasiveStrongPtr() : m_pPtr(NIL) {}
+		inline CxInvasiveStrongPtr() : m_pPtr(NIL) {}
 
 		/**
-		 * @brief Create a InvasiveStrongPtr wrapped around a pointer.
+		 * @brief Create a CxInvasiveStrongPtr wrapped around a pointer.
 		 * Do NOT pass a NIL pointer to this constructor.
 		 * @param ptr The pointer to wrap around.
 		 */
-		inline InvasiveStrongPtr(T* ptr) : m_pPtr(ptr) {
+		inline CxInvasiveStrongPtr(T* ptr) : m_pPtr(ptr) {
 			m_pPtr->retain();
 		}
 		
@@ -49,7 +69,7 @@ namespace Cat {
 		 * @brief Copy constructor, makes sure to increment the reference count.
 		 * @param src The source object to copy from.
 		 */
-		inline InvasiveStrongPtr(const InvasiveStrongPtr<T>& src) {
+		inline CxInvasiveStrongPtr(const CxInvasiveStrongPtr<T>& src) {
 			m_pPtr = src.m_pPtr;
 			if (m_pPtr) {
 				m_pPtr->retain();
@@ -61,7 +81,7 @@ namespace Cat {
 		 * @param src The source object to copy from.
 		 * @return A reference to the InvasiveStrongPtr.
 		 */
-		InvasiveStrongPtr& operator=(const InvasiveStrongPtr<T>& src) {
+		CxInvasiveStrongPtr& operator=(const CxInvasiveStrongPtr<T>& src) {
 			if (src.m_pPtr) {
 				src.m_pPtr->retain();
 			}			
@@ -75,7 +95,7 @@ namespace Cat {
 		 * @param src The object to store as a pointer.
 		 * @return A reference to the InvasiveStrongPtr.
 		 */
-		InvasiveStrongPtr& operator=(T* ptr) {
+		CxInvasiveStrongPtr& operator=(T* ptr) {
 			if (ptr) {
 				ptr->retain();
 			}			
@@ -89,7 +109,7 @@ namespace Cat {
 		 * @param other The Other pointer to compare to.
 		 * @return True if the pointers point to the same object.
 		 */
-		inline Boolean operator==(const InvasiveStrongPtr<T>& other) const {
+		inline CxBool operator==(const CxInvasiveStrongPtr<T>& other) const {
 			return m_pPtr == other.m_pPtr;
 		}
 
@@ -98,20 +118,20 @@ namespace Cat {
 		 * @param other The Other pointer to compare to.
 		 * @return True if the pointers point different objects.
 		 */
-		inline Boolean operator!=(const InvasiveStrongPtr<T>& other) const {
+		inline CxBool operator!=(const CxInvasiveStrongPtr<T>& other) const {
 			return m_pPtr != other.m_pPtr;
 		}	
 
 		/**
 		 * @brief Checks and decrements reference count and deletes pointer if needed.
 		 */
-		inline ~InvasiveStrongPtr() {
+		inline ~CxInvasiveStrongPtr() {
 		   releaseAndDeleteIfNeeded();			
 		}
 		
 		/**
 		 * @brief Overloaded pointer dereference operator.
-		 * @return The object being pointed to by this InvasiveStrongPtr pointer.
+		 * @return The object being pointed to by this CxInvasiveStrongPtr pointer.
 		 */
 		inline const T& operator*() const {
 #if defined(DEBUG)
@@ -148,19 +168,19 @@ namespace Cat {
 		 * @brief Get the number of references to the pointer.
 		 * @return The number of references to the pointer.
 		 */
-		inline I32 retainCount() const { return (m_pPtr) ? m_pPtr->retainCount() : 0; }
+		inline CxI32 retainCount() const { return (m_pPtr) ? m_pPtr->retainCount() : 0; }
 
 		/**
 		 * @brief Test to see if the pointer is null.
 		 * @return true If the pointer is NIL, false otherwise.
 		 */
-		inline Boolean isNull() const { return m_pPtr == NIL; }
+		inline CxBool isNull() const { return m_pPtr == NIL; }
 
 		/**
 		 * @brief Test to see if the pointer is NOT null.
 		 * @return true If the pointer is NOT NIL, false otherwise.
 		 */
-		inline Boolean notNull() const { return m_pPtr != NIL; }	
+		inline CxBool notNull() const { return m_pPtr != NIL; }	
 
 		/**
 		 * @brief Set the pointer to be a NIL pointer.
@@ -173,13 +193,13 @@ namespace Cat {
 		 * @brief Get a null pointer.
 		 * @return A null pointer.
 		 */
-		inline static InvasiveStrongPtr<T> nullPtr() { return InvasiveStrongPtr<T>(); }
+		inline static CxInvasiveStrongPtr<T> nullPtr() { return CxInvasiveStrongPtr<T>(); }
 			
 	  private:
 		inline void releaseAndDeleteIfNeeded() {
 			if (m_pPtr && m_pPtr->release()) {
 #if defined (DEBUG_REF_POINTERS)
-				DMSG("InvasiveStrongPtr count at 0 for reference, deleting pointer!");
+				DMSG("CxInvasiveStrongPtr count at 0 for reference, deleting pointer!");
 #endif
 				delete m_pPtr;
 			}
@@ -189,7 +209,7 @@ namespace Cat {
 		T* m_pPtr;		
 	};
 
-} // namespace Cat
+} // namespace cat
 
-#endif // CAT_CORE_UTIL_INVASIVESTRONGPTR_H
+#endif // CX_CORE_COMMON_CXINVASIVESTRONGPTR_H
 
