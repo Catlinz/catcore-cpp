@@ -121,21 +121,13 @@ namespace cat {
 		
 		/** @return The object being pointed to by this CxInvasiveStrongPtr pointer (const). */
 		inline const T & operator*() const {
-#if defined(DEBUG)
-			if (!mp_ptr) {
-				DERR("Trying to dereference NIL pointer!");
-			}
-#endif
+			CXD_IF_ERR(!mp_ptr, "Trying to dereference null ISPtr.");
 			return *mp_ptr;
 		}
 
 		/** @return The object being pointed to by this CxInvasiveStrongPtr pointer. */
 		inline T & operator*() {
-#if defined(DEBUG)
-			if (!mp_ptr) {
-				DERR("Trying to dereference NIL pointer!");
-			}
-#endif
+			CXD_IF_ERR(!mp_ptr, "Trying to dereference null ISPtr.");
 			return *mp_ptr;
 		}
 
@@ -169,7 +161,7 @@ namespace cat {
 		inline void releaseAndDeleteIfNeeded() {
 			if (mp_ptr && mp_ptr->release()) {
 #if defined (DEBUG_REF_POINTERS)
-				DMSG("CxInvasiveStrongPtr count at 0 for reference, deleting pointer!");
+				CXD_MSG("CxInvasiveStrongPtr count at 0 for reference, deleting pointer!");
 #endif
 				delete mp_ptr;
 				mp_ptr = 0;
@@ -178,6 +170,12 @@ namespace cat {
 		
 		T* mp_ptr;		
 	};
+
+	/**
+	 * @brief Macro for safetly deleting an invasive strong pointer type.
+	 */
+#define CxDeleteISPtr(x) \
+	if ((x) && (x)->release()) { delete (x); (x) = 0; }
 
 } // namespace cat
 

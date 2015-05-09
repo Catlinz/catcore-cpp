@@ -11,7 +11,7 @@
  * @date Apr 27, 2015
  */
 
-#include "core/util/invasivestrongptr.h"
+#include "core/common/CxInvasiveStrongPtr.h"
 
 namespace cat {
 

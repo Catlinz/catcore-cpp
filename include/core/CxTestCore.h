@@ -1,12 +1,10 @@
-#ifndef CAT_CORE_TESTCORE_H
-#define CAT_CORE_TESTCORE_H
+#ifndef CX_CORE_CXTESTCORE_H
+#define CX_CORE_CXTESTCORE_H
 
 #include <assert.h>
 #include <ctime>
 #include <cstdio>
 #include <iostream>
-#include <unistd.h>
-#include <cstring>
 
 #define BEGIN_TEST (std::cout << ">>> BEGINNING " << __FUNCTION__ << std::endl << std::flush)
 #define FINISH_TEST (std::cout << ">>> FINISHED " << __FUNCTION__ << std::endl << std::endl << std::flush)
@@ -66,35 +64,4 @@
 	}																						\
 	assert(!(value));
 
-namespace Cat {
-	/**
-	 * @brief Get an absolute filename relative to the /tests/ dir.
-	 * @param filename The filename of the filename to get.
-	 * @return An absolute path of the filename.
-	 */
-	inline char* getFilenameUnderTestDir(const char* filename) {
-		char cwd[1024];
-		getcwd(cwd, 1024);
-
-		char testDir[] = "CatzToy/tests/";		
-
-		char* ptr = strstr(cwd, testDir);
-		ptr += strlen(testDir);
-		*ptr = '\0';
-		size_t cwdLen = strlen(cwd);
-		size_t filenameLen = strlen(filename);		
-		char* absFilename = new char[cwdLen + filenameLen + 1];
-		memcpy(absFilename, cwd, sizeof(char)*cwdLen);
-		memcpy(&(absFilename[cwdLen]), filename, sizeof(char)*filenameLen);
-		absFilename[cwdLen + filenameLen] = '\0';
-		
-		return absFilename;
-	}	
-		
-		
-		
-}
-
-
-
-#endif // CAT_CORE_TESTCORE_H
+#endif // CX_CORE_CXTESTCORE_H
