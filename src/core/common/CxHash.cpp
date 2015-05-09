@@ -1,5 +1,5 @@
-#include "core/corelib.h"
-#include <cstring>
+#include "core/commom/CxHash.h"
+
 /*-
  *  COPYRIGHT (C) 1986 Gary S. Brown.  You may use this program, or
  *  code or tables extracted from it, as desired without restriction.
@@ -42,8 +42,9 @@
  * CRC32 code derived from work by Gary S. Brown.
  */
 
-namespace Cat {
-	static U32 crc32_tab[] = {
+namespace cat {
+
+		static CxU32 crc32_tab[] = {
 		0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
 		0xe963a535, 0x9e6495a3,	0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
 		0x09b64c2b, 0x7eb17cbd, 0xe7b82d07, 0x90bf1d91, 0x1db71064, 0x6ab020f2,
@@ -87,218 +88,16 @@ namespace Cat {
 		0xbdbdf21c, 0xcabac28a, 0x53b39330, 0x24b4a3a6, 0xbad03605, 0xcdd70693,
 		0x54de5729, 0x23d967bf, 0xb3667a2e, 0xc4614ab8, 0x5d681b02, 0x2a6f2b94,
 		0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
-	};
+		};
 
-
-	OID crc32(const Char* str) {
-		const U8 *p = (U8*)str;
-		U32 crc = (U32)~0U;
-
-		Size size = strlen(str);
-
+	CxU32 crc32(const I8 *in_str) {
+		const CxU8 *p = (CxU8*)in_str;
+		CxU32 crc = (CxU32)~0U;
+		CxI32 size = (CxI32)strlen(in_str);
 		while (size--) {
 			crc = crc32_tab[(crc ^ *p++) & 0xFF] ^ (crc >> 8);
 		}
-
 		return crc ^ ~0U;
 	}
 
-	Char* copy(const Char* str) {
-		Size bytesToCopy = sizeof(Char)*(strlen(str)+1);
-		Char* newStr = (Char*)malloc(bytesToCopy);
-#if defined (DEBUG)
-		if (!newStr) {
-			DERR("Allocating new string failed!");
-		}
-#endif
-		memcpy(newStr, str, bytesToCopy);
-		return newStr;
-	}
-
-	Boolean eq(const Char* str1, const Char* str2) {
-		return strcmp(str1, str2) == 0;
-	}
-
-	namespace ReturnCode {
-		const Char* toString(I32 returnCode) {
-			if (isSuccess(returnCode)) {
-				switch(returnCode) {
-				case kRCSuccess:
-					return "kRCSuccess";
-					break;
-				case kRCTrue:
-					return "kRCTrue";
-					break;
-				case kRCFalse:
-					return "kRCFalse";
-					break;
-				case kRCExists:
-					return "kRCExists";
-					break;
-				case kRCAlreadyDone:
-					return "kRCAlreadyDone";
-					break;
-				default:
-					return "UnknownSuccessCode";
-					break;					
-				};				
-			}			
-			else if (returnCode >= kRCError) {
-				return Error::toString(returnCode);
-			}
-			else if (returnCode >= kRCWarning) {
-				return Warning::toString(returnCode);
-			}
-			else {
-				return "UnknownReturnCode";
-			}			
-		}		
-	} // namespace ReturnCode
-
-	namespace Warning {
-		const Char* toString(I32 warning) {
-			switch(warning) {
-			case kWNoWarning:
-				return "kWNoWarning";
-				break;
-			case kWUnknownWarning:
-				return "kWUnknownWarning";
-				break;				
-			case kWNullValue:
-				return "kWNullValue";
-				break;
-			case kWInvalidValue:
-				return "kWInvalidValue";
-				break;
-			case kWInvalidState:
-				return "kWInvalidState";
-				break;
-			case kWInvalidArgument:
-				return "kWInvalidArgument";
-				break;
-			case kWInvalidFormat:
-				return "kWInvalidFormat";
-				break;
-			case kWAllocFailed:
-				return "kWAllocFailed";
-				break;
-			case kWConnectionFailed:
-				return "kWConnectionFailed";
-				break;
-			case kWBadRequest:
-				return "kWBadRequest";
-				break;
-			case kWAccessDenied:
-				return "kWAccessDenied";
-				break;
-			case kWIOFailed:
-				return "kWIOFailed";
-				break;
-			case kWFileNotFound:
-				return "kWFileNotFound";
-				break;
-			case kWInvalidPath:
-				return "kWInvalidPath";
-				break;
-			case kWInvalidFileName:
-				return "kWInvalidFileName";
-				break;
-			case kWInvalidFile:
-				return "kWInvalidFile";
-				break;
-			case kWMemoryWarning:
-				return "kWMemoryWarning";
-				break;
-			case kWFailedOp:
-				return "kWFailedOp";
-				break;
-			case kWIncompleteOp:
-				return "kWIncompleteOp";
-				break;
-			case kWExists:
-				return "kWExists";
-				break;
-			case kWAlreadyDone:
-				return "kWAlreadyDone";
-				break;
-		   default:
-				return "InvalidWarningCode";
-				break;				
-			};
-		}
-	} // namespace Warning
-
-	namespace Error {
-		const Char* toString(I32 error) {
-			switch(error) {
-			case kENoError:
-				return "kENoError";
-				break;
-			case kEUnknownError:
-				return "kEUnknownError";
-				break;				
-			case kEInvalidValue:
-				return "kEInvalidValue";
-				break;
-			case kEInvalidState:
-				return "kEInvalidState";
-				break;
-			case kEInvalidArgument:
-				return "kEInvalidArgument";
-				break;
-			case kEInvalidFormat:
-				return "kEInvalidFormat";
-				break;
-			case kEBadAddress:
-				return "kEBadAddress";
-				break;
-			case kEAllocError:
-				return "kEAllocError";
-				break;
-			case kEConnectionError:
-				return "kEConnectionError";
-				break;
-			case kEIlegalOperation:
-				return "kEIlegalOperation";
-				break;
-			case kEBadRequest:
-				return "kEBadRequest";
-				break;
-			case kEAccessDenied:
-				return "kEAccessDenied";
-				break;
-			case kEIOError:
-				return "kEIOError";
-				break;
-			case kEFileNotFound:
-				return "kEFileNotFound";
-				break;
-			case kEInvalidPath:
-				return "kEInvalidPath";
-				break;
-			case kEInvalidFileName:
-				return "kEInvalidFileName";
-				break;
-			case kEInvalidFile:
-				return "kEInvalidFile";
-				break;
-			case kENullValue:
-				return "kENullValue";
-				break;
-			case kEInsufficientMemory:
-				return "kEInsufficientMemory";
-				break;
-			case kEExists:
-				return "kEExists";
-				break;
-			case kEAlreadyDone:
-				return "kEAlreadyDone";
-				break;
-		   default:
-				return "InvalidErrorCode";
-				break;				
-			};
-		}
-	} // namespace error
-} // namespace Cat
-
+} // namespace cat
