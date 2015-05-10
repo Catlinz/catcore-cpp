@@ -487,7 +487,7 @@ namespace cat {
 		T		  *mp_vec;		   /**< The actual vector data */
 		T m_invalidValue; /**< The value returned if outside bounds */
 		CxI32		m_capacity;		/**< The current capacity of the Vector */
-		CXI32		m_size;		/**< The number of elements in the Vector */
+		CxI32		m_size;		/**< The number of elements in the Vector */
 		
 		CX_ISPTR_FIELDS;
 	};

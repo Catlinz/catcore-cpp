@@ -16,6 +16,7 @@
  */
 
 #include "core/Cx.h"
+#include "core/common/CxAtomic.h"
 
 /**
  * Macros for easily making a class be an invasive strong pointer.
@@ -25,17 +26,17 @@
  * the CX_ISPTR_PTR goes after the class definition if wanted.
  */
 #define CX_ISPTR_METHODS																\
-	inline CxBool release() { return m_retainCount.decrement() <= 0; }	\
-	inline void retain() { m_retainCount.increment(); }						\
-	inline CxI32 retainCount() const { return m_retainCount.val(); }
+	inline CxBool release() { return atomic::decr32(m_retainCount) <= 0; } \
+	inline void retain() { atomic::incr32(m_retainCount); }					\
+	inline CxI32 retainCount() const { return m_retainCount; }
 
 #define CX_ISPTR_FIELDS									\
-	CxAtomicI32 m_retainCount
+	CxI32 m_retainCount
 
 #define CX_ISPTR_INIT									\
-	m_retainCount = CxAtomicI32()
+	m_retainCount = 1
 
-#define CX_ISPTR_PTR(isptrClassName)											\
+#define CX_ISPTR_TYPEDEF(isptrClassName)										\
 	typedef CxInvasiveStrongPtr<isptrClassName> isptrClassName ## Ptr
 
 namespace cat {

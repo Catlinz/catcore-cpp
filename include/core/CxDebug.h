@@ -143,10 +143,4 @@
 
 #endif // !defined(STRIP_DEBUG)
 
-
-/* Check for NaN or infinite */
-
-
-#endif // defined(DEBUG)
-
 #endif // CX_CORE_CXDEBUG_H
