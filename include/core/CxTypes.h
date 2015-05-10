@@ -32,7 +32,7 @@ namespace cat {
 	typedef float CxF32;
 
 	typedef unsigned short CxU16;
-	typedef signed short CxI32;
+	typedef signed short CxI16;
 
 	typedef unsigned char CxU8;
 	typedef signed char CxI8;
