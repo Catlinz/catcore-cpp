@@ -11,7 +11,7 @@
  * @date May 17, 2015
  */
 
-#include "core/Cx.h"
+#include "core/common/CxMem.h"
 #include <wchar.h>
 
 namespace cat {
@@ -23,14 +23,18 @@ namespace cat {
 		 * @param in_len The length of the string (NOT incl. null-terminating char).
 		 * @return A pointer to a newly allocated c-string.
 		 */
-		CX_FORCE_INLINE CxChar * alloc8(CxI32 in_len);
+		CX_FORCE_INLINE CxChar * alloc8(CxI32 in_len) {
+			return (CxChar *)mem::alloc(sizeof(CxChar)*(in_len + 1));
+		}
 
 		/**
 		 * @brief Method to create a new 16 bit unicode string.
 		 * @param in_len The length of the string (NOT incl. null-terminating char).
 		 * @return A pointer to a newly allocated 16 bit unicode c-string.
 		 */
-		CX_FORCE_INLINE CxChar16 * alloc16(CxI32 in_len);
+		CX_FORCE_INLINE CxChar16 * alloc16(CxI32 in_len) {
+			return (CxChar16 *)mem::alloc(sizeof(CxChar16)*(in_len + 1));
+		}
 
 		/**
 		 * @brief Method to append chars of one string to another string.
@@ -61,8 +65,9 @@ namespace cat {
 		 * @return A pointer to inout_str is returned.
 		 */
 		CX_FORCE_INLINE CxChar * concat(CxChar *CX_RESTRICT inout_str,
-												  const CxChar *CX_RESTRICT in_str);
-
+												  const CxChar *CX_RESTRICT in_str) {
+			return str::concat(inout_str, in_str, str::len(in_str));
+		}
 
 		/**
 		 * @brief Method to append one string to another string.
@@ -71,7 +76,9 @@ namespace cat {
 		 * @return A pointer to inout_str is returned.
 		 */
 		CX_FORCE_INLINE CxChar16 * concat(CxChar16 *CX_RESTRICT inout_str,
-													 const CxChar16 *CX_RESTRICT in_str);
+													 const CxChar16 *CX_RESTRICT in_str) {
+			return str::concat(inout_str, in_str, str::len(in_str));
+		}
 		
 		/**
 		 * @brief Method to copy a string into another string.
@@ -82,7 +89,9 @@ namespace cat {
 		 */
 		CX_FORCE_INLINE CxChar * copy(CxChar *CX_RESTRICT inout_str,
 												const CxChar *CX_RESTRICT in_str,
-												CxI32 in_len);
+												CxI32 in_len) {
+			return (CxChar *)mem::copy(inout_str, in_str, sizeof(CxChar)*(in_len + 1));
+		}
 
 		/**
 		 * @brief Method to copy a 16 bit string into another string.
@@ -93,7 +102,9 @@ namespace cat {
 		 */
 		CX_FORCE_INLINE CxChar16 * copy(CxChar16 *CX_RESTRICT inout_str,
 												  const CxChar16 *CX_RESTRICT in_str,
-												  CxI32 in_len);
+												  CxI32 in_len) {
+			return (CxChar16 *)mem::copy(inout_str, in_str, sizeof(CxChar16)*(in_len + 1));
+		}
 		
 		/**
 		 * @brief Method to create a new copy of a string.
@@ -101,7 +112,9 @@ namespace cat {
 		 * @param in_len The length of the string to copy.
 		 * @return A new string that is the copy of the original.
 		 */
-		CX_FORCE_INLINE CxChar * copy(const CxChar *in_str, CxI32 in_len);
+		CX_FORCE_INLINE CxChar * copy(const CxChar *CX_RESTRICT in_str, CxI32 in_len) {
+			return str::copy(str::alloc8(in_len), in_str, in_len);
+		}
 
 		/**
 		 * @brief Method to create a new copy of a 16 bit string.
@@ -109,21 +122,27 @@ namespace cat {
 		 * @param in_len The length of the string to copy.
 		 * @return A new 16 bit string that is the copy of the original.
 		 */
-		CX_FORCE_INLINE CxChar16 * copy(const CxChar16 *in_str, CxI32 in_len);
+		CX_FORCE_INLINE CxChar16 * copy(const CxChar16 *CX_RESTRICT in_str, CxI32 in_len) {
+			return str::copy(str::alloc16(in_len), in_str, in_len);
+		}
 
 		/**
 		 * @brief Method to create a new copy of a string.
 		 * @param in_str The string to copy.
 		 * @return A new string that is the copy of the original.
 		 */
-		CX_FORCE_INLINE CxChar * copy(const CxChar *in_str);
+		CX_FORCE_INLINE CxChar * copy(const CxChar *CX_RESTRICT in_str) {
+			return str::copy(in_str, str::len(in_str));
+		}
 
 		/**
 		 * @brief Method to create a new copy of a 16 bit string.
 		 * @param in_str The 16 bit string to copy.
 		 * @return A new 16 bit string that is the copy of the original.
 		 */
-		CX_FORCE_INLINE CxChar16 * copy(const CxChar16 *in_str);
+		CX_FORCE_INLINE CxChar16 * copy(const CxChar16 *CX_RESTRICT in_str) {
+			return str::copy(in_str, str::len(in_str));
+		}
 
 		/**
 		 * @brief Test if two strings are equal or not.
@@ -168,100 +187,38 @@ namespace cat {
 		 * The method checks for null strings first.
 		 * @param inout_str A reference to the pointer to the string.
 		 */
-		CX_FORCE_INLINE void free(CxChar *&inout_str);
+		CX_FORCE_INLINE void free(CxChar *&inout_str) {
+			mem::free(inout_str);
+		}
 
 		/**
 		 * @brief Method to free a 16 bit string and set the pointer to 0.
 		 * The method checks for null strings first.
 		 * @param inout_str A reference to the pointer to the string.
 		 */
-		CX_FORCE_INLINE void free(CxChar16 *&inout_str);
+		CX_FORCE_INLINE void free(CxChar16 *&inout_str) {
+			mem::free(inout_str);
+		}
 
 		/**
 		 * @brief Method to get the length of a string.
 		 * @param in_str The string to get the length of.
 		 * @return The length of the string, not including null-term char.
 		 */
-		CX_FORCE_INLINE CxI32 len(const CxChar *in_str);
+		CX_FORCE_INLINE CxI32 len(const CxChar *CX_RESTRICT in_str) {
+			return strlen(in_str);
+		}
 
 		/**
 		 * @brief Method to get the length of a 16 bit string.
 		 * @param in_str The 16 bit string to get the length of.
 		 * @return The length of the string, not including null-term char.
 		 */
-		CX_FORCE_INLINE CxI32 len(const CxChar16 *in_str);
+		CX_FORCE_INLINE CxI32 len(const CxChar16 *CX_RESTRICT in_str) {
+			return wcslen(in_str);
+		}
 		
 	} // namespace str
-
-	CX_FORCE_INLINE CxChar * str::alloc8(CxI32 in_len) {
-		return (CxChar *)malloc(sizeof(CxChar)*(in_len + 1));
-	}
-
-	CX_FORCE_INLINE CxChar16 * str::alloc16(CxI32 in_len) {
-		return (CxChar16 *)malloc(sizeof(CxChar16)*(in_len + 1));
-	}
-	
-	CX_FORCE_INLINE CxChar * concat(CxChar *CX_RESTRICT inout_str,
-											  const CxChar *CX_RESTRICT in_str) {
-		return str::concat(inout_str, in_str, str::len(in_str));
-	}
-
-	CX_FORCE_INLINE CxChar16 * concat(CxChar16 *CX_RESTRICT inout_str,
-												 const CxChar16 *CX_RESTRICT in_str) {
-		return str::concat(inout_str, in_str, str::len(in_str));
-	}
-
-	CX_FORCE_INLINE CxChar * str::copy(CxChar *CX_RESTRICT inout_str,
-												  const CxChar *CX_RESTRICT in_str,
-												  CxI32 in_len) {
-		mem::copy(inout_str, in_str, sizeof(CxChar)*(in_len + 1));
-		return inout_str;
-	}
-
-	CX_FORCE_INLINE CxChar16 * str::copy(CxChar16 *CX_RESTRICT inout_str,
-													 const CxChar16 *CX_RESTRICT in_str,
-													 CxI32 in_len) {
-		mem::copy(inout_str, in_str, sizeof(CxChar16)*(in_len + 1));
-		return inout_str;
-	}
-
-	CX_FORCE_INLINE CxChar * str::copy(const CxChar *in_str, CxI32 in_len) {
-		CxChar *str = str::alloc8(in_len);
-		str::copy(str, in_str, in_len);
-		return str;
-	}
-
-	CX_FORCE_INLINE CxChar16 * str::copy(const CxChar16 *in_str, CxI32 in_len) {
-		CxChar16 *str = str::alloc16(in_len);
-		str::copy(str, in_str, in_len);
-		return str;
-	}
-	
-	CX_FORCE_INLINE CxChar * str::copy(const CxChar *in_str) {
-		return str::copy(in_str, str::len(in_str));
-	}
-
-	CX_FORCE_INLINE CxChar16 * str::copy(const CxChar16 *in_str) {
-		return str::copy(in_str, str::len(in_str));
-	}
-
-	CX_FORCE_INLINE void str::free(CxChar *&inout_str) {
-		if (inout_str) {
-			free(inout_str);
-			inout_str = 0;
-		}
-	}
-
-	CX_FORCE_INLINE void str::free(CxChar16 *&inout_str) {
-		if (inout_str) {
-			free(inout_str);
-			inout_str = 0;
-		}
-	}
-
-	CX_FORCE_INLINE CxI32 str::len(const CxChar16 *in_str) {
-		return wcslen(in_str);
-	}
 	
 } // namespace cat
 
