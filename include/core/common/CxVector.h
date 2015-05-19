@@ -46,11 +46,11 @@ namespace cat {
 
 		/**
 		 * @brief Create a new vector from the specified array.
-		 * @param in_size The number of elements in the array.
 		 * @param in_array The c-array of elements.
+		 * @param in_size The number of elements in the array.
 		 * @param inopt_copy If kCxNoCopy, then array is not copied, just stored.
 		 */
-		CxVector(CxI32 in_size, T *in_array, CxCopy inopt_copy = kCxCopy);
+		CxVector(T *in_array, CxI32 in_size, CxCopy inopt_copy = kCxCopy);
 
 		/**
 		 * @brief Copy constructor, copies each element.
@@ -508,7 +508,7 @@ namespace cat {
 	}
 
 	template <typename T>
-	CxVector<T>::CxVector(CxI32 in_size, T *in_array, CxCopy inopt_copy)
+	CxVector<T>::CxVector(T *in_array, CxI32 in_size, CxCopy inopt_copy)
 		: mp_vec(0), m_capacity(in_size), m_size(in_size) {
 		if (inopt_copy == kCxNoCopy) {
 			mp_vec = in_array;
