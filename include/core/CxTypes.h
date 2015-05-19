@@ -34,6 +34,7 @@ namespace cat {
 	typedef unsigned short CxU16;
 	typedef signed short CxI16;
 
+	typedef char CxChar;
 	typedef unsigned char CxU8;
 	typedef signed char CxI8;
 
@@ -94,14 +95,14 @@ namespace cat {
 	 * @param in_error The amount of error to allow for in equality.
 	 * @return True if the values are approximatly equal.
 	 */
-	CX_FORCE_INLINE CxBool approx(CxReal in_val1, CxReal in_val2, CxReal in_error = CX_EPSILON) {
-		return (fabs(in_val1 - in_val2) <= CX_EPSILON);
-	}
+	//CX_FORCE_INLINE CxBool approx(CxReal in_val1, CxReal in_val2, CxReal in_error = CX_EPSILON) {
+	//	return (fabs(in_val1 - in_val2) <= CX_EPSILON);
+	//}
 	
 	/* Types to store / manipulate memory addresses */
-#if defined(CX_X86) || (defined(CX_POWERPC) && !defined(CX_POWERPC64)) || (defined(CX_ARM) && !defined(CX_ARM64))
+#if defined(CX_32BIT)
 	typedef CxU32 CxAddr;
-#else
+#elif defined(CX_64BIT)
 	typedef CxU64 CxAddr;
 #endif	
 

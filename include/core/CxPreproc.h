@@ -273,7 +273,27 @@
 #  endif
 #endif
 
+/* Define macro's to 'know' if platform is 64 bit or not. */
+#if defined(CX_X86) || (defined(CX_POWERPC) && !defined(CX_POWERPC64)) || (defined(CX_ARM) && !defined(CX_ARM64))
+#  define CX_32BIT
+#else
+#  define CX_64BIT
+#endif
+
 /* Define macros to use to determine platform specs during runtime. */
+
+#if defined(CX_32BIT)
+#  define CX_IS_32BIT 1
+#else
+#  define CX_IS_32BIT 0
+#endif
+
+#if defined(CX_64BIT)
+#  define CX_IS_64BIT 1
+#else
+#  define CX_IS_64BIT 0
+#endif
+
 #if defined(CX_PSVITA)
 #  define CX_IS_PSVITA 1
 #else

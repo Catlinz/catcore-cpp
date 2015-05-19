@@ -19,5 +19,17 @@
 
 #include "core/CxDebug.h"
 
+namespace cat {
+
+	/** @brief An enum that defines how data is copied (if at all) */
+	enum CxCopy {
+		kCxNoCopy = 0,
+		kCxCopy = 1 << 0,
+		kCxCopyOnRead = 1 << 1,
+		kCxCopyOnWrite = 1 << 2
+	};
+
+} // namespace cat
+
 #endif // CAT_CORE_CORELIB_H
 

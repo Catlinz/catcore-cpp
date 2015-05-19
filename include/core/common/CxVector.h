@@ -471,7 +471,7 @@ namespace cat {
 		CX_ISPTR_METHODS;
 
 	  private:
-		inline void inititalise(CxI32 in_size);
+		inline void initialise(CxI32 in_size);
 
 		CX_FORCE_INLINE void priv_removeAt(CxI32 in_idx) {
 			/* Shift everything down by one */
@@ -536,7 +536,7 @@ namespace cat {
 			delete[] mp_vec; mp_vec = 0;			
 		}
 		CxI32 capacity = in_src.m_capacity;
-		m_capacity = capacity
+		m_capacity = capacity;
 		m_size = in_src.m_size;
 		
 		if (capacity > 0) {
@@ -866,7 +866,7 @@ namespace cat {
 
 	template <typename T>
 	void CxVector<T>::resize(CxI32 in_size) {
-		if (in_size > in_capacity) {
+		if (in_size > m_capacity) {
 			resizeToCapacity(in_size);
 		}
 		else if (in_size < m_size) {

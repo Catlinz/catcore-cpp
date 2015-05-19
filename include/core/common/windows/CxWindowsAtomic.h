@@ -23,7 +23,7 @@ namespace cat {
 		 * @return The resulting 32 bit value.
 		 */
 		CX_FORCE_INLINE CxI32 add32(CxI32 &inout_addend, CxI32 in_value) {
-			return InterlockedAdd(&inout_addend, in_value);
+			return InterlockedAdd((LONG *)&inout_addend, in_value);
 		}
 
 		/**
@@ -43,7 +43,7 @@ namespace cat {
 		 * @return The result of the and.
 		 */
 		CX_FORCE_INLINE CxI32 and32(CxI32 &inout_dest, CxI32 in_mask) {
-			return InterlockedAnd(&inout_dest, in_mask);
+			return InterlockedAnd((LONG*)&inout_dest, in_mask);
 		}
 
 		/**
@@ -56,7 +56,7 @@ namespace cat {
 		 * @return True if the value was changed (i.e., value == old value).
 		 */
 		CX_FORCE_INLINE CxBool compareAndSet32(CxI32 &inout_val, CxI32 in_old, CxI32 in_new) {
-			return InterlockedCompareExchange(&inout_val, in_new, in_old) == in_old;
+			return InterlockedCompareExchange((LONG*)&inout_val, in_new, in_old) == in_old;
 		}
 
 		/**
@@ -89,7 +89,7 @@ namespace cat {
 		 * @return The decremented value.
 		 */
 		CX_FORCE_INLINE CxI32 decr32(CxI32 &inout_val) {
-			return InterlockedDecrement(&inout_val);
+			return InterlockedDecrement((LONG*)&inout_val);
 		}
 
 		/**
@@ -97,7 +97,7 @@ namespace cat {
 		 * @param inout_val The value to decrement by one.
 		 * @return The decremented value.
 		 */
-		CX_FORCE_INLINE CxI32 decr64(CxI64 &inout_val) {
+		CX_FORCE_INLINE CxI64 decr64(CxI64 &inout_val) {
 			return InterlockedDecrement64(&inout_val);
 		}
 		
@@ -107,7 +107,7 @@ namespace cat {
 		 * @return The incremented value.
 		 */
 		CX_FORCE_INLINE CxI32 incr32(CxI32 &inout_val) {
-			return InterlockedIncrement(&inout_val);
+			return InterlockedIncrement((LONG*)&inout_val);
 		}
 
 		/**
@@ -115,7 +115,7 @@ namespace cat {
 		 * @param inout_val The value to increment by one.
 		 * @return The incremented value.
 		 */
-		CX_FORCE_INLINE CxI32 incr64(CxI64 &inout_val) {
+		CX_FORCE_INLINE CxI64 incr64(CxI64 &inout_val) {
 			return InterlockedIncrement64(&inout_val);
 		}
 
@@ -126,7 +126,7 @@ namespace cat {
 		 * @return The result of the OR.
 		 */
 		CX_FORCE_INLINE CxI32 or32(CxI32 &inout_dest, CxI32 in_mask) {
-			return InterlockedOr(&inout_dest, in_mask);
+			return InterlockedOr((LONG*)&inout_dest, in_mask);
 		}
 
 		/**
@@ -136,7 +136,7 @@ namespace cat {
 		 * @return The result of the XOR.
 		 */
 		CX_FORCE_INLINE CxI32 xor32(CxI32 &inout_dest, CxI32 in_mask) {
-			return InterlockedXor(&inout_dest, in_mask);
+			return InterlockedXor((LONG*)&inout_dest, in_mask);
 		}
 		
 	} // namespace atomic
