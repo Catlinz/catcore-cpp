@@ -18,13 +18,26 @@ namespace cat {
 	 * @param inout_v1 The first value to swap.
 	 * @param inout_v2 The second value to swap.
 	 */
-	template <typename T>
+	template<typename T>
 	CX_FORCE_INLINE void CxSwap(T &inout_v1, T &inout_v2) {
 		T tmp = inout_v1;
 		inout_v1 = inout_v2;
 		inout_v2 = tmp;
 	}
+
+	/**
+	 * @brief Method to safetly delete a new'd array of objects.
+	 * @param inout_array The array to delete.
+	 */
+	template<typename T>
+	CX_FORCE_INLINE void CxDeleteArray(T*& inout_array) {
+		if (inout_array != 0) {
+			delete[] inout_array;
+			inout_array = 0;
+		}
+	}
 	
 } // namespace cat
+
 
 #endif // CX_CORE_CXCOREFUNC_H
