@@ -176,7 +176,7 @@ namespace cat {
 	 * @brief Macro for safetly deleting an invasive strong pointer type.
 	 */
 #define CxDeleteISPtr(x) \
-	if ((x) && (x)->release()) { delete (x); (x) = 0; }
+	if ((x) != 0 && (x)->release()) { delete (x); (x) = 0; }
 
 } // namespace cat
 

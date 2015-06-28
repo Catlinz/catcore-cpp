@@ -11,11 +11,12 @@
  * @date May 7, 2015
  */
 
-#include "core/CxTypes.h"
-
 /* These are used a lot, so just always include them */
 #include <stdlib.h>
 #include <string.h>
+
+#include "core/CxTypes.h"
+#include "core/CxCoreFunc.h"
 
 #include "core/CxDebug.h"
 

@@ -212,6 +212,9 @@
 /* Give more control over the inlining of functions. */
 #if defined(CX_WINDOWS) || defined(CX_XBOX360) || defined(CX_XBOXONE)
 #  pragma inline_depth(255)
+#  define CX_INLINE inline
+#else
+#  define CX_INLINE inline
 #endif
 
 #if defined(CX_MVC)

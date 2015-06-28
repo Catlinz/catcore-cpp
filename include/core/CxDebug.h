@@ -11,13 +11,8 @@
  * @date May 9, 2015
  */
 
-#if defined(DEBUG) && !defined(STRIP_DEBUG)
+#if defined(DEBUG)
 #  define IS_DEBUG 1
-#else
-#  define IS_DEBUG 0
-#endif
-
-#if !defined(STRIP_DEBUG)
 #  include <assert.h>
 #  include <stdio.h>
 
@@ -67,7 +62,7 @@
 		}																				\
 	} while (0)
 
-#  define CX_IF_WARN(cond, fmt, ...)										\
+#  define CXD_IF_WARN(cond, fmt, ...)										\
 	do { if (IS_DEBUG) {															\
 			if (cond) {																\
 				fprintf(stderr, "#--> Warning %s:%d:%s(): " fmt "\n",	\
@@ -77,7 +72,7 @@
 		}																				\
 	} while (0)
 
-#  define CX_IF_MSG(cond, fmt, ...)											\
+#  define CXD_IF_MSG(cond, fmt, ...)											\
 	do { if (IS_DEBUG) {															\
 			if (cond) {																\
 				fprintf(stdout, "#> %s:%d:%s(): " fmt "\n",				\
@@ -87,7 +82,7 @@
 		}																				\
 	} while (0)
 
-#  define CX_IF_OUT(cond, fmt, ...)									\
+#  define CXD_IF_OUT(cond, fmt, ...)									\
 	do { if (IS_DEBUG) {													\
 			if (cond) { fprintf(stdout, fmt, __VA_ARGS__); }	\
 		}																		\
@@ -123,16 +118,18 @@
 		}																		\
 	} while (0)
 
+#  define CX_TODO(x)
 #else
+#  define IS_DEBUG 0
 #  define CXD_CRASH(fmt, ...)
 #  define CXD_ERR(fmt, ...)
 #  define CXD_WARN(fmt, ...)
 #  define CXD_MSG(fmt, ...)
 #  define CXD_OUT(fmt, ...)
 #  define CXD_IF_ERR(cond, fmt, ...)
-#  define CX_IF_WARN(cond, fmt, ...)
-#  define CX_IF_MSG(cond, fmt, ...)
-#  define CX_IF_OUT(cond, fmt, ...)
+#  define CXD_IF_WARN(cond, fmt, ...)
+#  define CXD_IF_MSG(cond, fmt, ...)
+#  define CXD_IF_OUT(cond, fmt, ...)
 #  define CXD_ISNUM(x)
 #  define CXD_ISFINITE_F32(x)
 #  define CXD_ISFINITE_F64(x)
@@ -141,6 +138,6 @@
 #  define CXD_ISVALID_F64(x)
 #  define CXD_ISVALID_REAL(x)
 
-#endif // !defined(STRIP_DEBUG)
+#endif // defined DEBUG && !defined(STRIP_DEBUG)
 
 #endif // CX_CORE_CXDEBUG_H

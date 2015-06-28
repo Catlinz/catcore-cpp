@@ -458,6 +458,28 @@ namespace cat {
 	void testCxVectorAppend() {
 		BEGIN_TEST;
 
+		/* tests: []:X, [1]:X, [...]:X */
+		/* First, test with appending an element to an empty list */
+		CxVector<I32> v0(3, 0);
+		v0.clear();
+		assert( v0.size() == 0 && v0.capacity() == 3 );
+		
+		v0 << 2;
+		assert( v0.size() == 1 );
+		assert( v0[0] == 2 );
+
+		v0[0] = 0; v0.clear();
+		v0 += 2;
+		assert( v0.size() == 1 );
+		assert( v0[0] == 2 );
+
+		v0[0] = 0; v0.clear();
+		v0.append(2);
+		assert( v0.size() == 1 );
+		assert( v0[0] == 2 );
+
+		/* Test appending to single element list */
+		CxVector<I32> v1(1, 0);
 		
 
 		FINISH_TEST;
