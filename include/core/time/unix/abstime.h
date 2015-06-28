@@ -3,4 +3,8 @@
 
 #include "core/time/unix/time.h"
 
+namespace Cat {
+	typedef AbsTime Time_T<U64>;
+}
+
 #endif // CAT_CORE_TIME_UNIX_ABSTIME_H
