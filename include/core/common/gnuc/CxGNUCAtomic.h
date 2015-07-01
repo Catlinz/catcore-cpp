@@ -87,8 +87,11 @@ namespace cat {
 		 * @param inout_val The value to decrement by one.
 		 * @return The decremented value.
 		 */
-		CX_FORCE_INLINE CxI32 decr32(CxI32 &inout_val) {
+		CX_FORCE_INLINE CxI32 decr32(CxI32& inout_val) {
 		   return __sync_add_and_fetch(&inout_addend, (CxI32)-1);
+		}
+		CX_FORCE_INLINE CxI32 decr32(CxI32* inout_val) {
+		   return __sync_add_and_fetch(inout_addend, (CxI32)-1);
 		}
 
 		/**
@@ -96,8 +99,11 @@ namespace cat {
 		 * @param inout_val The value to decrement by one.
 		 * @return The decremented value.
 		 */
-		CX_FORCE_INLINE CxI64 decr64(CxI64 &inout_val) {
+		CX_FORCE_INLINE CxI64 decr64(CxI64& inout_val) {
 		   return __sync_add_and_fetch(&inout_addend, (CxI64)-1);
+		}
+		CX_FORCE_INLINE CxI64 decr64(CxI64* inout_val) {
+		   return __sync_add_and_fetch(inout_addend, (CxI64)-1);
 		}
 		
 		/**
@@ -105,8 +111,11 @@ namespace cat {
 		 * @param inout_val The value to increment by one.
 		 * @return The incremented value.
 		 */
-		CX_FORCE_INLINE CxI32 incr32(CxI32 &inout_val) {
+		CX_FORCE_INLINE CxI32 incr32(CxI32& inout_val) {
 		   return __sync_add_and_fetch(&inout_addend, (CxI32)1);
+		}
+		CX_FORCE_INLINE CxI32 incr32(CxI32* inout_val) {
+		   return __sync_add_and_fetch(inout_addend, (CxI32)1);
 		}
 		
 		/**
@@ -114,9 +123,13 @@ namespace cat {
 		 * @param inout_val The value to increment by one.
 		 * @return The incremented value.
 		 */
-		CX_FORCE_INLINE CxI64 incr64(CxI64 &inout_val) {
+		CX_FORCE_INLINE CxI64 incr64(CxI64& inout_val) {
 		   return __sync_add_and_fetch(&inout_addend, (CxI64)1);
 		}
+		CX_FORCE_INLINE CxI64 incr64(CxI64* inout_val) {
+		   return __sync_add_and_fetch(inout_addend, (CxI64)1);
+		}
+
 
 		/**
 		 * @brief OR's a 32 bit value with the 32 bit destination value.

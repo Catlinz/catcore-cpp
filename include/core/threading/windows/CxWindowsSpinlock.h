@@ -26,9 +26,7 @@ namespace cat {
 	 */
 	class CxSpinlock {
 	  public:
-		/**
-		 * @brief Create a new Spinlock.
-		 */
+		/** @brief Create a new Spinlock. */
 		CxSpinlock();
 
 		/**
@@ -37,9 +35,7 @@ namespace cat {
 		 */
 		CxSpinlock(const CxSpinlock& in_src);
 
-		/**
-		 * @brief Destroy the CxSpinlock.
-		 */
+		/**  @brief Destroy the CxSpinlock. */
 		~CxSpinlock();
 
 		/**
@@ -67,7 +63,7 @@ namespace cat {
 		void tryDestroy();
 		
 		CRITICAL_SECTION* mp_spinlock;
-		CxI32* mp_retainCount;
+		CxI32* mp_refCount;
 	};
 } // namespace cat
 

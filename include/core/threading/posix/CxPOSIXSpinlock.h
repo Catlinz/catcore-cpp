@@ -28,8 +28,20 @@ namespace cat {
 		/** @brief Create a new CxSpinlock. */
 		CxSpinlock();
 
+		/**
+		 * @brief Copy constructor, handles reference counting. 
+		 * @param in_src The spinlock to copy.
+		 */
+		CxSpinlock(const CxSpinlock& in_src);
+
 		/** @brief Destroy the CxSpinlock. */
 		~CxSpinlock();
+
+		/**
+		 * @brief Overloaded assignment operator to handle reference counting.
+		 * @param in_src The spinlock to copy.
+		 */
+		CxSpinlock& operator=(const CxSpinlock& in_src);
 
 		/**  @brief Lock the mutex. */
 		CX_FORCE_INLINE void lock() { pthread_spin_lock(&m_spinlock); }
@@ -45,6 +57,10 @@ namespace cat {
 
 	  private:
 		pthread_spinlock_t m_spinlock;
+		CxI32* mp_refCount;
+
+		void tryDestroy();
+				
 	};
 
 } // namespace cat

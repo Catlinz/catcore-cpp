@@ -88,8 +88,11 @@ namespace cat {
 		 * @param inout_val The value to decrement by one.
 		 * @return The decremented value.
 		 */
-		CX_FORCE_INLINE CxI32 decr32(CxI32 &inout_val) {
+		CX_FORCE_INLINE CxI32 decr32(CxI32& inout_val) {
 			return InterlockedDecrement((LONG*)&inout_val);
+		}
+		CX_FORCE_INLINE CxI32 decr32(CxI32* inout_val) {
+			return InterlockedDecrement((LONG*)inout_val);
 		}
 
 		/**
@@ -97,8 +100,11 @@ namespace cat {
 		 * @param inout_val The value to decrement by one.
 		 * @return The decremented value.
 		 */
-		CX_FORCE_INLINE CxI64 decr64(CxI64 &inout_val) {
+		CX_FORCE_INLINE CxI64 decr64(CxI64& inout_val) {
 			return InterlockedDecrement64(&inout_val);
+		}
+		CX_FORCE_INLINE CxI64 decr64(CxI64* inout_val) {
+			return InterlockedDecrement64(inout_val);
 		}
 		
 		/**
@@ -106,8 +112,11 @@ namespace cat {
 		 * @param inout_val The value to increment by one.
 		 * @return The incremented value.
 		 */
-		CX_FORCE_INLINE CxI32 incr32(CxI32 &inout_val) {
+		CX_FORCE_INLINE CxI32 incr32(CxI32& inout_val) {
 			return InterlockedIncrement((LONG*)&inout_val);
+		}
+		CX_FORCE_INLINE CxI32 incr32(CxI32* inout_val) {
+			return InterlockedIncrement((LONG*)inout_val);
 		}
 
 		/**
@@ -115,8 +124,11 @@ namespace cat {
 		 * @param inout_val The value to increment by one.
 		 * @return The incremented value.
 		 */
-		CX_FORCE_INLINE CxI64 incr64(CxI64 &inout_val) {
+		CX_FORCE_INLINE CxI64 incr64(CxI64& inout_val) {
 			return InterlockedIncrement64(&inout_val);
+		}
+		CX_FORCE_INLINE CxI64 incr64(CxI64* inout_val) {
+			return InterlockedIncrement64(inout_val);
 		}
 
 		/**

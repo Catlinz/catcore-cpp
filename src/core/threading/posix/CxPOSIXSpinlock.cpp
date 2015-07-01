@@ -1,29 +1,28 @@
-#include "core/threading/windows/CxWindowsSpinlock.h"
-#include "core/common/CxAtomic.h"
-#include "core/common/CxMem.h"
+#include "core/threading/posix/CxPOSIXSpinlock.h"
 
 namespace cat {
 
-	CxSpinlock::CxSpinlock() : mp_spinlock(0), mp_refCount(0) {
-		mp_spinlock = (CRITICAL_SECTION *)mem::alloc(sizeof(CRITICAL_SECTION));
-		InitializeCriticalSectionAndSpinCount(mp_spinlock, CX_WINDOWS_SPINLOCK_TRIES);
-		
+	CxSpinlock::CxSpinlock() : mp_refCount(0) {
+		CxI32 error = pthread_spin_init(&m_spinlock, NIL);
+		CXD_IF_ERR((error != 0), "Failed to initialise CxSpinlock.  pthread_spin_init failed with code: %d.", error);
+
 		mp_refCount = (CxI32 *)mem::alloc(sizeof(CxI32));
 		atomic::incr32(mp_refCount);
 	}
 
-	CxSpinlock::CxSpinlock(const CxSpinlock& in_src)
-		: mp_spinlock(0), mp_refCount(0) {
-		mp_spinlock = in_src.mp_spinlock;
+	
+	CxSpinlock::CxSpinlock(const CxSpinlock& in_src) : mp_refCount(0) {
+		m_spinlock = in_src.m_spinlock;
 		mp_refCount = in_src.mp_refCount;
 		if (mp_refCount != 0) { atomic::incr32(mp_refCount); }
 	}
+
 
 	CxSpinlock::~CxSpinlock() { tryDestroy(); }
 
 	CxSpinlock& CxSpinlock::operator=(const CxSpinlock& in_src) {
 		if (mp_refCount != 0) { tryDestroy(); }
-		mp_spinlock = in_src.mp_spinlock;
+		m_spinlock = in_src.m_spinlock;
 		mp_refCount = in_src.mp_refCount;
 		if (mp_refCount != 0) { atomic::incr32(mp_refCount); }
 		return *this;
@@ -35,9 +34,9 @@ namespace cat {
 			mp_refCount = 0;
 			mem::free(i_ptr);
 			
-			DeleteCriticalSection(mp_spinlock);
-			mem::free(mp_spinlock);
+			CxI32 error = pthread_spin_destroy(&m_spinlock);
+			CXD_IF_ERR((error != 0), "Failed to destroy CxSpinlock.  pthread_spin_destroy failed with code: %d.", error);
 		}
 	}
-	
-} // namespace cat
+
+} // namespace Cat

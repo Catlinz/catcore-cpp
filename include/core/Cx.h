@@ -18,6 +18,7 @@
 #include "core/CxTypes.h"
 #include "core/CxCoreFunc.h"
 
+#include "core/CxError.h"
 #include "core/CxDebug.h"
 
 namespace cat {
