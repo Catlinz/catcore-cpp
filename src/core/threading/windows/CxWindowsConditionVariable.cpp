@@ -1,43 +1,30 @@
 #include "core/threading/windows/CxWindowsConditionVariable.h"
 #include "core/common/CxMem.h"
-#include "core/common/CxAtomic.h"
 
 namespace cat {
 
-	CxConditionVariable::CxConditionVariable()
-		: mp_cv(0), mp_refCount(0) {
-		mp_cv = (CONDITION_VARIABLE*)mem::alloc(sizeof(CONDITION_VARIABLE));
-		InitializeCxConditionVariable(mp_cv);
-		
-		mp_refCount = (CxI32 *)mem::alloc(sizeof(CxI32));
-		atomic::incr32(mp_refCount);
-	}
-
-	CxConditionVariable::CxConditionVariable(const CxConditionVariable& in_src)
-		: mp_refCount(0) {
-		mp_cv = in_src.mp_cv;
-	   mp_refCount = in_src.mp_refCount;
-		if (mp_refCount != 0) { atomic::incr32(mp_refCount); }
-	}
-
-	CxConditionVariable::~CxConditionVariable() { tryDestroy(); }
-
 	CxConditionVariable& CxConditionVariable::operator=(const CxConditionVariable& in_src) {
-		if (mp_refCount != 0) { tryDestroy(); }
+		if ((m_flags & kConditionVariableStatic) != 0) { destroy(); }
+		
 		mp_cv = in_src.mp_cv;
-		mp_refCount = in_src.mp_refCount;
-		if (mp_refCount != 0) { atomic::incr32(mp_refCount); }
+		m_flags = in_src.m_flags;
+		CXD_IF_ERR(((m_flags & kConditionVariableStatic) != 0), "DO NOT COPY STATIC CONDITION VARIABLES FFS!");
 		return *this;
 	}
 
-	void CxConditionVariable::tryDestroy() {
-		CxI32 *i_ptr = mp_refCount;
-		if (atomic::decr32(i_ptr) <= 0) {
-			mp_refCount = 0;
-			mem::free(i_ptr);
-
+	void CxConditionVariable::destroy() {
+		if (mp_cv != 0) {
 			DeleteCriticalSection(mp_cv);
 			mem::free(mp_cv);
+		}
+		m_flags = 0;
+	}
+
+	void CxConditionVariable::initialize() {
+		if ((m_flags & kConditionVariableInitialised) == 0) {
+			mp_cv = (CONDITION_VARIABLE*)mem::alloc(sizeof(CONDITION_VARIABLE));
+			InitializeConditionVariable(mp_cv);
+			m_flags |= kConditionVariableInitialized;
 		}
 	}
 	

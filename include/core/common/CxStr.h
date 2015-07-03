@@ -129,19 +129,25 @@ namespace cat {
 		/**
 		 * @brief Method to create a new copy of a string.
 		 * @param in_str The string to copy.
-		 * @return A new string that is the copy of the original.
+		 * @return A new string that is the copy of the original, or null if original is null.
 		 */
 		CX_FORCE_INLINE CxChar * copy(const CxChar *CX_RESTRICT in_str) {
-			return str::copy(in_str, str::len(in_str));
+			if (in_str != 0) {
+				return str::copy(in_str, str::len(in_str));
+			}
+			else { return 0; }
 		}
 
 		/**
 		 * @brief Method to create a new copy of a 16 bit string.
 		 * @param in_str The 16 bit string to copy.
-		 * @return A new 16 bit string that is the copy of the original.
+		 * @return A new 16 bit string that is the copy of the original, or null if original is null.
 		 */
 		CX_FORCE_INLINE CxChar16 * copy(const CxChar16 *CX_RESTRICT in_str) {
-			return str::copy(in_str, str::len(in_str));
+			if (in_str != 0) {
+				return str::copy(in_str, str::len(in_str));
+			}
+			else { return 0; }
 		}
 
 		/**

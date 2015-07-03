@@ -26,24 +26,47 @@ namespace cat {
 	 */
 	class CxSpinlock {
 	  public:
-		/** @brief Create a new Spinlock. */
-		CxSpinlock();
+		enum FlagsEnum { kSpinlockStatic = 1 << 0, kSpinlockInitialized = 1 << 1 };
 
-		/**
-		 * @brief Copy constructor.
-		 * @param in_src The CxSpinlock to copy.
+		/** @brief Flags to pass to constructor to indicate behaviour. */
+		enum StaticEnum { kStatic = 1 << 0 };
+		enum InitializeEnum { kInitialize = 1 << 0 };
+
+		
+		/** @brief Create an uninitialised CxSpinlock. */
+		CX_FORCE_INLINE CxSpinlock() : mp_spinlock(0), m_flags(0) {}
+
+		/** @brief Create and initialise a new spinlock. */
+		CX_FORCE_INLINE CxSpinlock(CxSpinlock::InitializeEnum)
+			: mp_spinlock(0), m_flags(0) { initialize(); }
+
+		/** 
+		 * @brief Create and initialise a new static spinlock. 
+		 * A static spinlock will assume that it is never copied (and should not be), 
+		 * and as such will destroy itself when the destructor is called. 
 		 */
-		CxSpinlock(const CxSpinlock& in_src);
+		CX_FORCE_INLINE CxSpinlock(CxSpinlock::StaticEnum)
+			: mp_spinlock(0), m_flags(kSpinlockStatic) { initialize(); }
 
-		/**  @brief Destroy the CxSpinlock. */
-		~CxSpinlock();
+		/** @brief Copy constructor (mainly does debug checking for copying. */
+		CX_FORCE_INLINE CxSpinlock(const CxSpinlock &in_src)
+			: mp_spinlock(in_src.mp_spinlock), m_flags(in_src.m_flags) {
+			CXD_IF_ERR(((m_flags & kSpinlockStatic) != 0), "DO NOT COPY STATIC MUTEXES FFS!");
+		}
 
-		/**
-		 * @brief Overloaded assignment operator.
-		 * @param in_src The Spinlock to copy from.
-		 * @return A reference to this CxSpinlock.
-		 */
-		CxSpinlock& operator=(const CxSpinlock& in_src);
+		/** @brief Destroy the CxSpinlock if it is static. */
+		CX_FORCE_INLINE ~CxSpinlock() {
+			if ((m_flags & kSpinlockStatic) != 0) { destroy(); }
+		}
+
+		/** @brief See copy constructor */
+		CxSpinlock & operator=(const CxSpinlock &in_src);
+
+		/** @brief Destroy the spinlock. */
+		void destroy();
+		
+		/** @brief Initialise the spinlock before the first use */
+		void initialize();
 
 		/** @brief Lock the spinlock. */
 		CX_FORCE_INLINE void lock() { EnterCriticalSection(mp_spinlock); }
@@ -54,16 +77,13 @@ namespace cat {
 		 */
 		CX_FORCE_INLINE CxBool tryLock() { return TryEnterCriticalSection(mp_spinlock); }
 
-		/**
-		 * @brief Unlock the Spinlock.
-		 */
+		/** @brief Unlock the Spinlock. */
 		CX_FORCE_INLINE void unlock() { LeaveCriticalSection(mp_spinlock); }
 
 	  private:
-		void tryDestroy();
 		
 		CRITICAL_SECTION* mp_spinlock;
-		CxI32* mp_refCount;
+		CxI32 m_flags;
 	};
 } // namespace cat
 

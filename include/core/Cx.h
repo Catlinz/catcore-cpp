@@ -30,6 +30,7 @@ namespace cat {
 		kCxCopyOnRead = 1 << 1,
 		kCxCopyOnWrite = 1 << 2
 	};
+	
 
 } // namespace cat
 

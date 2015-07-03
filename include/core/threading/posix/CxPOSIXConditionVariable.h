@@ -26,17 +26,47 @@ namespace cat {
 	 */
 	class CxConditionVariable {
 	  public:
-		/** @brief Create a new condition variable. */
-		CxConditionVariable();
+		enum FlagsEnum { kConditionVariableStatic = 1 << 0, kConditionVariableInitialized = 1 << 1 };
 
-		/** @brief Copy constructor, handles reference counting. */
-		CxConditionVariable(const CxConditionVariable& in_src);
+		/** @brief Flags to pass to constructor to indicate behaviour. */
+		enum StaticEnum { kStatic = 1 << 0 };
+		enum InitializeEnum { kInitialize = 1 << 0 };
+			
 
-		/** @brief destroy the condition variable. */
-		~CxConditionVariable();
+		/** @brief Create an uninitialised CxConditionVariable. */
+		CX_FORCE_INLINE CxConditionVariable() : m_flags(0) {}
 
-		/** @brief Overloaded assignment operator to handle reference counting. */
-		CxConditionVariable& operator=(const CxConditionVariable& in_src);
+		/** @brief Create and initialise a new ConditionVariable. */
+		CX_FORCE_INLINE CxConditionVariable(CxConditionVariable::InitializeEnum)
+			: m_flags(0) { initialize(); }
+
+		/** 
+		 * @brief Create and initialise a new static ConditionVariable. 
+		 * A static ConditionVariable will assume that it is never copied (and should not be), 
+		 * and as such will destroy itself when the destructor is called. 
+		 */
+		CX_FORCE_INLINE CxConditionVariable(CxConditionVariable::StaticEnum)
+			: m_flags(kConditionVariableStatic) { initialize(); }
+
+		/** @brief Copy constructor (mainly does debug checking for copying. */
+		CX_FORCE_INLINE CxConditionVariable(const CxConditionVariable &in_src)
+			: m_cv(in_src.m_cv), m_flags(in_src.m_flags) {
+			CXD_IF_ERR(((m_flags & kConditionVariableStatic) != 0), "DO NOT COPY STATIC CONDITION VARIABLES FFS!");
+		}
+
+		/** @brief Destroy the CxConditionVariable if it is static. */
+		CX_FORCE_INLINE ~CxConditionVariable() {
+			if ((m_flags & kConditionVariableStatic) != 0) { destroy(); }
+		}
+
+		/** @brief See copy constructor */
+		CxConditionVariable & operator=(const CxConditionVariable &in_src);
+
+		/** @brief Destroy the ConditionVariable. */
+		void destroy();
+		
+		/** @brief Initialise the ConditionVariable before the first use */
+		void initialize();
 
 		/** @brief Wait on the specified mutex until signalled. */
 		CX_FORCE_INLINE void wait(CxMutex& in_mutex) { pthread_cond_wait(&m_cv, &(in_mutex.m_mutex)); }
@@ -49,9 +79,7 @@ namespace cat {
 
 	  private:
 		pthread_cond_t m_cv;
-		CxI32 *mp_refCount;
-
-		void tryDestroy();
+		CxI32 m_flags;
 	};
 }
 

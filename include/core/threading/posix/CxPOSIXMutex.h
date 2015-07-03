@@ -25,23 +25,47 @@ namespace cat {
 	 */
 	class CxMutex {
 	  public:
-		/** @brief Create a new CxMutex. */
-		CxMutex();
+		enum FlagsEnum { kMutexStatic = 1 << 0, kMutexInitialized = 1 << 1 };
 
-		/**
-		 * @brief Copy constructor, handles reference counting. 
-		 * @param in_src The mutex to copy.
+		/** @brief Flags to pass to constructor to indicate behaviour. */
+		enum StaticEnum { kStatic = 1 << 0 };
+		enum InitializeEnum { kInitialize = 1 << 0 };
+			
+
+		/** @brief Create an uninitialised CxMutex. */
+		CX_FORCE_INLINE CxMutex() : m_flags(0) {}
+
+		/** @brief Create and initialise a new mutex. */
+		CX_FORCE_INLINE CxMutex(CxMutex::InitializeEnum)
+			: m_flags(0) { initialize(); }
+
+		/** 
+		 * @brief Create and initialise a new static mutex. 
+		 * A static mutex will assume that it is never copied (and should not be), 
+		 * and as such will destroy itself when the destructor is called. 
 		 */
-		CxMutex(const CxMutex& in_src);
+		CX_FORCE_INLINE CxMutex(CxMutex::StaticEnum)
+			: m_flags(kMutexStatic) { initialize(); }
 
-		/** @brief Destroy the CxMutex. */
-		~CxMutex();
+		/** @brief Copy constructor (mainly does debug checking for copying. */
+		CX_FORCE_INLINE CxMutex(const CxMutex &in_src)
+			: m_mutex(in_src.m_mutex), m_flags(in_src.m_flags) {
+			CXD_IF_ERR(((m_flags & kMutexStatic) != 0), "DO NOT COPY STATIC MUTEXES FFS!");
+		}
 
-		/**
-		 * @brief Overloaded assignment operator to handle reference counting.
-		 * @param in_src The mutex to copy.
-		 */
-		CxMutex& operator=(const CxMutex& in_src);
+		/** @brief Destroy the CxMutex if it is static. */
+		CX_FORCE_INLINE ~CxMutex() {
+			if ((m_flags & kMutexStatic) != 0) { destroy(); }
+		}
+
+		/** @brief See copy constructor */
+		CxMutex & operator=(const CxMutex &in_src);
+
+		/** @brief Destroy the mutex. */
+		void destroy();
+		
+		/** @brief Initialise the mutex before the first use */
+		void initialize();
 
 		/** @brief Lock the mutex. */
 		CX_FORCE_INLINE void lock() { pthread_mutex_lock(&m_mutex); }
@@ -55,9 +79,7 @@ namespace cat {
 		friend class CxConditionVariable;
 	  private:
 		pthread_mutex_t	m_mutex;
-		CxI32* mp_refCount;
-
-		void tryDestroy();
+		CxI32 m_flags;
 	};
 
 }

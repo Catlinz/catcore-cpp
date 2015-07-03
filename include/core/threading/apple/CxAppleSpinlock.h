@@ -24,10 +24,43 @@ namespace cat {
 	 */
 	class CxSpinlock {
 	  public:
-		/**  @brief Create a new CxSpinlock. */
-		CxSpinlock();
+		enum FlagsEnum { kSpinlockStatic = 1 << 0, kSpinlockInitialized = 1 << 1 };
 
-		/**  @brief Lock the mutex. */
+		/** @brief Flags to pass to constructor to indicate behaviour. */
+		enum StaticEnum { kStatic = 1 << 0 };
+		enum InitializeEnum { kInitialize = 1 << 0 };
+
+		/** @brief Create a CxSpinlock. */
+		CX_FORCE_INLINE CxSpinlock() { m_spinlock = OS_SPINLOCK_INIT; }
+
+		/** @brief Create and initialise a new spinlock. */
+		CX_FORCE_INLINE CxSpinlock(CxSpinlock::InitializeEnum) { m_spinlock = OS_SPINLOCK_INIT; }
+
+		/** 
+		 * @brief Create and initialise a new static spinlock. 
+		 * A static spinlock will assume that it is never copied (and should not be), 
+		 * and as such will destroy itself when the destructor is called. 
+		 */
+		CX_FORCE_INLINE CxSpinlock(CxSpinlock::StaticEnum) { m_spinlock = OS_SPINLOCK_INIT; }
+
+		/** @brief Copy constructor (mainly does debug checking for copying. */
+		CX_FORCE_INLINE CxSpinlock(const CxSpinlock &in_src) : m_spinlock(in_src.m_spinlock) {}
+
+		/** @brief noop */
+		CX_FORCE_INLINE ~CxSpinlock() {}
+
+		/** @brief See copy constructor */
+		CX_FORCE_INLINE CxSpinlock & operator=(const CxSpinlock &in_src) {
+			m_spinlock = in_src.m_spinlock;
+		}
+
+		/** @brief Destroy the spinlock. */
+		CX_FORCE_INLINE void destroy() {}
+		
+		/** @brief Initialise the spinlock before the first use */
+		CX_FORCE_INLINE void initialize() {}
+
+		/**  @brief Lock the spinlock. */
 		CX_FORCE_INLINE void lock() { OSSpinLockLock(&m_spinlock); }
 
 		/**
@@ -41,7 +74,6 @@ namespace cat {
 
 	  private:
 		OSSpinLock	m_spinlock;
-
 	};
 
 } // namespace cat

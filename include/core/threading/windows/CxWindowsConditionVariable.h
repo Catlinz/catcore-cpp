@@ -1,5 +1,5 @@
-#ifndef CAT_CORE_THREADING_WINDOWS_CXWINDOWSCONDITIONVARIABLE_H
-#define CAT_CORE_THREADING_WINDOWS_CXWINDOWSCONDITIONVARIABLE_H
+#ifndef CX_CORE_THREADING_WINDOWS_CXWINDOWSCONDITIONVARIABLE_H
+#define CX_CORE_THREADING_WINDOWS_CXWINDOWSCONDITIONVARIABLE_H
 /**
  * @copyright Copyright Catlin Zilinksi, 2013.  All rights reserved.
  *
@@ -26,17 +26,48 @@ namespace cat {
 	 */
 	class CxConditionVariable {
 	  public:
-		/** @brief Create a new CxConditionVariable. */
-		CxConditionVariable();
+		enum FlagsEnum { kConditionVariableStatic = 1 << 0,
+							  kConditionVariableInitialized = 1 << 1 };
 
-		/** @brief Copy constructor, deals with reference counting. */
-		CxConditionVariable(const CxConditionVariable &in_src);
+		/** @brief Flags to pass to constructor to indicate behaviour. */
+		enum StaticEnum { kStatic = 1 << 0 };
+		enum InitializeEnum { kInitialize = 1 << 0 };
+			
 
-		/** @brief Destroy the CxConditionVariable and deal with reference counting. */
-		~CxConditionVariable();
+		/** @brief Create an uninitialised CxConditionVariable. */
+		CX_FORCE_INLINE CxConditionVariable() : mp_cv(0), m_flags(0) {}
 
-		/** @brief Overloaded assignment operator to deal with reference counting. */
-		CxConditionVariable& operator=(const CxConditionVariable &in_src);
+		/** @brief Create and initialise a new condition variable. */
+		CX_FORCE_INLINE CxConditionVariable(CxConditionVariable::InitializeEnum)
+			: mp_cv(0), m_flags(0) { initialize(); }
+
+		/** 
+		 * @brief Create and initialise a new static condition variable. 
+		 * A static condition variable will assume that it is never copied (and should not be), 
+		 * and as such will destroy itself when the destructor is called. 
+		 */
+		CX_FORCE_INLINE CxConditionVariable(CxConditionVariable::StaticEnum)
+			: mp_cv(0), m_flags(kConditionVariableStatic) { initialize(); }
+
+		/** @brief Copy constructor (mainly does debug checking for copying. */
+		CX_FORCE_INLINE CxConditionVariable(const CxConditionVariable &in_src)
+			: mp_cv(in_src.mp_cv), m_flags(in_src.m_flags) {
+			CXD_IF_ERR(((m_flags & kConditionVariableStatic) != 0), "DO NOT COPY STATIC CONDITION VARIABLES FFS!");
+		}
+
+		/** @brief Destroy the CxConditionVariable if it is static. */
+		CX_FORCE_INLINE ~CxConditionVariable() {
+			if ((m_flags & kConditionVariableStatic) != 0) { destroy(); }
+		}
+
+		/** @brief See copy constructor */
+		CxConditionVariable & operator=(const CxConditionVariable &in_src);
+
+		/** @brief Destroy the condition variable. */
+		void destroy();
+		
+		/** @brief Initialise the condition variable before the first use */
+		void initialize();
 
 		/** @brief Broadcast that all threads waiting on the CV should wakeup. */
 		CX_FORCE_INLINE void broadcast() { WakeAllConditionVariable(mp_cv); }
@@ -51,12 +82,10 @@ namespace cat {
 
 	  private:
 		CONDITION_VARIABLE *mp_cv;
-		CxI32 *mp_refCount;
-
-		void tryDestroy();
+		CxI32 m_flags;
 	};
 } // namespace cat
 
-#endif // CAT_CORE_THREADING_WINDOWS_CXWINDOWSCONDITIONVARIABLE_H
+#endif // CX_CORE_THREADING_WINDOWS_CXWINDOWSCONDITIONVARIABLE_H
 
 

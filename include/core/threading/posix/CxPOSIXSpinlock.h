@@ -25,25 +25,49 @@ namespace cat {
 	class CxSpinlock {
 	  public:
 
-		/** @brief Create a new CxSpinlock. */
-		CxSpinlock();
+		enum FlagsEnum { kSpinlockStatic = 1 << 0, kSpinlockInitialized = 1 << 1 };
 
-		/**
-		 * @brief Copy constructor, handles reference counting. 
-		 * @param in_src The spinlock to copy.
+		/** @brief Flags to pass to constructor to indicate behaviour. */
+		enum StaticEnum { kStatic = 1 << 0 };
+		enum InitializeEnum { kInitialize = 1 << 0 };
+			
+
+		/** @brief Create an uninitialised CxSpinlock. */
+		CX_FORCE_INLINE CxSpinlock() : m_flags(0) {}
+
+		/** @brief Create and initialise a new spinlock. */
+		CX_FORCE_INLINE CxSpinlock(CxSpinlock::InitializeEnum)
+			: m_flags(0) { initialize(); }
+
+		/** 
+		 * @brief Create and initialise a new static spinlock. 
+		 * A static spinlock will assume that it is never copied (and should not be), 
+		 * and as such will destroy itself when the destructor is called. 
 		 */
-		CxSpinlock(const CxSpinlock& in_src);
+		CX_FORCE_INLINE CxSpinlock(CxSpinlock::StaticEnum)
+			: m_flags(kSpinlockStatic) { initialize(); }
 
-		/** @brief Destroy the CxSpinlock. */
-		~CxSpinlock();
+		/** @brief Copy constructor (mainly does debug checking for copying. */
+		CX_FORCE_INLINE CxSpinlock(const CxSpinlock &in_src)
+			: m_spinlock(in_src.m_spinlock), m_flags(in_src.m_flags) {
+			CXD_IF_ERR(((m_flags & kSpinlockStatic) != 0), "DO NOT COPY STATIC SPINLOCKS FFS!");
+		}
 
-		/**
-		 * @brief Overloaded assignment operator to handle reference counting.
-		 * @param in_src The spinlock to copy.
-		 */
-		CxSpinlock& operator=(const CxSpinlock& in_src);
+		/** @brief Destroy the CxSpinlock if it is static. */
+		CX_FORCE_INLINE ~CxSpinlock() {
+			if ((m_flags & kSpinlockStatic) != 0) { destroy(); }
+		}
 
-		/**  @brief Lock the mutex. */
+		/** @brief See copy constructor */
+		CxSpinlock & operator=(const CxSpinlock &in_src);
+
+		/** @brief Destroy the spinlock. */
+		void destroy();
+		
+		/** @brief Initialise the spinlock before the first use */
+		void initialize();
+
+		/**  @brief Lock the spinlock. */
 		CX_FORCE_INLINE void lock() { pthread_spin_lock(&m_spinlock); }
 
 		/**
@@ -57,10 +81,7 @@ namespace cat {
 
 	  private:
 		pthread_spinlock_t m_spinlock;
-		CxI32* mp_refCount;
-
-		void tryDestroy();
-				
+		CxI32 m_flags;
 	};
 
 } // namespace cat
