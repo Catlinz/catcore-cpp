@@ -88,8 +88,9 @@ namespace cat {
 		 * @return A reference to the element.
 		 */
 		CX_FORCE_INLINE T & operator[](CxI32 in_idx) {
-			D_CONDERR(in_idx >= m_size, "Accessing Vector element "
-						 << in_idx << " outside range [0.." << m_size << "]!");
+			CXD_IF_ERR(in_idx >= m_size,
+						  "Accessing CxVector [%d] outside range [0...%d]",
+						  in_idx, m_size-1);
 			return mp_vec[in_idx];
 		}
 
@@ -99,8 +100,9 @@ namespace cat {
 		 * @return A constant reference to the element.
 		 */
 		CX_FORCE_INLINE const T & operator[](const CxI32 in_idx) const {
-			D_CONDERR(in_idx >= m_size, "Accessing Vector element "
-						 << in_idx << " outside range [0.." << m_size << "]!");
+			CXD_IF_ERR(in_idx >= m_size,
+						  "Accessing CxVector [%d] outside range [0...%d]",
+						  in_idx, m_size-1);
 			return mp_vec[in_idx];
 		}
 
@@ -169,9 +171,9 @@ namespace cat {
 
 		/**
 		 * @brief Append all the elements from another vector.
-		 * @param src The other vector to append the elements from.
+		 * @param in_src The other vector to append the elements from.
 		 */
-		void append(const CxVector<T>& in_src);
+		void append(const CxVector<T> &in_src);
 
 		/**
 		 * @brief Get the value at the specified index.
@@ -188,11 +190,12 @@ namespace cat {
 		CX_FORCE_INLINE CxI32 capacity() const { return m_capacity; }
 		
 		/**
-		 * @brief Remove all elements from the array and releases the memory.
-		 * This method will NOT result in pointers being deleted in a vector of pointers.
-		 * For this behaviour, you must call eraseAll().
+		 * @brief Clears the size of the vector to 0.
+		 * This method does not deallocate any memory or delete any pointers.
+		 * eraseAll() is the equivilent when dealing with pointers that need 
+		 * to be deleted.
 		 */
-		void clear();
+		CX_FORCE_INLINE void clear() { m_size = 0; }
 
 		/**
 		 * @brief Releases any unused memory the vector has.
@@ -228,6 +231,21 @@ namespace cat {
 		CX_FORCE_INLINE const T * data() const { return mp_vec; }
 
 		/**
+		 * @brief Deallocate all the memory for the vector.
+		 * This method deallocates the memory for the vector and resets the 
+		 * size and capacity to 0.
+		 */
+		CX_FORCE_INLINE void dealloc();
+
+		/**
+		 * @brief Deletes pointers and deallocate all the memory for the vector.
+		 * This method deallocates the memory for the vector and resets the 
+		 * size and capacity to 0.  It will call delete for each non-null element
+		 * (pointer) in the vector.
+		 */
+		CX_FORCE_INLINE void deallocPtr();
+		
+		/**
 		 * @brief Test for equality with the last element of the vector.
 		 * @param in_value The value to test against the last element.
 		 * @return True if the vector is not empty and the last element is equal to in_value.
@@ -244,9 +262,24 @@ namespace cat {
 		void eraseAll();
 
 		/**
-		 * @brief Removes the last element from the vector and deletes it.
-		 * This method assumes that the vector is storing pointers to dynamically allocated 
-		 * memory, which was allocated using the 'new' operator.
+		 * @brief Remove and delete the element at the specified index.
+		 * This method assumes that the vector contains dynamically allocated 
+		 * pointers, and as such, calls delete on all the elements.
+		 * @param in_idx The index of the element to erase.
+		 */
+		void eraseAt(CxI32 in_idx);
+
+		/** 
+		 * @brief Removes the first element and deletes it.
+		 * This method assumes that the vector is storing points to 
+		 * dynamically allocated memory using the 'new' operator.
+		 */
+		void eraseFirst();
+
+	   /** 
+		 * @brief Removes the last element and deletes it.
+		 * This method assumes that the vector is storing points to 
+		 * dynamically allocated memory using the 'new' operator.
 		 */
 		void eraseLast();
 
@@ -485,7 +518,6 @@ namespace cat {
 				mp_vec[i] = mp_vec[i+1];
 			}
 			mp_vec[--m_size] = m_invalidValue;
-			return true;
 		}
 
 		void resizeToCapacity(CxI32 capacity);
@@ -606,8 +638,8 @@ namespace cat {
 			return mp_vec[in_idx];
 		}
 		else {
-			DERR(in_idx >= m_size, "Accessing CxVector element "
-				  << in_idx << " outside range [0.." << m_size << "]!");
+			CXD_ERR("Accessing CxVector [%d] outside range [0...%d]",
+					  in_idx, m_size-1);
 			return m_invalidValue;
 		}
 	}
@@ -615,20 +647,18 @@ namespace cat {
 	template <typename T>
 	CX_FORCE_INLINE void CxVector<T>::append(const T &in_elem) {
 		if (m_size == m_capacity) {
-			DMSG("AUTO Resizing CxVector from with length "
-				  << m_size << " from " << m_capacity
-				  << " to " << m_capacity*2);
-			resizeToCapacity(m_capacity*2);
+			CXD_MSG("Auto resizing CxVector[%d] (%d to %d).",
+					  m_size, m_capacity, m_capacity*2 + 2);
+			resizeToCapacity(m_capacity*2 + 2);
 		}
-		mp_vec[m_size++] = elem;
+		mp_vec[m_size++] = in_elem;
 	}	
 	
 	template <typename T>
 	void CxVector<T>::append(const T *in_src, CxI32 in_size) {
 		CxI32 capacity = m_size + in_size;
-		if (m_capacity < capacity) {
-			resizeToCapacity(capacity);
-		}
+		if (m_capacity < capacity) { resizeToCapacity(capacity); }
+		
 		/* Copy all the elements (calls copy constr.). */
 		T *ptr = mp_vec + m_size;
 		for (CxI32 i = 0; i < in_size; ++i) {
@@ -638,19 +668,25 @@ namespace cat {
 	}
 
 	template <typename T>
+	void CxVector<T>::append(const CxVector<T> &in_src) {
+		CxI32 capacity = m_size + in_src.size();
+		if (m_capacity < capacity) { resizeToCapacity(capacity); }
+
+		/* Copy all the elements (calls copy constr.). */
+		const CxI32 vec_len = in_src.size();
+		T *ptr = mp_vec + m_size;
+		for (CxI32 i = 0; i < vec_len; ++i) {
+			ptr[i] = in_src[i];
+		}
+		m_size += vec_len;
+	}
+
+	template <typename T>
 	CxBool CxVector<T>::contains(const T &in_value) const {
 		for (CxI32 i = 0; i < m_size; ++i) {
 			if (mp_vec[i] == in_value) { return true; }
 		}
 		return false;
-	}
-	
-	template <typename T>
-	void CxVector<T>::clear() {
-		if (mp_vec) {
-			delete[] mp_vec; mp_vec = 0;
-		}
-		m_size = m_capacity = 0;
 	}
 
 	template <typename T>
@@ -670,11 +706,25 @@ namespace cat {
 	CxI32 CxVector<T>::count(const T &in_value) const {
 		CxI32 nm_occurances = 0;
 		for (CxI32 i = 0; i < m_size; ++i) {
-			if (mp_vec[i] == nm_occurances) { nm_occurances += 1; }
+			if (mp_vec[i] == in_value) { ++nm_occurances; }
 		}
 		return nm_occurances;
 	}
 
+	template <typename T>
+	CX_FORCE_INLINE void CxVector<T>::dealloc() {
+		if (mp_vec != 0) {
+			delete[] mp_vec;  mp_vec = 0;
+		}
+		m_capacity = m_size = 0;
+	}
+
+	template <typename T>
+	CX_FORCE_INLINE void CxVector<T>::deallocPtr() {
+		eraseAll();
+	   dealloc();
+	}
+	
 	template <typename T>
 	void CxVector<T>::eraseAll() {
 		for (CxI32 i = 0; i < m_size; ++i) {
@@ -686,16 +736,40 @@ namespace cat {
 	}
 
 	template <typename T>
-	void CxVector<T>::eraseLast() {
+	void CxVector<T>::eraseAt(CxI32 in_idx) {
+		if (in_idx == 0) { eraseFirst(); }
+		else if (in_idx == m_size - 1) { eraseLast(); }
+		else if (in_idx > 0 && in_idx < m_size) {
+			if (mp_vec[in_idx] != 0) { delete mp_vec[in_idx]; }
+			const CxI32 len = m_size - (in_idx + 1);
+			memmove(mp_vec + in_idx, mp_vec + in_idx + 1, sizeof(T)*len);
+			--m_size;
+		}
+		else {
+			CXD_WARN("Trying to erase [%d] from CxVector[0...%d]",
+						in_idx, m_size -1);
+		}
+	}
+
+	template <typename T>
+	void CxVector<T>::eraseFirst() {
+		CXD_IF_WARN(m_size <= 0, "Trying to erase first item from empty CxVector!");
 		if (m_size > 0) {
-			delete mp_vec[m_size-1];
+			if (mp_vec[0] != 0) { delete mp_vec[0]; }
+			if (--m_size != 0) {
+				memmove(mp_vec, mp_vec + 1, sizeof(T)*m_size);
+			}
+			mp_vec[m_size] = 0;
+		}
+	}
+
+	template <typename T>
+	void CxVector<T>::eraseLast() {
+		CXD_IF_WARN(m_size <= 0, "Trying to erase last item from empty CxVector!");
+		if (m_size > 0) {
+			if (mp_vec[m_size-1] != 0) { delete mp_vec[m_size-1]; }
 			mp_vec[--m_size] = 0;
 		}
-#if defined (DEBUG)
-		else {
-			DWARN("Trying to erase last item from empty CxVector!");
-		}
-#endif
 	}
 
 	template <typename T>
@@ -712,6 +786,8 @@ namespace cat {
 
 	template <typename T>
 	CxI32 CxVector<T>::indexOf(const T &in_value, CxI32 in_from) const {
+		CXD_IF_ERR(in_from < 0, "Cannot start searching from index %d!",
+					  in_from);
 		for (CxI32 i = in_from; i < m_size; ++i) {
 			if (mp_vec[i] == in_value) { return i; }
 		}
@@ -721,11 +797,14 @@ namespace cat {
 	template <typename T>
 	void CxVector<T>::insert(CxI32 in_idx, const T &in_elem) {
 		if (m_size == m_capacity) {
-			DMSG("AUTO Resizing CxVector from with length "
-				  << m_size << " from " << m_capacity
-				  << " to " << m_capacity*2);
-			resizeToCapacity(m_capacity*2);
+			CXD_MSG("Auto resizing CxVector[%d] (%d to %d).",
+					  m_size, m_capacity, m_capacity*2 + 2);
+			resizeToCapacity(m_capacity*2 + 2);
 		}
+		/* Restrict the index value */
+		if (in_idx > m_size) { in_idx = m_size; }
+		else if (in_idx < 0) { in_idx = 0; }
+		
 		/* Move all the elements after down one */
 		for (CxI32 i = m_size - 1; i >= in_idx; --i) {
 			mp_vec[i+1] = mp_vec[i];
@@ -736,16 +815,17 @@ namespace cat {
 
 	template <typename T>
 	void CxVector<T>::insert(CxI32 in_idx, const T &in_elem, CxI32 in_count) {
-		if (m_size + in_count > m_capacity) {
-			CxI32 resize_to = ((m_size + in_count) > m_capacity * 2) ? m_size + in_count : m_capacity * 2;
-			DMSG("AUTO Resizing CxVector from with length "
-				  << m_size << " from " << m_capacity
-				  << " to " << resize_to);
+		const CxI32 n_size = m_size + in_count;
+		if (n_size > m_capacity) {
+			const CxI32 cap_2 = m_capacity*2 + 2;
+			const CxI32 resize_to = (n_size > cap_2) ? n_size : cap_2;
+			CXD_MSG("Auto resizing CxVector[%d] (%d to %d).",
+					  m_size, m_capacity, resize_to);
 			resizeToCapacity(resize_to);
 		}
 		/* Move all the elements after down by in_count */
 		for (CxI32 i = m_size - 1; i >= in_idx; --i) {
-			mp_vec[i+in_count] = mp_vec[i];
+			mp_vec[i + in_count] = mp_vec[i];
 		}
 		/* insert all the copies of the value */
 		for (CxI32 i = in_idx; i < in_idx + in_count; ++i) {
@@ -756,7 +836,10 @@ namespace cat {
 
 	template <typename T>
 	CxI32 CxVector<T>::lastIndexOf(const T &in_value, CxI32 in_from) const {
-		if (in_from == -1) { in_from = m_size - 1; }
+		CXD_IF_ERR(in_from >= m_size,
+					  "Cannot search CxVector[0...%d] from index %d!",
+					  m_size - 1, in_from);
+		if (in_from < 0) { in_from = m_size - 1; }
 		
 		for (CxI32 i = in_from; i >= 0; --i) {
 			if (mp_vec[i] == in_value) { return i; }
@@ -766,7 +849,7 @@ namespace cat {
 
 	template <typename T>
 	CxBool CxVector<T>::remove(const T &in_value) {
-		CxI32 idx = indexOf(elem);
+		CxI32 idx = indexOf(in_value);
 		if (idx != -1) {
 			priv_removeAt(idx);
 			return true;
@@ -793,40 +876,32 @@ namespace cat {
 	CxBool CxVector<T>::removeAt(CxI32 in_idx) {
 		if (in_idx >= 0 && in_idx < m_size) {
 			priv_removeAt(in_idx);
+			return true;
 		}
 		else {
-			DWARN("Cannot remove element at ["
-					<< idx << "], must be within [0.."
-					<< m_size-1 << "].");
+			CXD_WARN("Cannot remove CxVector element [%d], from [0...%d]",
+						in_idx, m_size-1);
 			return false;			
 		}		
 	}
 	
 	template <typename T>
 	void CxVector<T>::removeFirst() {
+		CXD_IF_WARN(m_size <= 0, "Trying to remove first item from empty CxVector.");
 		if (m_size > 0) {
 			for (CxI32 i = 0; i < m_size-1; ++i) {
 				mp_vec[i] = mp_vec[i+1];
 			}
 			mp_vec[--m_size] = m_invalidValue;
 		}
-#if defined (DEBUG)
-		else {
-			DWARN("Trying to remove first item from empty CxVector!");
-		}
-#endif
 	}
 
 	template <typename T>
 	void CxVector<T>::removeLast() {
+		CXD_IF_WARN(m_size <= 0, "Trying to remove last item from empty CxVector.");
 		if (m_size > 0) {
 			mp_vec[--m_size] = m_invalidValue;
 		}
-#if defined (DEBUG)
-		else {
-			DWARN("Trying to remove last item from empty CxVector!");
-		}
-#endif
 	}
 
 	template <typename T>
@@ -888,10 +963,9 @@ namespace cat {
 	void CxVector<T>::set(CxI32 in_idx, const T &in_value) {
 		if (in_idx >= m_size) {
 			if (in_idx >= m_capacity) {
-				DMSG("AUTO Resizing CxVector with capacity "
-					  << m_capacity << " to fit index "
-					  << in_idx << ".  Resizing to " << (in_idx*2) << ".");
-				resizeToCapacity(in_idx*2);
+				CXD_MSG("Auto resizing CxVector[%d] (%d to %d).",
+						  m_size, m_capacity, in_idx*2 + 2);
+				resizeToCapacity(in_idx*2 + 2);
 			}
 			m_size = in_idx + 1;
 		}
@@ -928,9 +1002,8 @@ namespace cat {
 			return ret;
 		}
 		else {
-			DERR("Cannot take element at ["
-				  << in_idx << "], must be within [0.."
-				  << m_size-1 << "].");
+			CXD_ERR("Cannot take [%d] from CxVector[0...%d]!",
+					  in_idx, m_size-1);
 			return m_invalidValue;
 		}
 	}
@@ -943,7 +1016,7 @@ namespace cat {
 			return ret;
 		}
 		else {
-			DWARN("Taking last element of EMPTY CxVector!");
+			CXD_WARN("Taking last element of empty CxVector.");
 			return m_invalidValue;
 		}
 	}
@@ -954,9 +1027,8 @@ namespace cat {
 			return mp_vec[in_idx];
 		}
 		else {
-			DERR("Cannot get value of element at ["
-				  << in_idx << "], must be within [0.."
-				  << m_size-1 << "].");
+			CXD_ERR("Cannot get value of [%d] from CxVector[0...%d]!",
+					  in_idx, m_size-1);
 			return m_invalidValue;
 		}
 	}

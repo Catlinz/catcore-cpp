@@ -37,6 +37,24 @@ namespace cat {
 		}
 
 		/**
+		 * @brief Method to get the length of a string.
+		 * @param in_str The string to get the length of.
+		 * @return The length of the string, not including null-term char.
+		 */
+		CX_FORCE_INLINE CxI32 len(const CxChar *CX_RESTRICT in_str) {
+			return strlen(in_str);
+		}
+
+		/**
+		 * @brief Method to get the length of a 16 bit string.
+		 * @param in_str The 16 bit string to get the length of.
+		 * @return The length of the string, not including null-term char.
+		 */
+		CX_FORCE_INLINE CxI32 len(const CxChar16 *CX_RESTRICT in_str) {
+			return wcslen((const wchar_t*)in_str);
+		}
+
+		/**
 		 * @brief Method to append chars of one string to another string.
 		 * @param inout_str The string to append to.
 		 * @param in_end The string to append to the other string.
@@ -81,7 +99,7 @@ namespace cat {
 		}
 		
 		/**
-		 * @brief Method to copy a string into another string.
+		 * @brief Method to copy an entire string (incl null term) into another string.
 		 * @param inout_str The string to copy into.
 		 * @param in_str The string to copy.
 		 * @param in_len The length of the string to copy.
@@ -194,7 +212,7 @@ namespace cat {
 		 * @param inout_str A reference to the pointer to the string.
 		 */
 		CX_FORCE_INLINE void free(CxChar *&inout_str) {
-			mem::free(inout_str);
+			if (inout_str != 0) { ::free(inout_str); inout_str = 0; }
 		}
 
 		/**
@@ -203,25 +221,7 @@ namespace cat {
 		 * @param inout_str A reference to the pointer to the string.
 		 */
 		CX_FORCE_INLINE void free(CxChar16 *&inout_str) {
-			mem::free(inout_str);
-		}
-
-		/**
-		 * @brief Method to get the length of a string.
-		 * @param in_str The string to get the length of.
-		 * @return The length of the string, not including null-term char.
-		 */
-		CX_FORCE_INLINE CxI32 len(const CxChar *CX_RESTRICT in_str) {
-			return strlen(in_str);
-		}
-
-		/**
-		 * @brief Method to get the length of a 16 bit string.
-		 * @param in_str The 16 bit string to get the length of.
-		 * @return The length of the string, not including null-term char.
-		 */
-		CX_FORCE_INLINE CxI32 len(const CxChar16 *CX_RESTRICT in_str) {
-			return wcslen(in_str);
+		   if (inout_str != 0) { ::free(inout_str); inout_str = 0; }
 		}
 		
 	} // namespace str

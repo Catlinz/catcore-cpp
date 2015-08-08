@@ -20,7 +20,7 @@
 	if ((value) != 0) {																	\
 		CXD_ASS_FAILED(#value " should be ZERO but is [" << (value) << " instead!"); \
 	}																							\
-	assert((ev) == (av));
+	assert((value) == 0);
 
 #define ass_neq(av, ev)																	\
 	if ((ev) == (av)) {																	\

@@ -131,7 +131,7 @@ namespace cat {
 		 * @param in_ptr The pointer to the allocated memory.
 		 */
 		CX_FORCE_INLINE void free(void *&in_ptr) {
-			if (in_ptr) { ::free(in_ptr); in_ptr = 0; }
+			if (in_ptr != 0) { ::free(in_ptr); in_ptr = 0; }
 		}
 
 		/**
@@ -195,7 +195,7 @@ namespace cat {
 		 * @param in_bytes The number of bytes to set.
 		 * @return Returns the pointer to the memory, in_ptr.
 		 */
-		CX_FORCE_INLINE void set(void *CX_RESTRICT inout_ptr, CxI32 in_value, CxU32 in_bytes) {
+		CX_FORCE_INLINE void * set(void *CX_RESTRICT inout_ptr, CxI32 in_value, CxU32 in_bytes) {
 			return memset(inout_ptr, in_value, in_bytes);
 		}
 
@@ -205,7 +205,7 @@ namespace cat {
 		 * @param in_bytes The number of bytes to set to zeros.
 		 * @return Returns the input pointer.
 		 */
-		CX_FORCE_INLINE void zero(void *CX_RESTRICT inout_ptr, CxU32 in_bytes) {
+		CX_FORCE_INLINE void * zero(void *CX_RESTRICT inout_ptr, CxU32 in_bytes) {
 			return memset(inout_ptr, 0, in_bytes);
 		}
 		

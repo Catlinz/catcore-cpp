@@ -35,6 +35,8 @@ namespace cat {
 	typedef unsigned short CxU16;
 	typedef signed short CxI16;
 
+	typedef wchar_t CxChar16;
+
 	typedef char CxChar;
 	typedef unsigned char CxU8;
 	typedef signed char CxI8;
