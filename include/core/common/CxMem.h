@@ -33,10 +33,9 @@ namespace cat {
 		 * @param in_bytes The number of bytes to allocate.
 		 * @return A pointer to the allocated memory.
 		 */
-		CX_FORCE_INLINE void * alloc(void *&inout_ptr, CxU32 in_bytes) {
-			if (inout_ptr == 0) { inout_ptr = ::malloc(in_bytes); }
-			else { inout_ptr = ::realloc(inout_ptr, in_bytes); }
-			return inout_ptr;
+		CX_FORCE_INLINE void * alloc(void *in_ptr, CxU32 in_bytes) {
+			if (in_ptr == 0) { return ::malloc(in_bytes); }
+			else {return ::realloc(in_ptr, in_bytes); }
 		}
 
 		/**
@@ -58,13 +57,13 @@ namespace cat {
 		 * @param in_size The size, in bytes, of each element.
 		 * @return A pointer to the allocated memory.
 		 */
-		CX_FORCE_INLINE void * allocZero(void *&inout_ptr, CxU32 in_num, CxU32 in_size) {
-			if (inout_ptr == 0) { inout_ptr = ::calloc(in_num, in_size); }
+		CX_FORCE_INLINE void * allocZero(void *in_ptr, CxU32 in_num, CxU32 in_size) {
+			if (in_ptr == 0) { return ::calloc(in_num, in_size); }
 			else {
-				inout_ptr = ::realloc(inout_ptr, in_num*in_size);
-				::memset(inout_ptr, 0, in_num*in_size);
+				void *result = ::realloc(in_ptr, in_num*in_size);
+				::memset(result, 0, in_num*in_size);
+				return result;
 			}
-			return inout_ptr;
 		}
 
 		/**
@@ -130,7 +129,8 @@ namespace cat {
 		 * This method can handle null pointers.
 		 * @param in_ptr The pointer to the allocated memory.
 		 */
-		CX_FORCE_INLINE void free(void *&in_ptr) {
+		template <typename T>
+		CX_FORCE_INLINE void free(T *&in_ptr) {
 			if (in_ptr != 0) { ::free(in_ptr); in_ptr = 0; }
 		}
 
@@ -183,9 +183,8 @@ namespace cat {
 		 * @param in_bytes The new size of the memory to allocate.
 		 * @return Returns the pointer inout_ptr.
 		 */
-		CX_FORCE_INLINE void * resize(void *&inout_dest, CxU32 in_bytes) {
-			inout_dest = ::realloc(inout_dest, in_bytes);
-			return inout_dest;
+		CX_FORCE_INLINE void * resize(void *inout_dest, CxU32 in_bytes) {
+		   return ::realloc(inout_dest, in_bytes);
 		}
 
 		/**

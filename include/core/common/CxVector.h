@@ -8,10 +8,11 @@
  * @brief Contains a simple Vector (resizeable array).
  *
  * @author Catlin Zilinski
- * @date Apr 27, 2015
+ * @date Aug 12, 2015
  */
 
 #include "core/common/CxInvasiveStrongPtr.h"
+#include "core/common/CxMem.h"
 
 namespace cat {
 
@@ -529,9 +530,13 @@ namespace cat {
 
 		CX_ISPTR_METHODS;
 
-	  private:
-		CX_FORCE_INLINE void initialise(CxI32 in_size);
+	  protected:
+		T		  *mp_vec;		   /**< The actual vector data */
+		T m_invalidValue; /**< The value returned if outside bounds */
+		CxI32		m_capacity;		/**< The current capacity of the Vector */
+		CxI32		m_size;		/**< The number of elements in the Vector */
 
+	  private:
 		CX_FORCE_INLINE void priv_removeAt(CxI32 in_idx) {
 			/* Shift everything down by one */
 			for (CxI32 i = in_idx; i < m_size-1; ++i) {
@@ -541,11 +546,6 @@ namespace cat {
 		}
 
 		void resizeToCapacity(CxI32 capacity);
-
-		T		  *mp_vec;		   /**< The actual vector data */
-		T m_invalidValue; /**< The value returned if outside bounds */
-		CxI32		m_capacity;		/**< The current capacity of the Vector */
-		CxI32		m_size;		/**< The number of elements in the Vector */
 		
 		CX_ISPTR_FIELDS;
 	};
@@ -554,21 +554,20 @@ namespace cat {
 	CX_FORCE_INLINE CxVector<T>::CxVector()
 		: mp_vec(0), m_capacity(0), m_size(0) {
 		CX_ISPTR_INIT;
-		initialise(0);
 	}
 
 	template <typename T>
 	CX_FORCE_INLINE CxVector<T>::CxVector(CxI32 in_size)
 		: mp_vec(0), m_capacity(0), m_size(0) {
 		CX_ISPTR_INIT;
-		initialise(in_size);
+		resize(in_size);
 	}
 
 	template <typename T>
 	CX_FORCE_INLINE CxVector<T>::CxVector(CxI32 in_size, const T &in_value)
 		: mp_vec(0), m_capacity(0), m_size(0) {
 		CX_ISPTR_INIT;
-		initialise(in_size);
+		resize(in_size);
 		fill(in_value);
 	}
 
@@ -591,29 +590,30 @@ namespace cat {
 	CxVector<T>::CxVector(const CxVector<T> &in_src)
 		: mp_vec(0), m_capacity(0), m_size(0) {
 		CX_ISPTR_INIT;
-	   initialise(0);
 		*this = in_src;
 	}
 
 	template <typename T>
-	CxVector<T>::~CxVector() { clear(); }
+	CxVector<T>::~CxVector() { dealloc(); }
 
 	template <typename T>
 	CxVector<T> & CxVector<T>::operator=(const CxVector<T> &in_src) {
-		if (mp_vec) {
-			delete[] mp_vec; mp_vec = 0;			
-		}
 		CxI32 capacity = in_src.m_capacity;
 		m_capacity = capacity;
 		m_size = in_src.m_size;
-		
+
+		T *old_vec = mp_vec;
 		if (capacity > 0) {
-			mp_vec = new T[capacity];
+			T *new_vec = new T[capacity];
 			/* Copy all the elements (calls copy constr.) */
 			for (CxI32 i = 0; i < in_src.m_size; ++i) {
-				mp_vec[i] = in_src.mp_vec[i];
+				new_vec[i] = in_src.mp_vec[i];
 			}
-		}		
+			mp_vec = new_vec;
+		}
+		else { mp_vec = 0; }
+
+		if (old_vec != 0) { delete[] old_vec; }
 		return *this;
 	}
 
@@ -621,9 +621,7 @@ namespace cat {
 	CxBool CxVector<T>::operator==(const CxVector<T> &in_vec) const {
 		if (m_size == in_vec.m_size) {
 			for (CxI32 i = 0; i < m_size; ++i) {
-				if (mp_vec[i] != in_vec.mp_vec[i]) {
-					return false;
-				}
+				if (mp_vec[i] != in_vec.mp_vec[i]) { return false; }
 			}
 			return true;
 		}
@@ -634,9 +632,7 @@ namespace cat {
 	CxBool CxVector<T>::operator!=(const CxVector<T> &in_vec) const {
 		if (m_size == in_vec.m_size) {
 			for (CxI32 i = 0; i < m_size; ++i) {
-				if (mp_vec[i] != in_vec.mp_vec[i]) {
-					return true;
-				}
+				if (mp_vec[i] != in_vec.mp_vec[i]) { return true; }
 			}
 			return false;
 		}
@@ -686,7 +682,7 @@ namespace cat {
 	
 	template <typename T>
 	void CxVector<T>::append(const T *in_src, CxI32 in_size) {
-		CxI32 capacity = m_size + in_size;
+		const CxI32 capacity = m_size + in_size;
 		if (m_capacity < capacity) { resizeToCapacity(capacity); }
 		
 		/* Copy all the elements (calls copy constr.). */
@@ -698,19 +694,20 @@ namespace cat {
 	}
 
 	template <typename T>
-	void CxVector<T>::append(const CxVector<T> &in_src) {
-		CxI32 capacity = m_size + in_src.size();
+	void CxVector<T>::append(const CxVector<T> & in_vec) {
+		const CxI32 v_size = in_vec.m_size;
+		const CxI32 capacity = m_size + v_size;
 		if (m_capacity < capacity) { resizeToCapacity(capacity); }
-
+		
 		/* Copy all the elements (calls copy constr.). */
-		const CxI32 vec_len = in_src.size();
 		T *ptr = mp_vec + m_size;
-		for (CxI32 i = 0; i < vec_len; ++i) {
-			ptr[i] = in_src[i];
+		const T *v_src = in_vec.mp_vec;
+		for (CxI32 i = 0; i < v_size; ++i) {
+			ptr[i] = v_src[i];
 		}
-		m_size += vec_len;
+		m_size += v_size;
 	}
-
+	
 	template <typename T>
 	CxBool CxVector<T>::contains(const T &in_value) const {
 		for (CxI32 i = 0; i < m_size; ++i) {
@@ -769,11 +766,12 @@ namespace cat {
 	void CxVector<T>::eraseAt(CxI32 in_idx) {
 		if (in_idx == 0) { eraseFirst(); }
 		else if (in_idx == m_size - 1) { eraseLast(); }
+		
 		else if (in_idx > 0 && in_idx < m_size) {
 			if (mp_vec[in_idx] != 0) { delete mp_vec[in_idx]; }
 			const CxI32 len = m_size - (in_idx + 1);
-			memmove(mp_vec + in_idx, mp_vec + in_idx + 1, sizeof(T)*len);
-			--m_size;
+			mem::move(mp_vec + in_idx, mp_vec + in_idx + 1, sizeof(T)*len);
+			mp_vec[--m_size] = 0;
 		}
 		else {
 			CXD_WARN("Trying to erase [%d] from CxVector[0...%d]",
@@ -787,7 +785,7 @@ namespace cat {
 		if (m_size > 0) {
 			if (mp_vec[0] != 0) { delete mp_vec[0]; }
 			if (--m_size != 0) {
-				memmove(mp_vec, mp_vec + 1, sizeof(T)*m_size);
+				mem::move(mp_vec, mp_vec + 1, sizeof(T)*m_size);
 			}
 			mp_vec[m_size] = 0;
 		}
@@ -809,9 +807,7 @@ namespace cat {
 		}
 
 		resize(inopt_size);
-		for (CxI32 i = 0; i < inopt_size; ++i) {
-			mp_vec[i] = in_value;
-		}
+		for (CxI32 i = 0; i < inopt_size; ++i) { mp_vec[i] = in_value; }
 	}
 
 	template <typename T>
@@ -1069,11 +1065,6 @@ namespace cat {
 			return mp_vec[in_idx];
 		}
 		else { return in_oobValue; }
-	}
-
-	template <typename T>
-	CX_FORCE_INLINE void CxVector<T>::initialise(CxI32 in_size) {
-		resize(in_size);
 	}
 
 	template <typename T>

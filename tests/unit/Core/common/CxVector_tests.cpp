@@ -1018,7 +1018,7 @@ namespace cat {
 		FINISH_TEST;
 	}
 
-	void testCxDealloc() {
+	void testCxVectorDealloc() {
 		BEGIN_TEST;
 
 		CxVector<CxI32> v0;
@@ -1175,7 +1175,7 @@ namespace cat {
 		v.fill(2, 10);
 		ass_eq(v.size(), 10);
 		for (CxI32 i = 0; i < 10; ++i) { ass_eq(v[i], 2); }
-
+		
 		v.fill(-3);
 		ass_eq(v.size(), 10);
 		for (CxI32 i = 0; i < 10; ++i) { ass_eq(v[i], -3); }
@@ -2795,7 +2795,7 @@ int main(int argc, char **argv) {
 	cat::testCxVectorContains();
 	cat::testCxVectorCount();
 	cat::testCxVectorFirstLast();
-	cat::testCxDealloc();
+	cat::testCxVectorDealloc();
 	cat::testCxVectorEndsWith();
 	cat::testCxVectorErase();
 	cat::testCxVectorFill();
