@@ -26,18 +26,15 @@
  * the CX_ISPTR_PTR goes after the class definition if wanted.
  */
 #define CX_ISPTR_METHODS																\
-	inline CxBool release() { return atomic::decr32(m_retainCount) <= 0; } \
-	inline void retain() { atomic::incr32(m_retainCount); }					\
-	inline CxI32 retainCount() const { return m_retainCount; }
+	CX_FORCE_INLINE CxBool release() { return atomic::decr32(m_retainCount) <= 0; }	\
+	CX_FORCE_INLINE void retain() { atomic::incr32(m_retainCount); }					\
+	CX_FORCE_INLINE CxI32 retainCount() const { return m_retainCount; }
 
 #define CX_ISPTR_FIELDS									\
 	CxI32 m_retainCount
 
 #define CX_ISPTR_INIT									\
 	m_retainCount = 1
-
-#define CX_ISPTR_TYPEDEF(isptrClassName)										\
-	typedef CxInvasiveStrongPtr<isptrClassName> isptrClassName ## Ptr
 
 namespace cat {
 
@@ -165,8 +162,8 @@ namespace cat {
 				CXD_MSG("CxInvasiveStrongPtr count at 0 for reference, deleting pointer!");
 #endif
 				delete mp_ptr;
-				mp_ptr = 0;
 			}
+			mp_ptr = 0;
 		}		
 		
 		T* mp_ptr;		
@@ -175,9 +172,13 @@ namespace cat {
 	/**
 	 * @brief Macro for safetly deleting an invasive strong pointer type.
 	 */
-#define CxDeleteISPtr(x) \
-	if ((x) != 0 && (x)->release()) { delete (x); (x) = 0; }
-
+	template<class T>
+	CX_FORCE_INLINE void CxDeleteISPtr(T *&in_ptr) {
+		if (in_ptr != 0 && in_ptr->release()) {
+			delete in_ptr;
+		}
+		in_ptr = 0;
+	}
 } // namespace cat
 
 #endif // CX_CORE_COMMON_CXINVASIVESTRONGPTR_H

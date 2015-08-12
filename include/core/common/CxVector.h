@@ -26,6 +26,10 @@ namespace cat {
 	template<typename T>
 	class CxVector {
 	  public:
+
+		/** @brief Typdef for the InvasiveStronPtr template for the CxVector. */
+		typedef typename CxInvasiveStrongPtr< CxVector<T> > Ptr;
+		
 		/** @brief Create an empty null vector. */
 		CX_FORCE_INLINE CxVector();
 
@@ -451,7 +455,23 @@ namespace cat {
 		 */
 		CX_FORCE_INLINE void sort(CxI32 (*in_compare)(const void*, const void*)) {
 			qsort(mp_vec, m_size, sizeof(T), in_compare);
-		}		
+		}
+
+		/**
+		 * @brief Method to sort the vector in ascending order.
+		 * The objects just implement the == and < operators.
+		 */
+		CX_FORCE_INLINE void sortAsc() {
+			qsort(mp_vec, m_size, sizeof(T), CxComparePtrAsc<T>);
+		}
+
+		/**
+		 * @brief Method to sort the vector in descending order.
+		 * The objects just implement the == and < operators.
+		 */
+		CX_FORCE_INLINE void sortDesc() {
+			qsort(mp_vec, m_size, sizeof(T), CxComparePtrDesc<T>);
+		}
 
 		/**
 		 * @brief Test to see if the vector begins with the specified value.
@@ -532,15 +552,22 @@ namespace cat {
 
 	template <typename T>
 	CX_FORCE_INLINE CxVector<T>::CxVector()
-		: mp_vec(0), m_capacity(0), m_size(0) { initialise(0); }
+		: mp_vec(0), m_capacity(0), m_size(0) {
+		CX_ISPTR_INIT;
+		initialise(0);
+	}
 
 	template <typename T>
 	CX_FORCE_INLINE CxVector<T>::CxVector(CxI32 in_size)
-		: mp_vec(0), m_capacity(0), m_size(0) { initialise(in_size); }
+		: mp_vec(0), m_capacity(0), m_size(0) {
+		CX_ISPTR_INIT;
+		initialise(in_size);
+	}
 
 	template <typename T>
 	CX_FORCE_INLINE CxVector<T>::CxVector(CxI32 in_size, const T &in_value)
 		: mp_vec(0), m_capacity(0), m_size(0) {
+		CX_ISPTR_INIT;
 		initialise(in_size);
 		fill(in_value);
 	}
@@ -548,6 +575,8 @@ namespace cat {
 	template <typename T>
 	CxVector<T>::CxVector(T *in_array, CxI32 in_size, CxCopy inopt_copy)
 		: mp_vec(0), m_capacity(in_size), m_size(in_size) {
+		CX_ISPTR_INIT;
+		
 		if (inopt_copy == kCxNoCopy) {
 			mp_vec = in_array;
 		}
@@ -561,6 +590,7 @@ namespace cat {
 	template <typename T>
 	CxVector<T>::CxVector(const CxVector<T> &in_src)
 		: mp_vec(0), m_capacity(0), m_size(0) {
+		CX_ISPTR_INIT;
 	   initialise(0);
 		*this = in_src;
 	}
@@ -986,12 +1016,12 @@ namespace cat {
 		CxI32 tmp_size = m_size;
 
 		mp_vec = in_vec.mp_vec;
-		m_capacity = in_vec.capacity;
-		m_size = in_vec.size;
+		m_capacity = in_vec.m_capacity;
+		m_size = in_vec.m_size;
 
 		in_vec.mp_vec = tmp;
-		in_vec.capacity = tmp_cap;
-		in_vec.size = tmp_size;
+		in_vec.m_capacity = tmp_cap;
+		in_vec.m_size = tmp_size;
 	}
 
 	template <typename T>
@@ -1043,7 +1073,6 @@ namespace cat {
 
 	template <typename T>
 	CX_FORCE_INLINE void CxVector<T>::initialise(CxI32 in_size) {
-		CX_ISPTR_INIT;
 		resize(in_size);
 	}
 

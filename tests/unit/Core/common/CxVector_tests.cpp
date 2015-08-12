@@ -6,6 +6,7 @@ namespace cat {
 	class TestObject {
 	  public:
 		TestObject() : m_x(0.0f), m_y(0.0f), m_z(0.0f) {}
+		TestObject(CxF32 v) : m_x(v), m_y(v), m_z(v) {}
 		TestObject(CxF32 x, CxF32 y, CxF32 z) : m_x(x), m_y(y), m_z(z) {}
 		inline CxBool operator==(const TestObject &o) const { return (m_x == o.m_x) && (m_y == o.m_y) && (m_z == o.m_z); }
 		inline CxBool operator!=(const TestObject &o) const { return (m_x != o.m_x) || (m_y != o.m_y) || (m_z != o.m_z); }
@@ -15,6 +16,52 @@ namespace cat {
 
 	std::ostream& operator<<(std::ostream& out, const TestObject &obj) {
 		return out << "TestObject(" << obj.m_x << ", " << obj.m_y << ", " << obj.m_z << ")";
+	}
+
+	CxI32 testObjectCompareAsc(const void *a, const void *b) {
+		const TestObject *ap = (const TestObject *)a;
+		const TestObject *bp = (const TestObject *)b;
+
+		const float r = (ap->m_x + ap->m_y + ap->m_z) - (bp->m_x + bp->m_y + bp->m_z);
+
+		if (r < 0) { return -1; }
+		else if (r == 0) { return 0; }
+		else { return 1; }
+	}
+
+	CxI32 testObjectCompareDesc(const void *a, const void *b) {
+		const TestObject *ap = (const TestObject *)a;
+		const TestObject *bp = (const TestObject *)b;
+
+		const float r = (bp->m_x + bp->m_y + bp->m_z) - (ap->m_x + ap->m_y + ap->m_z);
+
+		if (r < 0) { return -1; }
+		else if (r == 0) { return 0; }
+		else { return 1; }
+	}
+
+	class TestObjectWithLessThan : public TestObject {
+	  public:
+		TestObjectWithLessThan() : TestObject() {}
+		TestObjectWithLessThan(CxF32 v) : TestObject(v) {}
+		TestObjectWithLessThan(CxF32 x, CxF32 y, CxF32 z) : TestObject(x,y,z) {}
+		inline CxBool operator<(const TestObjectWithLessThan &in_obj) const {
+			const CxF32 r = m_x + m_y + m_z;
+			const CxF32 ro = in_obj.m_x + in_obj.m_y + in_obj.m_z;
+			return r < ro;
+		}
+	};
+
+	CxI32 testCxI32SortSquare(const void *a, const void *b) {
+		const CxI32 a_2 = (*(CxI32 *)a) * (*(CxI32 *)a);
+		const CxI32 b_2 = (*(CxI32 *)b) * (*(CxI32 *)b);
+
+		return (a_2 - b_2);
+	}
+
+	template<typename T>
+	void appendToCxVectorPtr(typename CxVector<T>::Ptr in_ptr, const T &in_val) {
+		(*in_ptr) << in_val;
 	}
 
 	template <typename T>
@@ -1474,6 +1521,9 @@ namespace cat {
 		FINISH_TEST;
 	}
 
+	/**
+	 * @tests removeAll(const T &)
+	 */
 	void testCxVectorRemoveAll() {
 		BEGIN_TEST;
 
@@ -1589,6 +1639,9 @@ namespace cat {
 		FINISH_TEST;
 	}
 
+	/** 
+	 * @tests removeAt(CxI32)
+	 */
 	void testCxVectorRemoveAt() {
 		BEGIN_TEST;
 
@@ -1665,11 +1718,1066 @@ namespace cat {
 		FINISH_TEST;
 	}
 
+	/**
+	 * @tests removeFirst()
+	 * @tests removeLast()
+	 */
 	void testCxVectorRemoveFirstLast() {
 		BEGIN_TEST;
 
-		assert(false);
+		/* First, test removing from single element vector */
+		CxVector<CxI32> v0;
+		v0 << 1;
+		ass_eq(v0[0], 1);
+		v0.removeFirst();
+		ass_zero(v0.size());
+
+		v0 << 2;
+		ass_eq(v0[0], 2);
+		v0.removeLast();
+		ass_zero(v0.size());
+
+		/* Test remove from double element vector */
+		v0 << 1 << 2;
+		ass_true(v0[0] == 1 && v0[1] == 2);
+		v0.removeFirst();
+		ass_true(v0.size() == 1 && v0[0] == 2);
+		v0.removeFirst();
+		ass_zero(v0.size());
+
+		v0 << 3 << 4;
+		ass_true(v0[0] == 3 && v0[1] == 4);
+		v0.removeLast();
+		ass_true(v0.size() == 1 && v0[0] == 3);
+		v0.removeLast();
+		ass_zero(v0.size());
+
+		/* Test remove from multiple element vector */
+		v0 << 1 << 2 << 3 << 4 << 5;
+		ass_true(v0[0] == 1 && v0[1] == 2 && v0[2] == 3 &&
+					v0[3] == 4 && v0[4] == 5);
+		v0.removeFirst();
+		ass_true(v0[0] == 2 && v0[1] == 3 && v0[2] == 4 &&
+					v0[3] == 5 && v0.size() == 4);
+		v0.removeLast();
+		ass_true(v0[0] == 2 && v0[1] == 3 && v0[2] == 4 &&
+					v0.size() == 3);
+		v0.removeLast();
+		ass_true(v0[0] == 2 && v0[1] == 3 && v0.size() == 2);
+		v0.removeFirst();
+		ass_true(v0[0] == 3 && v0.size() == 1);
+		v0.removeFirst();
+		ass_zero(v0.size());
+
+
+		/* Test with objects */
+		CxVector<TestObject> v1;
+		v1 << TestObject(1,1,1) << TestObject(2,2,2) << TestObject(3,3,3)
+			<< TestObject(4,4,4) << TestObject(5,5,5);
+		ass_true(v1[0].test(1,1,1) && v1[1].test(2,2,2) && v1[2].test(3,3,3) &&
+					v1[3].test(4,4,4) && v1[4].test(5,5,5) && v1.size() == 5);
+		v1.removeFirst();
+		ass_true(v1[0].test(2,2,2) && v1[1].test(3,3,3) &&
+					v1[2].test(4,4,4) && v1[3].test(5,5,5) && v1.size() == 4);
+		v1.removeLast();
+		ass_true(v1[0].test(2,2,2) && v1[1].test(3,3,3) &&
+					v1[2].test(4,4,4) && v1.size() == 3);
+		v1.removeLast();
+		ass_true(v1[0].test(2,2,2) && v1[1].test(3,3,3) && v1.size() == 2);
+		v1.removeFirst();
+		ass_true(v1[0].test(3,3,3) && v1.size() == 1);
+		v1.removeFirst();
+		ass_zero(v1.size());
 		
+		FINISH_TEST;
+	}
+
+	/**
+	 * @tests replace(const T &, const T &)
+	 */
+	void testCxVectorReplace() {
+		BEGIN_TEST;
+
+		CxVector<CxI32> v0;
+		/* First, test on empty vector */
+	   assert(!v0.replace(0, 1));
+		assert(!v0.replace(1, 2));
+		assert(!v0.replace(-1, 0));
+
+		/* Test replace in single element list */
+		v0 << 0;
+		ass_true(v0[0] == 0 && v0.size() == 1);
+		assert(!v0.replace(1, 0));
+		assert(!v0.replace(-1, 0));
+		assert(v0.replace(0, 1));
+
+		ass_true(v0[0] == 1 && v0.size() == 1);
+		assert(!v0.replace(0, 2));
+		assert(!v0.replace(-1, 4));
+		assert(v0.replace(1, -1));
+
+		ass_true(v0[0] == -1 && v0.size() == 1);
+		assert(!v0.replace(0, 2));
+		assert(!v0.replace(1, 3));
+		assert(v0.replace(-1, 4));
+
+		ass_true(v0[0] == 4 && v0.size() == 1);
+		v0.clear();
+
+		/* Test replace single element with itself */
+		v0 << 1;
+		ass_true(v0[0] == 1 && v0.size() == 1);
+		assert(v0.replace(1, 1));
+		ass_true(v0[0] == 1 && v0.size() == 1);
+		v0.clear();
+
+		/* Test replace in list with all the same values */
+		v0 << 1 << 1 << 1 << 1;
+		ass_true(v0[0] == 1 && v0[1] == 1 && v0[2] == 1 && v0[3] == 1 &&
+					v0.size() == 4);
+		assert(!v0.replace(0, 3));
+		assert(!v0.replace(-1, 4));
+		assert(v0.replace(1, -1));
+		ass_true(v0[0] == -1 && v0[1] == 1 && v0[2] == 1 && v0[3] == 1 &&
+					v0.size() == 4);
+		
+		assert(v0.replace(1, 0));
+		ass_true(v0[0] == -1 && v0[1] == 0 && v0[2] == 1 && v0[3] == 1 &&
+					v0.size() == 4);
+
+		assert(v0.replace(1, -1));
+		ass_true(v0[0] == -1 && v0[1] == 0 && v0[2] == -1 && v0[3] == 1 &&
+					v0.size() == 4);
+
+		assert(v0.replace(1, 0));
+		ass_true(v0[0] == -1 && v0[1] == 0 && v0[2] == -1 && v0[3] == 0 &&
+					v0.size() == 4);
+
+		assert(!v0.replace(1, 3));
+
+		/* Test replace in list with different values */
+		assert(v0.replace(0, 2));
+		ass_true(v0[0] == -1 && v0[1] == 2 && v0[2] == -1 && v0[3] == 0 &&
+					v0.size() == 4);
+		assert(v0.replace(0, 2));
+		ass_true(v0[0] == -1 && v0[1] == 2 && v0[2] == -1 && v0[3] == 2 &&
+					v0.size() == 4);
+		assert(!v0.replace(0, 2));
+		assert(v0.replace(-1, 2));
+		ass_true(v0[0] == 2 && v0[1] == 2 && v0[2] == -1 && v0[3] == 2 &&
+					v0.size() == 4);
+		assert(v0.replace(-1, 2));
+		ass_true(v0[0] == 2 && v0[1] == 2 && v0[2] == 2 && v0[3] == 2 &&
+					v0.size() == 4);
+		assert(!v0.replace(-1, 2));
+
+
+		/* Test replace with objects */
+		CxVector<TestObject> v1;
+		assert(!v1.replace(TestObject(0,0,0), TestObject(1,1,1)));
+
+		v1 << TestObject(1,1,1) << TestObject(1,1,1) << TestObject(1,1,1)
+			<< TestObject(1,1,1);
+		ass_true(v1[0].test(1,1,1) && v1[1].test(1,1,1) && v1[2].test(1,1,1) &&
+					v1[3].test(1,1,1) && v1.size() == 4);
+
+		assert(!v1.replace(TestObject(1,1,-1), TestObject(2,2,2)));
+		assert(v1.replace(TestObject(1,1,1), TestObject(-1,-1,-1)));
+		ass_true(v1[0].test(-1,-1,-1) && v1[1].test(1,1,1) && v1[2].test(1,1,1) &&
+					v1[3].test(1,1,1) && v1.size() == 4);
+
+		assert(v1.replace(TestObject(1,1,1), TestObject(0,0,0)));
+		ass_true(v1[0].test(-1,-1,-1) && v1[1].test(0,0,0) && v1[2].test(1,1,1) &&
+					v1[3].test(1,1,1) && v1.size() == 4);
+
+		assert(v1.replace(TestObject(1,1,1), TestObject(-1,-1,-1)));
+		ass_true(v1[0].test(-1,-1,-1) && v1[1].test(0,0,0) && v1[2].test(-1,-1,-1) &&
+					v1[3].test(1,1,1) && v1.size() == 4);
+
+		assert(v1.replace(TestObject(1,1,1), TestObject(0,0,0)));
+		ass_true(v1[0].test(-1,-1,-1) && v1[1].test(0,0,0) && v1[2].test(-1,-1,-1) &&
+					v1[3].test(0,0,0) && v1.size() == 4);
+		assert(!v1.replace(TestObject(1,1,1), TestObject(3,3,3)));
+
+		assert(v1.replace(TestObject(0,0,0), TestObject(2,2,2)));
+		ass_true(v1[0].test(-1,-1,-1) && v1[1].test(2,2,2) && v1[2].test(-1,-1,-1) &&
+					v1[3].test(0,0,0) && v1.size() == 4);
+
+		assert(v1.replace(TestObject(0,0,0), TestObject(2,2,2)));
+		ass_true(v1[0].test(-1,-1,-1) && v1[1].test(2,2,2) && v1[2].test(-1,-1,-1) &&
+					v1[3].test(2,2,2) && v1.size() == 4);
+
+		assert(!v1.replace(TestObject(0,0,0), TestObject(4,4,4)));
+		assert(v1.replace(TestObject(-1,-1,-1), TestObject(2,2,2)));
+		ass_true(v1[0].test(2,2,2) && v1[1].test(2,2,2) && v1[2].test(-1,-1,-1) &&
+					v1[3].test(2,2,2) && v1.size() == 4);
+
+		assert(v1.replace(TestObject(-1,-1,-1), TestObject(2,2,2)));
+		ass_true(v1[0].test(2,2,2) && v1[1].test(2,2,2) && v1[2].test(2,2,2) &&
+					v1[3].test(2,2,2) && v1.size() == 4);
+		assert(!v1.replace(TestObject(-1,-1,-1), TestObject(34,4,4)));
+		
+		FINISH_TEST;
+	}
+
+	/**
+	 * @tests replaceAll(const T & const T &)
+	 */
+	void testCxVectorReplaceAll() {
+		BEGIN_TEST;
+
+		CxVector<CxI32> v0;
+		/* Test replaceAll from empty vector */
+		assert(!v0.replaceAll(0, 3) && !v0.replaceAll(1, 4) && !v0.replaceAll(-1, 5));
+
+		/* Test replaceAll from single element vector */
+		v0 << 0;
+		ass_true(v0[0] == 0 && v0.size() == 1);
+		assert(!v0.replaceAll(1, 2) && !v0.replaceAll(-1, 3));
+		assert(v0.replaceAll(0, 1));
+		ass_true(v0[0] == 1 && v0.size() == 1);
+
+		assert(!v0.replaceAll(-1, 3) && !v0.replaceAll(0, 4));
+		assert(v0.replaceAll(1, -1));
+		ass_true(v0[0] == -1 && v0.size() == 1);
+
+		assert(!v0.replaceAll(1, 4) && !v0.replaceAll(0, 3));
+		assert(v0.replaceAll(-1, 2));
+		ass_true(v0[0] == 2 && v0.size() == 1);
+		v0.clear();
+
+		/* Test replace all in vector with all the same elements */
+		v0 << 1 << 1 << 1 << 1;
+		ass_true(v0[0] == 1 && v0[1] == 1 && v0[2] == 1 && v0[3] == 1 &&
+					v0.size() == 4);
+		assert(!v0.replaceAll(0, 3) && !v0.replaceAll(-1, 2));
+		assert(v0.replaceAll(1, 0));
+		ass_true(v0[0] == 0 && v0[1] == 0 && v0[2] == 0 && v0[3] == 0 &&
+					v0.size() == 4);
+
+		assert(!v0.replaceAll(1, 3) && !v0.replaceAll(-1, 2));
+		assert(v0.replaceAll(0, -1));
+		ass_true(v0[0] == -1 && v0[1] == -1 && v0[2] == -1 && v0[3] == -1 &&
+					v0.size() == 4);
+
+		assert(!v0.replaceAll(0, 3) && !v0.replaceAll(1, 4));
+		assert(v0.replaceAll(-1, 2));
+		ass_true(v0[0] == 2 && v0[1] == 2 && v0[2] == 2 && v0[3] == 2 &&
+					v0.size() == 4);
+
+		/* Test replace all in vector with different elements */
+		v0.clear();
+
+		v0 << 1 << 1 << 0 << 1 << -1 << 0 << -1 << 0 << 2 << 0;
+		ass_true(v0[0] == 1 && v0[1] == 1 && v0[2] == 0 && v0[3] == 1 &&
+					v0[4] == -1 && v0[5] == 0 && v0[6] == -1 && v0[7] == 0 &&
+					v0[8] == 2 && v0[9] == 0 && v0.size() == 10);
+		assert(!v0.replaceAll(3, 5));
+		assert(v0.replaceAll(0, 4));
+		ass_true(v0[0] == 1 && v0[1] == 1 && v0[2] == 4 && v0[3] == 1 &&
+					v0[4] == -1 && v0[5] == 4 && v0[6] == -1 && v0[7] == 4 &&
+					v0[8] == 2 && v0[9] == 4 && v0.size() == 10);
+
+		assert(!v0.replaceAll(0, 5));
+		assert(v0.replaceAll(1, 4));
+		ass_true(v0[0] == 4 && v0[1] == 4 && v0[2] == 4 && v0[3] == 4 &&
+					v0[4] == -1 && v0[5] == 4 && v0[6] == -1 && v0[7] == 4 &&
+					v0[8] == 2 && v0[9] == 4 && v0.size() == 10);
+
+		assert(!v0.replaceAll(1, 5));
+		assert(v0.replaceAll(2, 4));
+		ass_true(v0[0] == 4 && v0[1] == 4 && v0[2] == 4 && v0[3] == 4 &&
+					v0[4] == -1 && v0[5] == 4 && v0[6] == -1 && v0[7] == 4 &&
+					v0[8] == 4 && v0[9] == 4 && v0.size() == 10);
+
+		assert(!v0.replaceAll(2, 5));
+		assert(v0.replaceAll(-1, 4));
+		ass_true(v0[0] == 4 && v0[1] == 4 && v0[2] == 4 && v0[3] == 4 &&
+					v0[4] == 4 && v0[5] == 4 && v0[6] == 4 && v0[7] == 4 &&
+					v0[8] == 4 && v0[9] == 4 && v0.size() == 10);
+		assert(!v0.replaceAll(-1, 5));
+		assert(v0.replaceAll(4, -10));
+		ass_true(v0[0] == -10 && v0[1] == -10 && v0[2] == -10 && v0[3] == -10 &&
+					v0[4] == -10 && v0[5] == -10 && v0[6] == -10 && v0[7] == -10 &&
+					v0[8] == -10 && v0[9] == -10 && v0.size() == 10);
+
+		/* Test replace All with objects */
+		CxVector<TestObject> v1;
+		assert(!v1.replaceAll(TestObject(0,0,0), TestObject(1,1,1)));
+
+		v1 << TestObject(1) << TestObject(1) << TestObject(0)
+			<< TestObject(1) << TestObject(-1) << TestObject(0)
+			<< TestObject(-1) << TestObject(0) << TestObject(2,3,4)
+			<< TestObject(0, 0, 0);
+		ass_true(v1[0].test(1,1,1) && v1[1].test(1,1,1) && v1[2].test(0,0,0) &&
+					v1[3].test(1,1,1) && v1[4].test(-1,-1,-1) && v1[5].test(0,0,0) &&
+					v1[6].test(-1,-1,-1) && v1[7].test(0,0,0) && v1[8].test(2,3,4) &&
+					v1[9].test(0,0,0) && v1.size() == 10);
+		
+		assert(!v1.replaceAll(TestObject(2), TestObject(4,3,2)));
+		assert(v1.replaceAll(TestObject(0), TestObject(2)));
+		ass_true(v1[0].test(1,1,1) && v1[1].test(1,1,1) && v1[2].test(2,2,2) &&
+					v1[3].test(1,1,1) && v1[4].test(-1,-1,-1) && v1[5].test(2,2,2) &&
+					v1[6].test(-1,-1,-1) && v1[7].test(2,2,2) && v1[8].test(2,3,4) &&
+					v1[9].test(2,2,2) && v1.size() == 10);
+		
+		assert(!v1.replaceAll(TestObject(0), TestObject(4,3,2)));
+		assert(v1.replaceAll(TestObject(1), TestObject(2)));
+		ass_true(v1[0].test(2,2,2) && v1[1].test(2,2,2) && v1[2].test(2,2,2) &&
+					v1[3].test(2,2,2) && v1[4].test(-1,-1,-1) && v1[5].test(2,2,2) &&
+					v1[6].test(-1,-1,-1) && v1[7].test(2,2,2) && v1[8].test(2,3,4) &&
+					v1[9].test(2,2,2) && v1.size() == 10);
+
+		assert(!v1.replaceAll(TestObject(1), TestObject(4,3,2)));
+		assert(v1.replaceAll(TestObject(2,3,4), TestObject(2)));
+		ass_true(v1[0].test(2,2,2) && v1[1].test(2,2,2) && v1[2].test(2,2,2) &&
+					v1[3].test(2,2,2) && v1[4].test(-1,-1,-1) && v1[5].test(2,2,2) &&
+					v1[6].test(-1,-1,-1) && v1[7].test(2,2,2) && v1[8].test(2,2,2) &&
+					v1[9].test(2,2,2) && v1.size() == 10);
+
+		assert(!v1.replaceAll(TestObject(2,3,4), TestObject(4,3,2)));
+		assert(v1.replaceAll(TestObject(-1,-1,-1), TestObject(2)));
+		ass_true(v1[0].test(2,2,2) && v1[1].test(2,2,2) && v1[2].test(2,2,2) &&
+					v1[3].test(2,2,2) && v1[4].test(2,2,2) && v1[5].test(2,2,2) &&
+					v1[6].test(2,2,2) && v1[7].test(2,2,2) && v1[8].test(2,2,2) &&
+					v1[9].test(2,2,2) && v1.size() == 10);
+
+		assert(!v1.replaceAll(TestObject(-1,-1,-1), TestObject(4,3,2)));
+		assert(v1.replaceAll(TestObject(2,2,2), TestObject(1,2,-3)));
+
+		ass_true(v1[0].test(1,2,-3) && v1[1].test(1,2,-3) && v1[2].test(1,2,-3) &&
+					v1[3].test(1,2,-3) && v1[4].test(1,2,-3) && v1[5].test(1,2,-3) &&
+					v1[6].test(1,2,-3) && v1[7].test(1,2,-3) && v1[8].test(1,2,-3) &&
+					v1[9].test(1,2,-3) && v1.size() == 10);
+		
+		FINISH_TEST;
+	}
+
+	/**
+	 * @tests replaceAt(CxI32, const T &)
+	 */
+	void testCxVectorReplaceAt() {
+		BEGIN_TEST;
+
+		CxVector<CxI32> v0;
+		assert(!v0.replaceAt(0, 1));
+		
+		/* Test single element vector */
+		v0 << 0;
+		assert(!v0.replaceAt(1, 1));
+		ass_true(v0[0] == 0 && v0.size() == 1);
+		
+		assert(v0.replaceAt(0, 1));
+		ass_true(v0[0] == 1 && v0.size() == 1);
+
+		assert(v0.replaceAt(0, -1));
+		ass_true(v0[0] == -1 && v0.size() == 1);
+		v0.clear();
+		
+		/* Test multiple element vector */
+		v0 << 1 << 2 << 2 << 3;
+		ass_true(v0[0] == 1 && v0[1] == 2 && v0[2] == 2 && v0[3] == 3 &&
+					v0.size() == 4);
+		assert(!v0.replaceAt(4, 12));
+		assert(v0.replaceAt(1, 4));
+		ass_true(v0[0] == 1 && v0[1] == 4 && v0[2] == 2 && v0[3] == 3 &&
+					v0.size() == 4);
+
+		assert(v0.replaceAt(1, 5));
+		ass_true(v0[0] == 1 && v0[1] == 5 && v0[2] == 2 && v0[3] == 3 &&
+					v0.size() == 4);
+
+		assert(v0.replaceAt(0, 5));
+		ass_true(v0[0] == 5 && v0[1] == 5 && v0[2] == 2 && v0[3] == 3 &&
+					v0.size() == 4);
+
+		assert(v0.replaceAt(3, 5));
+		ass_true(v0[0] == 5 && v0[1] == 5 && v0[2] == 2 && v0[3] == 5 &&
+					v0.size() == 4);
+
+		assert(v0.replaceAt(2, 5));
+		ass_true(v0[0] == 5 && v0[1] == 5 && v0[2] == 5 && v0[3] == 5 &&
+					v0.size() == 4);
+
+		assert(v0.replaceAt(0, 5));
+		ass_true(v0[0] == 5 && v0[1] == 5 && v0[2] == 5 && v0[3] == 5 &&
+					v0.size() == 4);
+		assert(!v0.replaceAt(4, 5));
+
+		/* Test with objects */
+		CxVector<TestObject> v1;
+		assert(!v1.replaceAt(0, TestObject(1,1,1)));
+		
+		v1 << TestObject(1) << TestObject(2) << TestObject(2) << TestObject(3);
+		ass_true(v1[0].test(1,1,1) && v1[1].test(2,2,2) && v1[2].test(2,2,2) &&
+					v1[3].test(3,3,3) && v1.size() == 4);
+
+		assert(!v1.replaceAt(4, TestObject(1,2,3)));
+		assert(v1.replaceAt(1, TestObject(4)));
+		ass_true(v1[0].test(1,1,1) && v1[1].test(4,4,4) && v1[2].test(2,2,2) &&
+					v1[3].test(3,3,3) && v1.size() == 4);
+
+		assert(v1.replaceAt(1, TestObject(5)));
+		ass_true(v1[0].test(1,1,1) && v1[1].test(5,5,5) && v1[2].test(2,2,2) &&
+					v1[3].test(3,3,3) && v1.size() == 4);
+
+		assert(v1.replaceAt(0, TestObject(5)));
+		ass_true(v1[0].test(5,5,5) && v1[1].test(5,5,5) && v1[2].test(2,2,2) &&
+					v1[3].test(3,3,3) && v1.size() == 4);
+
+		assert(v1.replaceAt(3, TestObject(5,5,5)));
+		ass_true(v1[0].test(5,5,5) && v1[1].test(5,5,5) && v1[2].test(2,2,2) &&
+					v1[3].test(5,5,5) && v1.size() == 4);
+
+		assert(v1.replaceAt(2, TestObject(5,5,5)));
+		ass_true(v1[0].test(5,5,5) && v1[1].test(5,5,5) && v1[2].test(5,5,5) &&
+					v1[3].test(5,5,5) && v1.size() == 4);
+
+		assert(v1.replaceAt(0, TestObject(5,5,5)));
+		ass_true(v1[0].test(5,5,5) && v1[1].test(5,5,5) && v1[2].test(5,5,5) &&
+					v1[3].test(5,5,5) && v1.size() == 4);
+
+		assert(!v1.replaceAt(4, TestObject(5,5,5)));
+		
+		FINISH_TEST;
+	}
+
+	/**
+	 * @tests reserve(CxI32)
+	 * @tests resizeToCapacity(CxI32)
+	 */
+	void testCxVectorReserve() {
+		BEGIN_TEST;
+
+		CxVector<CxI32> v0;
+		ass_zero(v0.capacity());
+		ass_zero(v0.size());
+
+		v0.reserve(1);
+		ass_eq(v0.capacity(), 1);
+		ass_zero(v0.size());
+
+		v0.reserve(10);
+		ass_eq(v0.capacity(), 10);
+		ass_zero(v0.size());
+
+		v0.dealloc();
+		ass_zero(v0.capacity());
+		ass_zero(v0.size());
+
+		v0.reserve(10);
+		ass_eq(v0.capacity(), 10);
+		ass_zero(v0.size());
+
+		v0.reserve(2);
+		ass_eq(v0.capacity(), 10);
+		ass_zero(v0.size());
+
+
+		CxVector<TestObject> v1;
+		ass_zero(v1.capacity());
+		ass_zero(v1.size());
+
+		v1.reserve(1);
+		ass_eq(v1.capacity(), 1);
+		ass_zero(v1.size());
+
+		v1.reserve(10);
+		ass_eq(v1.capacity(), 10);
+		ass_zero(v1.size());
+
+		v1.dealloc();
+		ass_zero(v1.capacity());
+		ass_zero(v1.size());
+
+		v1.reserve(10);
+		ass_eq(v1.capacity(), 10);
+		ass_zero(v1.size());
+
+		v1.reserve(2);
+		ass_eq(v1.capacity(), 10);
+		ass_zero(v1.size());
+		
+		FINISH_TEST;
+	}
+
+	/**
+	 * @tests resize(CxI32)
+	 * @tests resizeToCapacity(CxI32)
+	 */
+	void testCxVectorResize() {
+		BEGIN_TEST;
+
+		CxVector<CxI32> v0;
+		ass_zero(v0.capacity());
+		ass_zero(v0.size());
+
+		v0.resize(1);
+		ass_eq(v0.capacity(), 1);
+		ass_eq(v0.size(), 1);
+
+		v0.resize(10);
+		ass_eq(v0.capacity(), 10);
+		ass_eq(v0.size(), 10);
+
+		v0.dealloc();
+		ass_zero(v0.capacity());
+		ass_zero(v0.size());
+
+		v0.resize(10);
+		ass_eq(v0.capacity(), 10);
+		ass_eq(v0.size(), 10);
+
+		v0.resize(4);
+		ass_eq(v0.capacity(), 10);
+		ass_eq(v0.size(), 4);
+
+		v0.resize(1);
+		ass_eq(v0.capacity(), 10);
+		ass_eq(v0.size(), 1);
+
+		v0.resize(0);
+		ass_eq(v0.capacity(), 10);
+		ass_eq(v0.size(), 0);
+
+		/* Test with obejcst */
+		CxVector<TestObject> v1;
+		ass_zero(v1.capacity());
+		ass_zero(v1.size());
+
+		v1.resize(1);
+		ass_eq(v1.capacity(), 1);
+		ass_eq(v1.size(), 1);
+
+		v1.resize(10);
+		ass_eq(v1.capacity(), 10);
+		ass_eq(v1.size(), 10);
+
+		v1.dealloc();
+		ass_zero(v1.capacity());
+		ass_zero(v1.size());
+
+		v1.resize(10);
+		ass_eq(v1.capacity(), 10);
+		ass_eq(v1.size(), 10);
+
+		v1.resize(4);
+		ass_eq(v1.capacity(), 10);
+		ass_eq(v1.size(), 4);
+
+		v1.resize(1);
+		ass_eq(v1.capacity(), 10);
+		ass_eq(v1.size(), 1);
+
+		v1.resize(0);
+		ass_eq(v1.capacity(), 10);
+		ass_eq(v1.size(), 0);
+		
+
+		FINISH_TEST;
+	}
+
+	/**
+	 * @tests sort(CxI32 (*)(const void *, const void *)
+	 * @tests sortAsc()
+	 * @tests sortDesc()
+	 */
+	void testCxVectorSort() {
+		BEGIN_TEST;
+
+		CxVector<CxI32> v0;
+
+		/* Test sorting empty vector */
+		v0.sortAsc();
+		v0.sortDesc();
+
+		/* Test sorting single element vector */
+		v0 << 1;
+		v0.sortAsc();
+		ass_eq(v0[0], 1);
+		
+		v0.sortDesc();
+		ass_eq(v0[0], 1);
+
+		v0.sort(testCxI32SortSquare);
+		ass_eq(v0[0], 1);
+		v0.clear();
+		
+		/* Test sorting vector */
+		v0 << 1 << 2 << -3 << 9 << 4 << 10 << 0;
+		v0.sortAsc();
+		ass_true(v0[0] == -3 && v0[1] == 0 && v0[2] == 1 && v0[3] == 2 &&
+					v0[4] == 4 && v0[5] == 9 && v0[6] == 10 && v0.size() == 7);
+
+		v0.sortDesc();
+		ass_true(v0[0] == 10 && v0[1] == 9 && v0[2] == 4 && v0[3] == 2 &&
+					v0[4] == 1 && v0[5] == 0 && v0[6] == -3 && v0.size() == 7);
+
+		v0.sort(testCxI32SortSquare);
+		ass_true(v0[0] == 0 && v0[1] == 1 && v0[2] == 2 && v0[3] == -3 &&
+					v0[4] == 4 && v0[5] == 9 && v0[6] == 10 && v0.size() == 7);
+
+		/* Test sorting vector with duplicates */
+		v0.clear();
+		v0 << 9 << -3 << 8 << -3 << 9 << 0 << 1 << 9;
+
+		v0.sortAsc();
+		ass_true(v0[0] == -3 && v0[1] == -3 && v0[2] == 0 && v0[3] == 1 &&
+					v0[4] == 8 && v0[5] == 9 && v0[6] == 9 && v0[7] == 9 &&
+					v0.size() == 8);
+
+		v0.sortDesc();
+		ass_true(v0[0] == 9 && v0[1] == 9 && v0[2] == 9 && v0[3] == 8 &&
+					v0[4] == 1 && v0[5] == 0 && v0[6] == -3 && v0[7] == -3 &&
+					v0.size() == 8);
+
+		v0.sort(testCxI32SortSquare);
+		ass_true(v0[0] == 0 && v0[1] == 1 && v0[2] == -3 && v0[3] == -3 &&
+					v0[4] == 8 && v0[5] == 9 && v0[6] == 9 && v0[7] == 9 &&
+					v0.size() == 8);
+
+		/* Test sorting vector of objects */
+		CxVector<TestObject> v1;
+		
+		/* Test sorting empty vector */
+		v1.sort(testObjectCompareDesc);
+		v1.sort(testObjectCompareAsc);
+
+		/* Test sorting single element vector */
+		v1 << TestObject(1,2,3);
+		v1.sort(testObjectCompareAsc);
+		ass_true(v1[0].test(1,2,3));
+
+		v1.sort(testObjectCompareDesc);
+		ass_true(v1[0].test(1,2,3));
+
+		/* Test sorting vector */
+		v1.clear();
+		v1 << TestObject(1) << TestObject(2) << TestObject(-3) << TestObject(9)
+			<< TestObject(4) << TestObject(10) << TestObject(0);
+
+		v1.sort(testObjectCompareAsc);
+		ass_true(v1[0].test(-3,-3,-3) && v1[1].test(0,0,0) && v1[2].test(1,1,1) &&
+					v1[3].test(2,2,2) && v1[4].test(4,4,4) && v1[5].test(9,9,9) &&
+					v1[6].test(10,10,10) && v1.size() == 7);
+
+		v1.sort(testObjectCompareDesc);
+		ass_true(v1[0].test(10,10,10) && v1[1].test(9,9,9) && v1[2].test(4,4,4) &&
+					v1[3].test(2,2,2) && v1[4].test(1,1,1) && v1[5].test(0,0,0) &&
+					v1[6].test(-3,-3,-3) && v1.size() == 7);
+
+		/* Test sorting with duplicates */
+		v1.clear();
+		v1 << TestObject(9) << TestObject(-3,0,0) << TestObject(8) << TestObject(1,0,-4)
+			<< TestObject(9) << TestObject(0) << TestObject(1) << TestObject(25,1,1);
+
+		v1.sort(testObjectCompareAsc);
+		ass_true((v1[0].test(-3,0,0) && v1[1].test(1,0,-4)) ||
+					(v1[0].test(1,0,-4) && v1[1].test(-3,0,0)));
+		ass_true(v1[2].test(0,0,0) && v1[3].test(1,1,1) && v1[4].test(8,8,8));
+		ass_true((v1[5].test(9,9,9) || v1[5].test(25,1,1)) &&
+					(v1[6].test(9,9,9) || v1[6].test(25,1,1)) &&
+					(v1[7].test(9,9,9) || v1[7].test(25,1,1)));
+		ass_eq(v1.size(), 8);
+
+		v1.sort(testObjectCompareDesc);
+		ass_true((v1[0].test(9,9,9) || v1[0].test(25,1,1)) &&
+					(v1[1].test(9,9,9) || v1[1].test(25,1,1)) &&
+					(v1[2].test(9,9,9) || v1[2].test(25,1,1)));
+		ass_true(v1[3].test(8,8,8) && v1[4].test(1,1,1) && v1[5].test(0,0,0));
+		ass_true((v1[6].test(-3,0,0) && v1[7].test(1,0,-4)) ||
+					(v1[6].test(1,0,-4) && v1[7].test(-3,0,0)));
+		ass_eq(v1.size(), 8);
+
+
+		/* Test sorting vector of objects that have < operator*/
+		CxVector<TestObjectWithLessThan> v2;
+		
+		/* Test sorting empty vector */
+		v2.sortDesc();
+		v2.sortAsc();
+
+		/* Test sorting single element vector */
+		v2 << TestObjectWithLessThan(1,2,3);
+		v2.sortAsc();
+		ass_true(v2[0].test(1,2,3));
+
+		v2.sortDesc();
+		ass_true(v2[0].test(1,2,3));
+
+		/* Test sorting vector */
+		v2.clear();
+		v2 << TestObjectWithLessThan(1) << TestObjectWithLessThan(2)
+			<< TestObjectWithLessThan(-3) << TestObjectWithLessThan(9)
+			<< TestObjectWithLessThan(4) << TestObjectWithLessThan(10)
+			<< TestObjectWithLessThan(0);
+
+		v2.sortAsc();
+		ass_true(v2[0].test(-3,-3,-3) && v2[1].test(0,0,0) && v2[2].test(1,1,1) &&
+					v2[3].test(2,2,2) && v2[4].test(4,4,4) && v2[5].test(9,9,9) &&
+					v2[6].test(10,10,10) && v2.size() == 7);
+
+		v2.sortDesc();
+		ass_true(v2[0].test(10,10,10) && v2[1].test(9,9,9) && v2[2].test(4,4,4) &&
+					v2[3].test(2,2,2) && v2[4].test(1,1,1) && v2[5].test(0,0,0) &&
+					v2[6].test(-3,-3,-3) && v2.size() == 7);
+
+		/* Test sorting with duplicates */
+		v2.clear();
+		v2 << TestObjectWithLessThan(9) << TestObjectWithLessThan(-3,0,0)
+			<< TestObjectWithLessThan(8) << TestObjectWithLessThan(1,0,-4)
+			<< TestObjectWithLessThan(9) << TestObjectWithLessThan(0)
+			<< TestObjectWithLessThan(1) << TestObjectWithLessThan(25,1,1);
+
+		v2.sortAsc();
+		ass_true((v2[0].test(-3,0,0) && v2[1].test(1,0,-4)) ||
+					(v2[0].test(1,0,-4) && v2[1].test(-3,0,0)));
+		ass_true(v2[2].test(0,0,0) && v2[3].test(1,1,1) && v2[4].test(8,8,8));
+		ass_true((v2[5].test(9,9,9) || v2[5].test(25,1,1)) &&
+					(v2[6].test(9,9,9) || v2[6].test(25,1,1)) &&
+					(v2[7].test(9,9,9) || v2[7].test(25,1,1)));
+		ass_eq(v2.size(), 8);
+
+		v2.sortDesc();
+		ass_true((v2[0].test(9,9,9) || v2[0].test(25,1,1)) &&
+					(v2[1].test(9,9,9) || v2[1].test(25,1,1)) &&
+					(v2[2].test(9,9,9) || v2[2].test(25,1,1)));
+		ass_true(v2[3].test(8,8,8) && v2[4].test(1,1,1) && v2[5].test(0,0,0));
+		ass_true((v2[6].test(-3,0,0) && v2[7].test(1,0,-4)) ||
+					(v2[6].test(1,0,-4) && v2[7].test(-3,0,0)));
+		ass_eq(v2.size(), 8);
+		
+		FINISH_TEST;
+	}
+
+	void testCxVectorStartsWith() {
+		BEGIN_TEST;
+
+		CxVector<CxI32> v0;
+		/* Test empty vector */
+		ass_false(v0.startsWith(0));
+		ass_false(v0.startsWith(1));
+		ass_false(v0.startsWith(-1));
+
+		/* Test vector with single element */
+		v0 << 0;
+		ass_false(v0.startsWith(-1) || v0.startsWith(1));
+		ass_true(v0.startsWith(0));
+
+		v0.replace(0, 1);
+		ass_false(v0.startsWith(-1) || v0.startsWith(0));
+		ass_true(v0.startsWith(1));
+
+		v0.replace(1, -1);
+		ass_false(v0.startsWith(1) || v0.startsWith(0));
+		ass_true(v0.startsWith(-1));
+
+		v0.clear();
+
+		/* Test with multiple elements */
+		v0 << 0 << 1 << 2 << 3 << -1 << 0 << 1;
+		ass_eq(v0[0], 0);
+		ass_false(v0.startsWith(1) || v0.startsWith(-1));
+		ass_true(v0.startsWith(0));
+
+		v0.removeFirst();
+		ass_false(v0.startsWith(0) || v0.startsWith(-1));
+		ass_true(v0.startsWith(1));
+
+		v0.clear();
+		ass_false(v0.startsWith(1) || v0.startsWith(0) || v0.startsWith(-1));
+
+		/* Test with objects */
+		CxVector<TestObject> v1;
+		ass_false(v1.startsWith(TestObject(0)) || v1.startsWith(TestObject(1,2,3)));
+
+		v1 << TestObject(0) << TestObject(1,2,3) << TestObject(0) << TestObject(2);
+		ass_eq(v1[0], TestObject(0));
+		ass_false(v1.startsWith(TestObject(1,2,3)));
+		ass_true(v1.startsWith(TestObject(0,0,0)));
+
+		v1.removeFirst();
+		ass_true(v1.startsWith(TestObject(1,2,3)));
+		ass_false(v1.startsWith(TestObject(0)));
+
+		v1.clear();
+		ass_false(v1.startsWith(TestObject(1,2,3)) || v1.startsWith(TestObject(0)));
+		
+
+		FINISH_TEST;
+	}
+
+	void testCxVectorSwap() {
+		BEGIN_TEST;
+
+		CxVector<CxI32> v0;
+		CxVector<CxI32> v1;
+
+		/* Test swap two empty vectors */
+		v0.swap(v1);
+
+		/* Test swap empty and non-empty vectors */
+		v0 << 1 << 2 << 3 << 4;
+		ass_true(v0[0] == 1 && v0[1] == 2 && v0[2] == 3 && v0[3] == 4 &&
+					v0.size() == 4 && v0.capacity() == 6);
+		ass_true(v1.size() == 0 && v1.capacity() == 0);
+
+		v0.swap(v1);
+		ass_true(v1[0] == 1 && v1[1] == 2 && v1[2] == 3 && v1[3] == 4 &&
+					v1.size() == 4 && v1.capacity() == 6);
+		ass_true(v0.size() == 0 && v0.capacity() == 0);
+
+		v0.swap(v1);
+		ass_true(v0[0] == 1 && v0[1] == 2 && v0[2] == 3 && v0[3] == 4 &&
+					v0.size() == 4 && v0.capacity() == 6);
+		ass_true(v1.size() == 0 && v0.capacity() == 6);
+
+		/* Test swap two non-empty vectors */
+		v1 << -1 << -2 << -3 << -4 << -5;
+
+		ass_true(v0[0] == 1 && v0[1] == 2 && v0[2] == 3 && v0[3] == 4 &&
+					v0.size() == 4);
+	   ass_true(v1[0] == -1 && v1[1] == -2 && v1[2] == -3 && v1[3] == -4 &&
+					v1[4] == -5 && v1.size() == 5);
+
+		v0.swap(v1);
+		ass_true(v1[0] == 1 && v1[1] == 2 && v1[2] == 3 && v1[3] == 4 &&
+					v1.size() == 4);
+	   ass_true(v0[0] == -1 && v0[1] == -2 && v0[2] == -3 && v0[3] == -4 &&
+					v0[4] == -5 && v0.size() == 5);
+
+		v1.swap(v0);
+		ass_true(v0[0] == 1 && v0[1] == 2 && v0[2] == 3 && v0[3] == 4 &&
+					v0.size() == 4);
+	   ass_true(v1[0] == -1 && v1[1] == -2 && v1[2] == -3 && v1[3] == -4 &&
+					v1[4] == -5 && v1.size() == 5);
+
+		/* Test Swapping vectors with objects */
+		CxVector<TestObject> v2;
+		CxVector<TestObject> v3;
+		
+		/* Test swapping empty vectors */
+		v2.swap(v3);
+		v3.swap(v2);
+
+		/* Test swapping empty vector with non-empty vector */
+		v2 << TestObject(1) << TestObject(2) << TestObject(3) << TestObject(4);
+		ass_true(v2[0].test(1,1,1) && v2[1].test(2,2,2) && v2[2].test(3,3,3) &&
+					v2[3].test(4,4,4) && v2.size() == 4 && v2.capacity() == 6);
+		ass_true(v3.size() == 0 && v3.capacity() == 0);
+
+		v2.swap(v3);
+		ass_true(v3[0].test(1,1,1) && v3[1].test(2,2,2) && v3[2].test(3,3,3) &&
+					v3[3].test(4,4,4) && v3.size() == 4 && v3.capacity() == 6);
+		ass_true(v2.size() == 0 && v2.capacity() == 0);
+
+		v2.swap(v3);
+	   ass_true(v2[0].test(1,1,1) && v2[1].test(2,2,2) && v2[2].test(3,3,3) &&
+					v2[3].test(4,4,4) && v2.size() == 4 && v2.capacity() == 6);
+		ass_true(v3.size() == 0 && v3.capacity() == 0);
+
+		/* Test swapping two non-empty vectors */
+		v3 << TestObject(-1) << TestObject(-2) << TestObject(-3) << TestObject(-4)
+			<< TestObject(-5);
+		ass_true(v2[0].test(1,1,1) && v2[1].test(2,2,2) && v2[2].test(3,3,3) &&
+					v2[3].test(4,4,4) && v2.size() == 4);
+		ass_true(v3[0].test(-1,-1,-1) && v3[1].test(-2,-2,-2) && v3[2].test(-3,-3,-3) &&
+					v3[3].test(-4,-4,-4) && v3[4].test(-5,-5,-5) && v3.size() == 5);
+
+		v2.swap(v3);
+		ass_true(v3[0].test(1,1,1) && v3[1].test(2,2,2) && v3[2].test(3,3,3) &&
+					v3[3].test(4,4,4) && v3.size() == 4);
+		ass_true(v2[0].test(-1,-1,-1) && v2[1].test(-2,-2,-2) && v2[2].test(-3,-3,-3) &&
+					v2[3].test(-4,-4,-4) && v2[4].test(-5,-5,-5) && v2.size() == 5);
+
+		v3.swap(v2);
+		ass_true(v2[0].test(1,1,1) && v2[1].test(2,2,2) && v2[2].test(3,3,3) &&
+					v2[3].test(4,4,4) && v2.size() == 4);
+		ass_true(v3[0].test(-1,-1,-1) && v3[1].test(-2,-2,-2) && v3[2].test(-3,-3,-3) &&
+					v3[3].test(-4,-4,-4) && v3[4].test(-5,-5,-5) && v3.size() == 5);
+		
+		
+		FINISH_TEST;
+	}
+
+	void testCxVectorTakeAt() {
+		BEGIN_TEST;
+
+		CxVector<CxI32> v0;
+
+		/* Test with single element vector */
+		v0 << 0;
+		assert(v0.takeAt(0) == 0);
+		ass_zero(v0.size());
+
+		v0 << -1;
+		assert(v0.takeAt(0) == -1);
+		ass_zero(v0.size());
+
+		/* Test with multiple element vector */
+		v0 << 1 << 2 << 3 << 4 << 5;
+		assert(v0.takeAt(0) == 1);
+		ass_eq(v0.size(), 4);
+
+		assert(v0.takeAt(1) == 3);
+		ass_eq(v0.size(), 3);
+
+		assert(v0.takeAt(2) == 5);
+		ass_eq(v0.size(), 2);
+		
+		assert(v0.takeAt(1) == 4);
+		ass_eq(v0.size(), 1);
+
+		assert(v0.takeAt(0) == 2);
+		ass_zero(v0.size());
+
+
+		/* Test with object vector */
+		CxVector<TestObject> v1;
+
+		v1 << TestObject(0);
+		assert(v1.takeAt(0) == TestObject(0));
+		ass_zero(v1.size());
+
+		v1 << TestObject(1,2,3);
+		assert(v1.takeAt(0) == TestObject(1,2,3));
+		ass_zero(v1.size());
+
+		/* Test with multiple elements */
+		v1 << TestObject(1) << TestObject(1,2,3) << TestObject(3)
+			<< TestObject(4) << TestObject(5,5,1);
+
+		assert(v1.takeAt(0) == TestObject(1,1,1));
+		ass_eq(v1.size(), 4);
+
+		assert(v1.takeAt(1) == TestObject(3));
+		ass_eq(v1.size(), 3);
+
+		assert(v1.takeAt(2) == TestObject(5,5,1));
+		ass_eq(v1.size(), 2);
+
+		assert(v1.takeAt(1) == TestObject(4));
+		ass_eq(v1.size(), 1);
+
+		assert(v1.takeAt(0) == TestObject(1,2,3));
+		ass_zero(v1.size());
+		
+		FINISH_TEST;
+	}
+
+	void testCxVectorTakeFirstLast() {
+		BEGIN_TEST;
+
+		CxVector<CxI32> v0;
+
+		/* Test Take first / last from single element vector */
+		v0 << 0;
+		assert(v0.takeFirst() == 0);
+		ass_zero(v0.size());
+
+		v0 << 0;
+		assert(v0.takeLast() == 0);
+		ass_zero(v0.size());
+
+		v0 << 1;
+		assert(v0.takeFirst() == 1);
+		ass_zero(v0.size());
+
+		v0 << 1;
+		assert(v0.takeLast() == 1);
+		ass_zero(v0.size());
+
+		/* Test take first / last from multiple element vector */
+		v0 << 1 << 2 << 3 << 4 << 5;
+
+		assert(v0.takeFirst() == 1);
+		ass_eq(v0.size(), 4);
+
+		assert(v0.takeLast() == 5);
+		ass_eq(v0.size(), 3);
+
+		assert(v0.takeLast() == 4);
+		ass_eq(v0.size(), 2);
+
+		assert(v0.takeFirst() == 2);
+		ass_eq(v0.size(), 1);
+
+		assert(v0.takeLast() == 3);
+		ass_zero(v0.size());
+
+
+		/* Test with objects */
+		CxVector<TestObject> v1;
+
+		/* Test on single element vectors */
+		v1 << TestObject(0);
+		assert(v1.takeFirst() == TestObject(0));
+		ass_zero(v1.size());
+
+		v1 << TestObject(1,2,3);
+		assert(v1.takeLast() == TestObject(1,2,3));
+		ass_zero(v1.size());
+
+		/* Test on multiple element vectors */
+		v1 << TestObject(1) << TestObject(1,2,3) << TestObject(3)
+			<< TestObject(4) << TestObject(5,5,1);
+
+		assert(v1.takeFirst() == TestObject(1));
+		ass_eq(v1.size(), 4);
+
+		assert(v1.takeLast() == TestObject(5,5,1));
+		ass_eq(v1.size(), 3);
+
+		assert(v1.takeLast() == TestObject(4,4,4));
+		ass_eq(v1.size(), 2);
+
+		assert(v1.takeFirst() == TestObject(1,2,3));
+		ass_eq(v1.size(), 1);
+
+		assert(v1.takeFirst() == TestObject(3));
+		ass_zero(v1.size());
+
+		FINISH_TEST;
+	}
+
+	void testCxVectorISPTR() {
+		BEGIN_TEST;
+
+		CxVector<CxI32> *v0 = new CxVector<CxI32>();
+		ass_eq(v0->retainCount(), 1);
+
+		CxDeleteISPtr(v0);
+		ass_zero(v0);
+
+		v0 = new CxVector<CxI32>();
+		(*v0) << 1 << 2 << 3;
+		ass_eq(v0->size(), 3);
+
+		CxVector<CxI32> *v01 = v0;
+		v0->retain();
+
+		CxDeleteISPtr(v01);
+		ass_zero(v01);
+		ass_eq(v0->retainCount(), 1);
+
+		/* Test the actual ISPointers */
+		CxVector<CxI32>::Ptr v1(v0);
+		ass_eq(v0->retainCount(), 2);
+
+		appendToCxVectorPtr(v1, 2);
+		ass_eq(v0->at(3), 2);
+
+		v1.setNull();
+		ass_eq(v0->retainCount(), 1);
+
+		v1 = v0;
+		ass_eq(v0->retainCount(), 2);
+
+		CxDeleteISPtr(v0);
+		ass_zero(v0);
+
+		v1.setNull();
+
 		FINISH_TEST;
 	}
 	
@@ -1697,5 +2805,16 @@ int main(int argc, char **argv) {
 	cat::testCxVectorRemoveAll();
 	cat::testCxVectorRemoveAt();
 	cat::testCxVectorRemoveFirstLast();
+	cat::testCxVectorReplace();
+	cat::testCxVectorReplaceAll();
+	cat::testCxVectorReplaceAt();
+	cat::testCxVectorReserve();
+	cat::testCxVectorResize();
+	cat::testCxVectorSort();
+	cat::testCxVectorStartsWith();
+	cat::testCxVectorSwap();
+	cat::testCxVectorTakeAt();
+	cat::testCxVectorTakeFirstLast();
+	cat::testCxVectorISPTR();
 	return 0;
 }
