@@ -19,6 +19,7 @@ namespace cat {
 		
 		/**
 		 * @brief Calculates the CRC32 hash of a string and returns the hash as a 32 bit integer.
+		 * @todo Look into using intrinsics for the CRC32-C hashing.
 		 * @param str The string to hash.
 		 * @return A 32 bit unsigned integer represetning the CRC32 hash of the string.
 		 */

@@ -8,9 +8,10 @@
  * @brief Contains the DualQueue class definition.
  *
  * @author Catlin Zilinski
- * @date June 28, 2015
+ * @date Aug 15, 2015
  */
 
+#include "core/Cx.h"
 #include "core/threading/CxSpinlock.h"
 
 namespace cat {
@@ -32,6 +33,13 @@ namespace cat {
 	template<class T>
 	class CxDualQueue {
 	  public:
+		/** @brief An enum of possible messages for the writers to give to the reader */
+		enum Message {
+			kRequestResize = 1 << 0,
+			kRequestClear = 1 << 1,
+			kRequestEraseAll = 1 << 2,
+		};
+
 		/** @brief Create an empty queue */
 		CxDualQueue()
 			: mp_queue(0), mp_read(0), mp_write(0), m_capacity(0),
@@ -44,7 +52,7 @@ namespace cat {
 		CxDualQueue(CxI32 in_capacity)
 			: mp_queue(0), mp_read(0), mp_write(0), m_capacity(0),
 			  m_rStart(0), m_rEnd(0), m_wStart(0), m_wEnd(0) {
-			initWithCapacity(in_capacity);
+			expandQueue(in_capacity);
 		}
 
 		/**
@@ -115,11 +123,17 @@ namespace cat {
 		 */
 		void eraseAllWrite();
 
-		/**
-		 * @brief Initialise the queue with the specified capacity.
-		 * @param in_capacity The capacity to give the queue.
+		/** 
+		 * @brief Expand the queue to a new capacity (locks).
+		 * This method will only change the size of the queue 
+		 * if the new capacity is greater than the old capacity.
+		 * Also works on null queues to create the queue with a
+		 * given initial capacity.
 		 */
-		void initWithCapacity(CxI32 in_capacity);
+		void expandQueue(CxI32 in_capacity);
+
+		/** @return True if there are any messages waiting (no lock) */
+		CX_FORCE_INLINE void hasMessages() const { return m_messages != 0; }
 		
 		/** @return True if both queues are empty. */
 		CX_FORCE_INLINE CxBool isEmpty() const {
@@ -149,6 +163,24 @@ namespace cat {
 			if (m_rStart != m_rEnd) { ++m_rStart; }
 			return item;
 		}
+
+		/**
+		 * @brief Post a message from a reader to the writer.
+		 * This gives the ability to the readers to ask the writer 
+		 * to perform actions that should be done only by the writer 
+		 * (i.e., that affect both the read and write queues and require locking).
+		 * @param in_msg The message to post to the writer.
+		 */
+		CX_FORCE_INLINE void postMessage(Message in_m) {
+			m_lock.lock();
+			m_messages |= in_m;
+			m_lock.unlock();
+		}
+
+		/**
+		 * @brief Method to the writer to use to process any messages.
+		 */
+		void processMessages();
 
 		/**
 		 * @brief Put an item onto the end of the write queue.
@@ -202,10 +234,14 @@ namespace cat {
 		CxI32 m_rEnd; /**< Next free pos in read queue */
 		CxI32 m_wStart; /**< First elem in write queue */
 		CxI32 m_wEnd;  /**< Next free pos in write queue */
+
+		CxI32 m_messages;  /**< Gives the writers ability to request actions */
 	};
 
 	template<class T>
-	CxDualQueue<T>::CxDualQueue(const CxDualQueue<T>& in_src) {
+	CxDualQueue<T>::CxDualQueue(const CxDualQueue<T>& in_src)
+		: mp_queue(0), mp_read(0), mp_write(0), m_capacity(0),
+		  m_rStart(0), m_rEnd(0), m_wStart(0), m_wEnd(0) {
 		*this = in_src;
 	}
 	
@@ -218,21 +254,28 @@ namespace cat {
 
 	template<class T>
 	CxDualQueue<T>& CxDualQueue<T>::operator=(const CxDualQueue<T>& in_src) {
-		initWithCapacity(in_src.capacity());
+		const CxI32 new_cap = in_src.capacity();
+		clear();
+		expandQueue(new_cap);
 
-		const int cap_two = m_capacity*2;
+		m_lock.lock();
+		in_src.m_lock.lock();
+
+		const CxI32 cap_two = new_cap*2;
 		for (CxI32 i = 0; i < cap_two; ++i) { mp_queue[i] = in_src.mp_queue[i]; }
 
-		const int cap = m_capacity;
 		if (in_src.mp_read == in_src.mp_queue) {
-			mp_read = mp_queue;  mp_write = &(mp_queue[cap]);
+			mp_read = mp_queue;  mp_write = &(mp_queue[new_cap]);
 		}
 		else {
-			mp_write = mp_queue;  mp_read = &(mp_queue[cap]);
+			mp_write = mp_queue;  mp_read = &(mp_queue[new_cap]);
 		}
 
 		m_rStart = in_src.m_rStart;  m_rEnd = in_src.m_rEnd;
 		m_wStart = in_src.m_wStart;  m_wEnd = in_src.m_wEnd;
+
+		in_src.m_lock.unlock();
+		m_lock.unlock();
 	}
 
 	template<class T>
@@ -261,19 +304,52 @@ namespace cat {
 	}
 
 	template<class T>
-	void CxDualQueue<T>::initWithCapacity(CxI32 in_capacity) {
-		m_lock.lock();
-		const CxI32 cap_two = in_capacity*2;
-		if (mp_queue != 0) { delete[] mp_queue; mp_queue = 0; }
+	void CxDualQueue<T>::expandQueue(CxI32 in_capacity) {
+		if (in_capacity > m_capacity) {
+			/* First, create the storage for the new queue */
+			T * new_q = new T[in_capacity*2];
 
-		mp_queue = new T[cap_two];
-		mp_write = mp_queue;
-		mp_read = &(mp_queue[in_capacity]);
+			/* Next, copy all the read data */
+			T * new_rq = new_q + in_capacity;
+			for (CxI32 i = m_rStart; i < m_rEnd; ++i) {
+				new_rq[i] = mp_read[i];
+			}
+
+			T * old_queue = mp_queue;
 		
-		m_capacity = in_capacity;
+			/* Next, copy the write queue (locks) */
+			m_lock.lock();
+			for (CxI32 i = 0; i < m_wEnd; ++i) {
+				new_q[i] = mp_write[i];
+			}
+			mp_queue = mp_write = new_q;
+			m_capacity = in_capacity;
+			m_lock.unlock();
+
+			mp_read = new_rq;
+
+			if (old_queue) {
+				delete[] old_queue;
+			}
+		}
+	}
+
+	template<class T>
+	void CxDualQueue<T>::processMessages() {
+		/* First, grab the messages */
+		m_lock.lock();
+		const CxI32 msgs = m_messages;
+		m_messages = 0;
 		m_lock.unlock();
+
+		/* Now, process each message */
+		if ((msgs & kRequestResize) != 0) {
+			expandQueue( (m_capacity > 0) ? m_capacity*2 : 32 );
+		}
+		if ((msgs & kRequestClear) != 0) { clear(); }
+		if ((msgs & kRequestEraseAll) != 0) { eraseAll(); }
 	}
 	
-} // namespace Cat
+} // namespace cat
 
 #endif // CX_CORE_COMMON_CXDUALQUEUE_H

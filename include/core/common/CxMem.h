@@ -40,11 +40,11 @@ namespace cat {
 
 		/**
 		 * @brief Allocate the specified amount of bytes and initialise to zero.
-		 * @param in_num The number of elements to allocate memory for.
 		 * @param in_size The size, in bytes, of each element.
+		 * @param in_num The number of elements to allocate memory for.
 		 * @return A pointer to the allocated memory.
 		 */
-		CX_FORCE_INLINE void * allocZero(CxU32 in_num, CxU32 in_size) {
+		CX_FORCE_INLINE void * allocZero(CxU32 in_size, CxU32 in_num) {
 			return ::calloc(in_num, in_size);
 		}
 
@@ -53,11 +53,11 @@ namespace cat {
 		 * This method will either allocate the memory, if the input pointer 
 		 * is zero, or reallocate the memory if the pointer is not null.
 		 * @param inout_ptr A pointer to store the allocated block of memory.
-		 * @param in_num The number of elements to allocate memory for.
 		 * @param in_size The size, in bytes, of each element.
+		 * @param in_num The number of elements to allocate memory for.
 		 * @return A pointer to the allocated memory.
 		 */
-		CX_FORCE_INLINE void * allocZero(void *in_ptr, CxU32 in_num, CxU32 in_size) {
+		CX_FORCE_INLINE void * allocZero(void *in_ptr, CxU32 in_size, CxU32 in_num) {
 			if (in_ptr == 0) { return ::calloc(in_num, in_size); }
 			else {
 				void *result = ::realloc(in_ptr, in_num*in_size);
@@ -112,7 +112,7 @@ namespace cat {
 		 * @param in_bytes THe number of bytes to search.
 		 * @return A pointer to the first occurance of the value, or null if not found.
 		 */
-		CX_FORCE_INLINE void * find(void *CX_RESTRICT in_ptr, CxUByte in_value, CxU32 in_bytes) {
+		CX_FORCE_INLINE void * find(void *CX_RESTRICT in_ptr, CxU8 in_value, CxU32 in_bytes) {
 			return memchr(in_ptr, in_value, in_bytes);
 		}
 
@@ -120,7 +120,7 @@ namespace cat {
 		 * @brief const version of mem::find(...).
 		 * @see mem::find(void*, CxUByte, CxU32).
 		 */
-		CX_FORCE_INLINE const void * find(const void *CX_RESTRICT in_ptr, CxUByte in_value, CxU32 in_bytes) {
+		CX_FORCE_INLINE const void * find(const void *CX_RESTRICT in_ptr, CxU8 in_value, CxU32 in_bytes) {
 			return memchr(in_ptr, in_value, in_bytes);
 		}
 
@@ -194,7 +194,7 @@ namespace cat {
 		 * @param in_bytes The number of bytes to set.
 		 * @return Returns the pointer to the memory, in_ptr.
 		 */
-		CX_FORCE_INLINE void * set(void *CX_RESTRICT inout_ptr, CxI32 in_value, CxU32 in_bytes) {
+		CX_FORCE_INLINE void * set(void *CX_RESTRICT inout_ptr, CxU8 in_value, CxU32 in_bytes) {
 			return memset(inout_ptr, in_value, in_bytes);
 		}
 

@@ -59,15 +59,20 @@ namespace cat {
 	template<typename T>
 	class CxList {
 	  public:
+
+		/** @brief Typdef for the InvasiveStronPtr template for the CxList. */
+		typedef typename CxInvasiveStrongPtr< CxList<T> > Ptr;
+
+		
 		/** @brief Create an empty null list. */
-		inline CxList();
+		CX_FORCE_INLINE CxList();
 
 		/**
 		 * @brief Create a new list with the specified size.
 		 * The values are initialise with the default values.
 		 * @param in_size The initial size of the list.
 		 */
-		inline CxList(CxI32 in_size);
+		CX_FORCE_INLINE CxList(CxI32 in_size);
 
 		/**
 		 * @brief Create a new list with the specified size.
@@ -75,7 +80,7 @@ namespace cat {
 		 * @param in_size The initialise size of the list.
 		 * @param in_value The value to fill the list with.
 		 */
-		inline CxList(CxI32 in_size, const T &in_value);
+		CX_FORCE_INLINE CxList(CxI32 in_size, const T &in_value);
 
 		/**
 		 * @brief Create a new list from the specified array.
@@ -120,9 +125,10 @@ namespace cat {
 		 * @param in_idx The index of the element to access.
 		 * @return A reference to the element.
 		 */
-		inline T & operator[](CxI32 in_idx) {
-			D_CONDERR(in_idx >= m_size, "Accessing List element "
-						 << in_idx << " outside range [0.." << m_size << "]!");
+		CX_FORCE_INLINE T & operator[](CxI32 in_idx) {
+			CXD_IF_ERR(in_idx >= m_size,
+						  "Accessing CxList [%d] outside range [0...%d]",
+						  in_idx, m_size-1);
 			return *(mp_list[in_idx]);
 		}
 
@@ -131,9 +137,10 @@ namespace cat {
 		 * @param in_idx The index of the element ot access.
 		 * @return A constant reference to the element.
 		 */
-		inline const T & operator[](const CxI32 in_idx) const {
-			D_CONDERR(in_idx >= m_size, "Accessing List element "
-						 << in_idx << " outside range [0.." << m_size << "]!");
+		CX_FORCE_INLINE const T & operator[](const CxI32 in_idx) const {
+			CXD_IF_ERR(in_idx >= m_size,
+						  "Accessing CxList [%d] outside range [0...%d]",
+						  in_idx, m_size-1);
 			return *(mp_list[in_idx]);
 		}
 
@@ -151,7 +158,7 @@ namespace cat {
 		 * @param in_vec The list to append to this one.
 		 * @return A reference to this list.
 		 */
-		inline CxList<T> & operator+=(const CxList<T> &in_list) {
+		CX_FORCE_INLINE CxList<T> & operator+=(const CxList<T> &in_list) {
 			append(in_list); return *this;
 		}
 
@@ -162,7 +169,7 @@ namespace cat {
 		 * @param in_value The value to append to the list.
 		 * @return A reference to this list.
 		 */
-		inline CxList<T> & operator+=(const T &in_value) {
+		CX_FORCE_INLINE CxList<T> & operator+=(const T &in_value) {
 			append(in_value); return *this;
 		}
 		
@@ -173,7 +180,7 @@ namespace cat {
 		 * @param in_vec The list to append to this one.
 		 * @return A reference to this list.
 		 */
-		inline CxList<T> & operator<<(const CxList<T> &in_list) {
+		CX_FORCE_INLINE CxList<T> & operator<<(const CxList<T> &in_list) {
 			append(in_list); return *this;
 		}
 
@@ -184,7 +191,7 @@ namespace cat {
 		 * @param in_value The value to append to the list.
 		 * @return A reference to this list.
 		 */
-		inline CxList<T> & operator<<(const T &in_value) {
+		CX_FORCE_INLINE CxList<T> & operator<<(const T &in_value) {
 			append(in_value); return *this;
 		}
 		
@@ -192,8 +199,14 @@ namespace cat {
 		 * @brief Append an element onto the end of the list.
 		 * @param in_elem The element to append to the list.
 		 */
-		inline void append(const T& in_elem);
+		CX_FORCE_INLINE void append(const T& in_elem);
 
+	   /**
+		 * @brief Append all the elements from an array onto this list.
+		 * @param in_src The array to append the elements from.
+		 */
+		void append(const T *in_src, CxI32 in_size);
+		
 		/**
 		 * @brief Append all the elements from another list.
 		 * @param in_src The other list to append the elements from.
@@ -209,17 +222,17 @@ namespace cat {
 		 * @param in_idx The index to get the value at (must be valid).
 		 * @return The value at the specified index.
 		 */
-		inline const T & at(CxI32 in_idx) const;
+		CX_FORCE_INLINE const T & at(CxI32 in_idx) const;
 		
 		/** @return The capacity of the list. */
-		inline CxI32 capacity() const { return m_capacity; }
+		CX_FORCE_INLINE CxI32 capacity() const { return m_capacity; }
 		
 		/**
 		 * @brief Remove all elements from the list and releases the memory.
 		 * This method will NOT result in pointers being deleted in a list of pointers.
 		 * For this behaviour, you must call eraseAll().
 		 */
-		void clear();
+		CX_FORCE_INLINE clear();
 
 		/**
 		 * @brief Releases any unused memory the list has.
@@ -236,7 +249,7 @@ namespace cat {
 		CxBool contains(const T& in_value) const;
 
 		/** @return The number of items in the list */
-		inline CxI32 count() const { return m_size; }
+		CX_FORCE_INLINE CxI32 count() const { return m_size; }
 
 		/**
 		 * @brief Get the number of occurances of a specified value.
@@ -246,11 +259,26 @@ namespace cat {
 		CxI32 count(const T &in_value) const;
 
 		/**
+		 * @brief Deallocate all the memory for the list.
+		 * This method deallocates the memory for the list and resets the 
+		 * size and capacity to 0.
+		 */
+		CX_FORCE_INLINE void dealloc();
+
+		/**
+		 * @brief Deletes pointers and deallocate all the memory for the list.
+		 * This method deallocates the memory for the list and resets the 
+		 * size and capacity to 0.  It will call delete for each non-null element
+		 * (pointer) in the list.
+		 */
+		CX_FORCE_INLINE void deallocPtr();
+
+		/**
 		 * @brief Test for equality with the last element of the list.
 		 * @param in_value The value to test against the last element.
 		 * @return True if the list is not empty and the last element is equal to in_value.
 		 */
-		inline CxBool endsWith(const T &in_value) const {
+		CX_FORCE_INLINE CxBool endsWith(const T &in_value) const {
 			return (m_size > 0 && *(mp_list[m_size - 1]) == in_value);
 		}
 
@@ -261,6 +289,21 @@ namespace cat {
 		 */
 		void eraseAll();
 
+				/**
+		 * @brief Remove and delete the element at the specified index.
+		 * This method assumes that the list contains dynamically allocated 
+		 * pointers, and as such, calls delete on all the elements.
+		 * @param in_idx The index of the element to erase.
+		 */
+		void eraseAt(CxI32 in_idx);
+
+		/** 
+		 * @brief Removes the first element and deletes it.
+		 * This method assumes that the list is storing points to 
+		 * dynamically allocated memory using the 'new' operator.
+		 */
+		void eraseFirst();
+		
 		/**
 		 * @brief Removes the last element from the list and deletes it.
 		 * This method assumes that the list is storing pointers to dynamically allocated 
@@ -278,10 +321,10 @@ namespace cat {
 		void fill(const T &in_value, CxI32 inopt_size = -1);
 
 		/** @return A reference to the first element in the list */
-		inline T & first() { return (*this)[0]; }
+		CX_FORCE_INLINE T & first() { return (*this)[0]; }
 
 		/** @return A constant reference to the first element in the list */
-		inline const T & first() const { return (*this)[0]; }
+		CX_FORCE_INLINE const T & first() const { return (*this)[0]; }
 
 		/**
 		 * @brief Get the index of the first occurance of a value, or -1 if not found.
@@ -312,13 +355,13 @@ namespace cat {
 		void insert(CxI32 in_idx, const T &in_elem, CxI32 in_count);
 
 		/** @return True if the list is empty. */
-		inline CxBool isEmpty() const { return m_size == 0; }
+		CX_FORCE_INLINE CxBool isEmpty() const { return m_size == 0; }
 		
 		/** @return A reference to the last element in the list. */
-		inline T & last() { return (*this)[(m_size - 1)]; }
+		CX_FORCE_INLINE T & last() { return (*this)[(m_size - 1)]; }
 
 		/** @return A constant reference to the last element in the vector. */
-		inline const T& last() const { return (*this)[(m_size - 1)]; }
+		CX_FORCE_INLINE const T& last() const { return (*this)[(m_size - 1)]; }
 
 		/**
 		 * @brief Get the index of the last occurance of a value, or -1 if not found.
@@ -329,13 +372,13 @@ namespace cat {
 		CxI32 lastIndexOf(const T &in_value, CxI32 in_from = -1) const;
 
 		/** @return The current length of the list. */
-		inline CxI32 length() const { return m_size; }
+		CX_FORCE_INLINE CxI32 length() const { return m_size; }
 
 		/**
 		 * @brief Insert a value into the front of the list.
 		 * @param in_value The value to insert into the front of the list.
 		 */
-		inline void prepend(const T &in_value);
+		CX_FORCE_INLINE void prepend(const T &in_value);
 		
 		/**
 		 * @brief Try and remove the specified element from the List.
@@ -365,7 +408,7 @@ namespace cat {
 		CxBool removeAt(CxI32 in_idx);
 
 		/** @brief Remove the first element from the list. */
-		inline void removeFirst();
+		CX_FORCE_INLINE void removeFirst();
 
 		/** @brief Remove the last element from the list. */
 		void removeLast();
@@ -376,7 +419,7 @@ namespace cat {
 		 * @param in_new The value to replace with.
 		 * @return True if a value was found and replaced.
 		 */
-		inline CxBool replace(const T &in_old, const T &in_new);
+		CX_FORCE_INLINE CxBool replace(const T &in_old, const T &in_new);
 
 		/**
 		 * @brief Replace all occurances of a specified value with a new value.
@@ -392,13 +435,13 @@ namespace cat {
 		 * @param in_value The new value to replace with.
 		 * @return True if the value was replaced.
 		 */
-		inline CxBool replaceAt(CxI32 in_idx, const T &in_value);
+		CX_FORCE_INLINE CxBool replaceAt(CxI32 in_idx, const T &in_value);
 
 		/**
 		 * @brief Reserve the specified capacity in the list.
 		 * @param in_capacity The amount of elements to reserve for the list.
 		 */
-		inline void reserve(CxI32 in_capacity);
+		CX_FORCE_INLINE void reserve(CxI32 in_capacity);
 
 		/**
 		 * @brief Resize the list to the specified size.
@@ -427,7 +470,7 @@ namespace cat {
 		void setAll(const T &in_value);
 
 		/** @return The number of elements in the list. */
-		inline CxI32 size() const { return m_size; }
+		CX_FORCE_INLINE CxI32 size() const { return m_size; }
 
 		/**
 		 * @brief Method to sort the list using the given comparator
@@ -437,16 +480,32 @@ namespace cat {
 		 * to the objects, not the actual objects themselves.
 		 * @param in_compare The method to use to compare two elements.
 		 */
-		inline void sort(CxI32 (*in_compare)(const void*, const void*)) {
+		CX_FORCE_INLINE void sort(CxI32 (*in_compare)(const void*, const void*)) {
 			qsort(mp_vec, m_size, sizeof(T), in_compare);
-		}		
+		}
+
+		/**
+		 * @brief Method to sort the list in ascending order.
+		 * The objects just implement the == and < operators.
+		 */
+		CX_FORCE_INLINE void sortAsc() {
+			qsort(mp_vec, m_size, sizeof(T), CxComparePtrAsc<T>);
+		}
+
+		/**
+		 * @brief Method to sort the list in descending order.
+		 * The objects just implement the == and < operators.
+		 */
+		CX_FORCE_INLINE void sortDesc() {
+			qsort(mp_vec, m_size, sizeof(T), CxComparePtrDesc<T>);
+		}
 
 		/**
 		 * @brief Test to see if the list begins with the specified value.
 		 * @param in_value The value to see if the list starts with.
 		 * @return True if the list's first element is in_value.
 		 */
-		inline CxBool startsWith(const T &in_value) const {
+		CX_FORCE_INLINE CxBool startsWith(const T &in_value) const {
 			return (m_size > 0 && *(mp_list[0]) == in_value);
 		}
 
@@ -454,7 +513,7 @@ namespace cat {
 		 * @brief Swaps the contents of two lists.
 		 * @param in_list The other list to swap with.
 		 */
-		inline void swap(CxList<T> &in_list);
+		CX_FORCE_INLINE void swap(CxList<T> &in_list);
 
 		/**
 		 * @brief Removes and returns the given value from the list.
@@ -467,13 +526,13 @@ namespace cat {
 		 * @brief Removes and returns the first element in the list.
 		 * @return A copy of the previously first element in the list.
 		 */
-		inline T takeFirst();
+		CX_FORCE_INLINE T takeFirst();
 		
 		/**
 		 * @brief Removes and returns the last element in the list.
 		 * @return A copy of the previously last element in the list.
 		 */
-		inline T takeLast();
+		CX_FORCE_INLINE T takeLast();
 
 		/**
 		 * @brief Get a copy of the value at the specified index.
@@ -484,7 +543,7 @@ namespace cat {
 		 * @param in_idx The index to get the value at (must be valid).
 		 * @return A copy of the value at the specified index.
 		 */
-		inline T value(CxI32 in_idx) const;
+		CX_FORCE_INLINE T value(CxI32 in_idx) const;
 
 		/**
 		 * @brief Get a copy of the value at the specified index.
@@ -493,14 +552,14 @@ namespace cat {
 		 * @param in_oobValue The value to return for an out-of-bounds index.
 		 * @return A copy of the value at the specified index or in_oobValue.
 		 */
-		inline T value(CxI32 in_idx, const T &in_oobValue) const;
+		CX_FORCE_INLINE T value(CxI32 in_idx, const T &in_oobValue) const;
 
 		CX_ISPTR_METHODS;
 
 	  private:
 		void freeStorage();
 		
-		inline void initialise(CxI32 in_size);
+		CX_FORCE_INLINE void initialise(CxI32 in_size);
 
 		void priv_removeAt(CxI32 in_idx);
 
@@ -520,17 +579,17 @@ namespace cat {
 	};
 
 	template <typename T>
-	inline CxList<T>::CxList()
+	CX_FORCE_INLINE CxList<T>::CxList()
 		: mp_raw(0), mp_list(0), mp_store(0), mp_lastStore(0),
 		  m_capacity(0), m_size(0) { initialise(0); }
 
 	template <typename T>
-	inline CxList<T>::CxList(CxI32 in_size)
+	CX_FORCE_INLINE CxList<T>::CxList(CxI32 in_size)
 		: mp_raw(0), mp_list(0), mp_store(0), mp_lastStore(0),
 		  m_capacity(0), m_size(0) { initialise(in_size); }
 
 	template <typename T>
-	inline CxList<T>::CxList(CxI32 in_size, const T &in_value)
+	CX_FORCE_INLINE CxList<T>::CxList(CxI32 in_size, const T &in_value)
 		: mp_raw(0), mp_list(0), mp_store(0), mp_lastStore(0),
 		  m_capacity(0), m_size(0) {
 		initialise(in_size);
@@ -643,7 +702,7 @@ namespace cat {
 		}
 	}
 	template <typename T>
-	inline const T & CxList<T>::at(CxI32 in_idx) const {
+	CX_FORCE_INLINE const T & CxList<T>::at(CxI32 in_idx) const {
 		if (in_idx >= 0 && in_idx < m_size) {
 			return *(mp_list[in_idx]);
 		}
@@ -655,7 +714,7 @@ namespace cat {
 	}
 
 	template <typename T>
-	inline void CxList<T>::append(const T &in_elem) {
+	CX_FORCE_INLINE void CxList<T>::append(const T &in_elem) {
 		if (m_size == m_capacity) {
 			DMSG("AUTO Resizing CxList from with length "
 				  << m_size << " from " << m_capacity
@@ -864,7 +923,7 @@ namespace cat {
 	}
 	
 	template <typename T>
-	inline void CxList<T>::removeFirst() {
+	CX_FORCE_INLINE void CxList<T>::removeFirst() {
 		if (m_size > 0) {
 			++mp_list; --m_size;
 		}
@@ -886,7 +945,7 @@ namespace cat {
 	}
 
 	template <typename T>
-	inline CxBool CxList<T>::replace(const T &in_old, const T &in_new) {
+	CX_FORCE_INLINE CxBool CxList<T>::replace(const T &in_old, const T &in_new) {
 		CxI32 idx = indexOf(in_old);
 		if (idx != -1) {
 		  	*(mp_list[idx]) = in_new;
@@ -911,7 +970,7 @@ namespace cat {
 	}
 
 	template <typename T>
-	inline CxBool CxList<T>::replaceAt(CxI32 in_idx, const T &in_value) {
+	CX_FORCE_INLINE CxBool CxList<T>::replaceAt(CxI32 in_idx, const T &in_value) {
 		if (in_idx >= 0 && in_idx < m_size) {
 			*(mp_list[in_idx]) = in_value;
 			return true;
@@ -920,7 +979,7 @@ namespace cat {
 	}
 
 	template <typename T>
-	inline void CxList<T>::reserve(CxI32 in_capacity) {
+	CX_FORCE_INLINE void CxList<T>::reserve(CxI32 in_capacity) {
 		/* Only if reserving more than we have */
 		if (in_capacity > m_capacity) { 
 			resizeToCapacity(in_capacity);
@@ -957,7 +1016,7 @@ namespace cat {
 	}
 
 	template <typename T>
-	inline void CxList<T>::swap(CxList<T> &in_vec) {
+	CX_FORCE_INLINE void CxList<T>::swap(CxList<T> &in_vec) {
 		T **tmp_raw = mp_raw;
 		T **tmp_list = mp_list;
 		CxListStore<T> *tmp_store = mp_store;
@@ -996,7 +1055,7 @@ namespace cat {
 	}
 	
 	template <typename T>
-	inline T CxList<T>::takeLast() {
+	CX_FORCE_INLINE T CxList<T>::takeLast() {
 		if (m_size > 0) {
 			T ret = *(mp_list[m_size - 1]);
 			*(mp_list[--m_size]) = m_invalidValue;
@@ -1009,7 +1068,7 @@ namespace cat {
 	}
 
 	template <typename T>
-	inline T CxList<T>::value(CxI32 in_idx) const {
+	CX_FORCE_INLINE T CxList<T>::value(CxI32 in_idx) const {
 		if (in_idx >= 0 && in_idx < m_size) {
 			return *(mp_list[in_idx]);
 		}
@@ -1022,7 +1081,7 @@ namespace cat {
 	}
 
 	template <typename T>
-	inline T CxList<T>::value(CxI32 in_idx, const T &in_oobValue) const {
+	CX_FORCE_INLINE T CxList<T>::value(CxI32 in_idx, const T &in_oobValue) const {
 		if (in_idx >= 0 && in_idx < m_size) {
 			return *(mp_list[in_idx]);
 		}
@@ -1043,7 +1102,7 @@ namespace cat {
 	}
 
 	template <typename T>
-	inline void CxList<T>::initialise(CxI32 in_size) {
+	CX_FORCE_INLINE void CxList<T>::initialise(CxI32 in_size) {
 		CX_ISPTR_INIT;
 		resize(in_size);
 	}

@@ -12,6 +12,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CxVectorTests", "..\CxVecto
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CxPODVectorTests", "..\CxPODVectorTests\CxPODVectorTests.vcxproj", "{E3E19955-C014-4BE2-AA37-30018ACC7F57}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CxMemTests", "..\CxMemTests\CxMemTests.vcxproj", "{1F2CB0A7-1764-4387-A386-0262FF388AA4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CxStrTests", "CxStrTests\CxStrTests.vcxproj", "{9BD79EAA-C57A-40EE-8FE3-25B113046C14}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		clean|Win32 = clean|Win32
@@ -37,6 +41,18 @@ Global
 		{E3E19955-C014-4BE2-AA37-30018ACC7F57}.Debug|Win32.Build.0 = Debug|Win32
 		{E3E19955-C014-4BE2-AA37-30018ACC7F57}.Release|Win32.ActiveCfg = Release|Win32
 		{E3E19955-C014-4BE2-AA37-30018ACC7F57}.Release|Win32.Build.0 = Release|Win32
+		{1F2CB0A7-1764-4387-A386-0262FF388AA4}.clean|Win32.ActiveCfg = Release|Win32
+		{1F2CB0A7-1764-4387-A386-0262FF388AA4}.clean|Win32.Build.0 = Release|Win32
+		{1F2CB0A7-1764-4387-A386-0262FF388AA4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1F2CB0A7-1764-4387-A386-0262FF388AA4}.Debug|Win32.Build.0 = Debug|Win32
+		{1F2CB0A7-1764-4387-A386-0262FF388AA4}.Release|Win32.ActiveCfg = Release|Win32
+		{1F2CB0A7-1764-4387-A386-0262FF388AA4}.Release|Win32.Build.0 = Release|Win32
+		{9BD79EAA-C57A-40EE-8FE3-25B113046C14}.clean|Win32.ActiveCfg = Release|Win32
+		{9BD79EAA-C57A-40EE-8FE3-25B113046C14}.clean|Win32.Build.0 = Release|Win32
+		{9BD79EAA-C57A-40EE-8FE3-25B113046C14}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9BD79EAA-C57A-40EE-8FE3-25B113046C14}.Debug|Win32.Build.0 = Debug|Win32
+		{9BD79EAA-C57A-40EE-8FE3-25B113046C14}.Release|Win32.ActiveCfg = Release|Win32
+		{9BD79EAA-C57A-40EE-8FE3-25B113046C14}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

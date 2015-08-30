@@ -1,4 +1,6 @@
 #include "core/common/CxStr.h"
+#include <stdarg.h>
+#include <stdio.h>
 
 #if defined(CX_32BIT)
 #  define STR_EQ_BITSHIFT 2
@@ -6,24 +8,9 @@
 #elif defined(CX_64BIT)
 #  define STR_EQ_BITSHIFT 3
 #  define STR_EQ_MASK 0x7
+#endif
 
 namespace cat {
-
-	CxChar * str::concat(CxChar *CX_RESTRICT inout_str,
-								const CxChar *CX_RESTRICT in_str,
-								CxI32 in_len) {
-		const int io_str_len = str::len(inout_str);
-		memcpy(inout_str + io_str_len, in_str, sizeof(CxChar)*(in_len+1));
-		return inout_str;
-	}
-
-	CxChar16 * str::concat(CxChar16 *CX_RESTRICT inout_str,
-								const CxChar16 *CX_RESTRICT in_str,
-								CxI32 in_len) {
-		const int io_str_len = str::len(inout_str);
-		memcpy(inout_str + io_str_len, in_str, sizeof(CxChar16)*(in_len+1));
-		return inout_str;
-	}
 	
 	CxBool str::eq(const CxChar *CX_RESTRICT in_str1,
 						const CxChar *CX_RESTRICT in_str2) {
@@ -32,7 +19,7 @@ namespace cat {
 		while (*(in_str1) != 0) {
 			if (*(in_str1++) != *(in_str2++)) { return false; }
 		}
-		return true;
+		return (*in_str2) == 0;
 	}
 
 	CxBool str::eq(const CxChar16 *CX_RESTRICT in_str16,
@@ -42,7 +29,7 @@ namespace cat {
 		while (*(in_str16) != 0) {
 			if (*(in_str16++) != (CxChar16)*(in_str8++)) { return false; }
 		}
-		return true;
+		return (*in_str8) == 0;
 	}
 
 	CxBool str::eq(const CxChar16 *CX_RESTRICT in_str1,
@@ -52,7 +39,7 @@ namespace cat {
 		while (*(in_str1) != 0) {
 			if (*(in_str1++) != *(in_str2++)) { return false; }
 		}
-		return true;
+		return (*in_str2) == 0;
 	}
 
 	CxBool str::eq(const CxChar *CX_RESTRICT in_str1,
@@ -73,4 +60,33 @@ namespace cat {
 		return true;
 	}
 
+	CxBool str::greater(const CxChar16 *CX_RESTRICT in_str1,
+						const CxChar16 *CX_RESTRICT in_str2) {
+		/* Check for null strings */
+		if (in_str1 == 0 || in_str2 == 0) { return in_str1 > in_str2;}
+		while (*(in_str1) != 0) {
+			if (*in_str1 != *in_str2) { return *in_str1 > *in_str2; }
+			++in_str1;  ++in_str2;
+		}
+		return false;
+	}
+
+	CxBool str::less(const CxChar16 *CX_RESTRICT in_str1,
+					const CxChar16 *CX_RESTRICT in_str2) {
+		/* Check for null strings */
+		if (in_str1 == 0 || in_str2 == 0) { return in_str1 < in_str2;}
+		while (*(in_str1) != 0) {
+			if (*in_str1 != *in_str2) { return *in_str1 < *in_str2; }
+			++in_str1;  ++in_str2;
+		}
+		return (*in_str2) != 0;
+	}
+
+#if defined(CX_WINDOWS)
+#  include "windows/CxWindowsStr.cpp"
+#else
+#  include "gnuc/CxGNUCStr.cpp"
+#endif
+	
 } // namespace cat
+

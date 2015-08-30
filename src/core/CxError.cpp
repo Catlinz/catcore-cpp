@@ -4,7 +4,7 @@ namespace cat {
 
 	namespace CxError {
 
-		const char * toString(CxError::Code in_err) {
+		const char * str(CxError::Code in_err) {
 			switch(in_err) {
 			case kNoError: return "No error"; break;
 			case kUnknownError: return "Unknown error"; break;
