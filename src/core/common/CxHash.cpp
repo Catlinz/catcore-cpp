@@ -1,4 +1,4 @@
-#include "core/commom/CxHash.h"
+#include "core/common/CxHash.h"
 
 /*-
  *  COPYRIGHT (C) 1986 Gary S. Brown.  You may use this program, or
@@ -92,7 +92,7 @@ namespace cat {
 			0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 		};
 
-		CxU32 crc32(const I8 *in_str) {
+		CxU32 crc32(const CxChar *in_str) {
 			const CxU8 *p = (CxU8*)in_str;
 			CxU32 crc = (CxU32)~0U;
 			CxI32 size = (CxI32)strlen(in_str);

@@ -143,6 +143,7 @@ namespace cat {
 			m_hash = in_src.m_hash;
 		}
 		else { m_hash = 0; }
+		return *this;
 	}
 
 } // namespace cat

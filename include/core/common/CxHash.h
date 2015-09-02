@@ -23,7 +23,7 @@ namespace cat {
 		 * @param str The string to hash.
 		 * @return A 32 bit unsigned integer represetning the CRC32 hash of the string.
 		 */
-		CxU32 crc32(const I8 *in_str);
+		CxU32 crc32(const CxChar *in_str);
 		
 	} // namespace hash
 	
