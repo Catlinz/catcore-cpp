@@ -18,6 +18,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CxStrTests", "CxStrTests\Cx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CxStrIDTests", "..\CxStrIDTests\CxStrIDTests.vcxproj", "{AC80CA48-9F40-4205-9A84-A7B6555865D4}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CxStrIDGenTests", "..\CxStrIDGenTests\CxStrIDGenTests.vcxproj", "{C19367D5-0DC1-46D7-B6FE-DA96F88385DF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		clean|Win32 = clean|Win32
@@ -61,6 +63,12 @@ Global
 		{AC80CA48-9F40-4205-9A84-A7B6555865D4}.Debug|Win32.Build.0 = Debug|Win32
 		{AC80CA48-9F40-4205-9A84-A7B6555865D4}.Release|Win32.ActiveCfg = Release|Win32
 		{AC80CA48-9F40-4205-9A84-A7B6555865D4}.Release|Win32.Build.0 = Release|Win32
+		{C19367D5-0DC1-46D7-B6FE-DA96F88385DF}.clean|Win32.ActiveCfg = Release|Win32
+		{C19367D5-0DC1-46D7-B6FE-DA96F88385DF}.clean|Win32.Build.0 = Release|Win32
+		{C19367D5-0DC1-46D7-B6FE-DA96F88385DF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C19367D5-0DC1-46D7-B6FE-DA96F88385DF}.Debug|Win32.Build.0 = Debug|Win32
+		{C19367D5-0DC1-46D7-B6FE-DA96F88385DF}.Release|Win32.ActiveCfg = Release|Win32
+		{C19367D5-0DC1-46D7-B6FE-DA96F88385DF}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

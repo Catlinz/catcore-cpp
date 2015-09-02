@@ -11,7 +11,7 @@
  */
 
 #include "core/Cx.h"
-#include "core/CxStrID.h"
+#include "core/common/CxStrID.h"
 
 namespace cat {
 
@@ -27,17 +27,18 @@ namespace cat {
 	 */
 	class CxStrIDGen {
 	  public:
-		static const CxChar s_encodingTable[64];
+		static const CxChar encodingTable[64];
 
 		/** @brief Create an empty, uninitialized generator. */
-		CX_FORCE_INLINE CxStrIDGen() : mp_prefix(0), m_prefixLn(0), m_maxLn(0), m_count(0) {}
+		CX_FORCE_INLINE CxStrIDGen()
+			: mp_prefix(0), m_count(0), m_prefixLn(0), m_maxLn(0) {}
 
 		/**
 		 * @brief Create a generator with the specified prefix.
 		 * @param in_prefix The prefix string for ID generation.
 		 */
 		CX_FORCE_INLINE CxStrIDGen(const CxChar *in_prefix)
-			 : mp_prefix(0), m_prefixLn(0), m_maxLn(0), m_count(0) {
+			: mp_prefix(0), m_count(0), m_prefixLn(0), m_maxLn(0) {
 			initWithPrefix(in_prefix);
 		}
 
@@ -49,9 +50,6 @@ namespace cat {
 
 		/** @brief Overloaded assignment operator, copies prefix string */
 		CxStrIDGen & operator=(const CxStrIDGen &in_src);
-
-		/** @return The current value of the count. */
-		CX_FORCE_INLINE CxI64 count() const { return m_count; }
 
 		/**
 		 * @brief Generate and return a new name.
@@ -65,22 +63,18 @@ namespace cat {
 		 */
 		void initWithPrefix(const CxChar *in_prefix);
 
-		/** @return The max length of the generated string. */
+		/** @return The max length of the generated string (minus null terminator). */
 		CX_FORCE_INLINE CxI32 maxLength() const { return m_maxLn; }
 
 		/** @return The prefix string for generated ID's. */
 		CX_FORCE_INLINE const CxChar * prefix() const { return mp_prefix; }
 
-		/** @return The length of the prefix string. */
-		CX_FORCE_INLINE CxI32 prefixLength() const { return m_prefixLn; }
-		
 	  private:
-		CxU64 m_count;
 		CxChar* mp_prefix;
 		CxI64   m_count;
 		
-		CxI32   m_prefixLength;
-		CxI32   m_maxLength;				
+		CxI32   m_prefixLn;
+		CxI32   m_maxLn;				
 	};
 
 } // namespace cat

@@ -16,7 +16,8 @@ namespace cat {
 		'+', '/'
 	};
 
-	CxStrIDGen::CxStrIDGen(const CxStrIDGen &in_src) {
+	CxStrIDGen::CxStrIDGen(const CxStrIDGen &in_src)
+		: mp_prefix(0), m_count(0), m_prefixLn(0), m_maxLn(0) {
 	   *this = in_src;
 	}
 
@@ -28,10 +29,10 @@ namespace cat {
 
 	CxStrIDGen & CxStrIDGen::operator=(const CxStrIDGen &in_src) {
 		str::free(mp_prefix);
-		mp_prefix = str::copy(src.mp_prefix);		
-		m_prefixLn = src.m_prefixLn;
-		m_maxLn = src.m_maxLn;
-		m_count = src.m_count;
+		mp_prefix = str::copy(in_src.mp_prefix);
+		m_count = in_src.m_count;
+		m_prefixLn = in_src.m_prefixLn;
+		m_maxLn = in_src.m_maxLn;
 		return *this;		
 	}
 

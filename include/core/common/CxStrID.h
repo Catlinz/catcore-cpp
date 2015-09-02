@@ -35,7 +35,7 @@ namespace cat {
 		CX_FORCE_INLINE CxStrID(const CxChar *in_str);
 
 		/** @brief Create a new ID from a string (optionally not copying the string)*/
-		CX_FORCE_INLINE CxStrID(const CxChar *in_str, CxCopy in_copy);
+		CX_FORCE_INLINE CxStrID(CxChar *in_str, CxCopy in_copy);
 
 		/** @brief Makes a copy of the string */
 		CX_FORCE_INLINE CxStrID(const CxStrID &in_src);
@@ -131,7 +131,7 @@ namespace cat {
 		}
 	}
 
-	CX_FORCE_INLINE CxStrID::CxStrID(const CxChar *in_str, CxCopy in_copy)
+	CX_FORCE_INLINE CxStrID::CxStrID(CxChar *in_str, CxCopy in_copy)
 		: mp_str(0), m_hash(0) {
 		if (in_str != 0) {
 			if (in_copy == kCxNoCopy) { mp_str = in_str; }
