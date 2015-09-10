@@ -1,5 +1,5 @@
-#ifndef CAT_CORE_THREADING_PROCESSMANAGER_H
-#define CAT_CORE_THREADING_PROCESSMANAGER_H
+#ifndef CX_CORE_THREADING_CXPROCESSMANAGER_H
+#define CX_CORE_THREADING_CXPROCESSMANAGER_H
 /**
  * @copyright Catlin Zilinksi, 2014.  All rights reserved.
  *
@@ -7,7 +7,7 @@
  * @brief Contains the definition for the ProcessManager class.
  *
  * @author Catlin Zilinski
- * @date Mar 11, 2014
+ * @date July 4, 2015
  */
 
 #include "core/corelib.h"
@@ -15,54 +15,50 @@
 #include "core/threading/processrunner.h"
 #include "core/util/staticmap.h"
 
-namespace Cat {
+namespace cat {
 
 	/**
-	 * @class ProcessManager processmanager.h "core/threading/processmanager.h"
+	 * @class CxProcessManager CxProcessManager.h "core/threading/CxProcessManager.h"
 	 * @brief The Class that is responsible for holding multiple ProcessRunners.
 	 *
-	 * The ProcessManager provides a means of running multiple ProcessRunners 
+	 * The CxProcessManager provides a means of running multiple CxProcessRunners 
 	 * simultaneously.
 	 *
 	 * @since Mar 7, 2014
-	 * @version 1
+	 * @version 2
 	 * @author Catlin Zilinski
 	 */
-	class ProcessManager {
+	class CxProcessManager {
 	  public:		
-		/**
-		 * @brief Initializes an empty ProcessManager with no process runners.
-		 */
-		ProcessManager() { }		
+		/** @brief Initializes an empty CxProcessManager with no process runners. */
+		CxProcessManager() { }		
 
 		/**
 		 * @brief Create a new Process Manager with the specified number of runners.
-		 * @param maxProcessRunners The number of ProcessRunners to run.
+		 * @param in_maxProcessRunners The number of ProcessRunners to run.
 		 */
-		ProcessManager(Size maxProcessRunners);		
+		CxProcessManager(CxI32 in_maxProcessRunners);		
+
+		/** @brief Makes sure to stop all the process runners. */
+		~CxProcessManager();
 
 		/**
-		 * @brief Makes sure to stop all the process runners.
+		 * @brief Create a new ProcessRunner with the specified name.
+		 * @param in_name The name of the process runner.
+		 * @param inopt_queueSize the number of processes that can be run on the runner.
 		 */
-		~ProcessManager();
-
-		/**
-		 * @brief Create a new ProcessRunner.
-		 * @param name The name of the process runner.
-		 * @param queueSize the number of processes that can be run on the runner.
-		 */
-		Boolean createProcessRunner(const Char* name, Size queueSize = 32) {
-			if (!m_runners.contains(crc32(name)) && m_runners.size() != m_runners.capacity()) {
-				m_runners.insert(crc32(name), new ProcessRunner(name, queueSize));
+		CxBool createProcessRunner(const CxChar *in_name, CxI32 inopt_queueSize = 32) {
+			if (!m_runners.contains(hash::crc32(in_name)) && m_runners.size() != m_runners.capacity()) {
+				m_runners.insert(hash::crc32(in_name), new CxProcessRunner(in_name, inopt_queueSize));
 				return true;				
 			}
 			else {
 #if defined (DEBUG)
-				if (m_runners.contains(crc32(name))) {
-					DWARN("Cannot add Process Runner " << name << ", already added!");
+				if (m_runners.contains(hash::crc32(in_name))) {
+					DWARN("Cannot add Process Runner " << in_name << ", already added!");
 				}
 				else {
-					DWARN("Cannot add Process Runner " << name << ", Process Manager full!");
+					DWARN("Cannot add Process Runner " << in_name << ", Process Manager full!");
 				}
 #endif /* DEBUG */
 				return false;
@@ -71,10 +67,10 @@ namespace Cat {
 
 		/**
 		 * @brief Get a pointer to the specified process runner.
-		 * @param id The id of the process runner.
+		 * @param in_id The id of the process runner.
 		 * @return A pointer to the specified process runner.
 		 */
-		inline ProcessRunner* getProcessRunner(OID id) {
+		inline ProcessRunner* getProcessRunner(CxU32 in_id) {
 			return m_runners.at(id);			
 		}		
 
@@ -361,6 +357,6 @@ namespace Cat {
 	
 } // namespace Cat
 
-#endif // CAT_CORE_THREADING_PROCESSMANAGER_H
+#endif // CX_CORE_THREADING_CXPROCESSMANAGER_H
 
 
