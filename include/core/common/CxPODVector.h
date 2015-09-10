@@ -67,6 +67,12 @@ namespace cat {
 		 */
 		CxPODVector(const CxPODVector<T> &in_src);
 
+		/**
+		 * @brief Move constructor, steals the vector's array.
+		 * @param in_src The source vector to move from.
+		 */
+		CxPODVector(CxPODVector<T> &&in_src);
+
 		/** @brief Deletes the contents of the Vector. */
 		~CxPODVector();
 
@@ -76,6 +82,13 @@ namespace cat {
 		 * @return A reference to this Vector.
 		 */
 		CxPODVector<T>& operator=(const CxPODVector<T> &in_src);
+
+		/**
+		 * @brief Overloaded Move-Assignment operator, steals the contents of the src vector.
+		 * @param in_src The CxPODVector to move from.
+		 * @return A reference to this Vector.
+		 */
+		CxPODVector<T>& operator=(CxPODVector<T> &&in_src);
 
 		/**
 		 * @brief Operator to test to vectors to equality.
@@ -324,12 +337,22 @@ namespace cat {
 			mem::copy(mp_vec, in_array, sizeof(T)*in_size);
 		}
 	}
+	
 	template <typename T>
 	CxPODVector<T>::CxPODVector(const CxPODVector<T> &in_src)
 		: CxVector<T>() {
 		*this = in_src;
 	}
 
+	template <typename T>
+	CxPODVector<T>::CxPODVector(CxPODVector<T> &&in_src)
+		: CxVector<T>() {
+	   mp_vec = in_src.mp_vec;
+		m_capacity = in_src.m_capacity;
+		m_size = in_src.m_size;
+		in_src.mp_vec = 0;
+	}
+	
 	template <typename T>
 	CxPODVector<T>::~CxPODVector() { dealloc(); }
 
@@ -348,6 +371,16 @@ namespace cat {
 		else { mp_vec = 0; }
 		
 		mem::free(old_vec);
+		return *this;
+	}
+
+	template <typename T>
+	CxPODVector<T> & CxPODVector<T>::operator=(CxPODVector<T> &&in_src) {
+		mem::free(mp_vec);
+		mp_vec = in_src.mp_vec;
+		m_capacity = in_src.m_capacity;
+		m_size = in_src.m_size;
+		in_src.mp_vec = 0;
 		return *this;
 	}
 

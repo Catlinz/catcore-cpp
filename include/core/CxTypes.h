@@ -141,6 +141,21 @@ namespace cat {
 		CxBool boolean;
 	};
 
+	/** @brief Set the specified value of a CxCoreType. */
+	CX_FORCE_INLINE void CxAssign(CxCoreType &in_t, CxBool in_b) { in_t.boolean = in_b; }
+	CX_FORCE_INLINE void CxAssign(CxCoreType &in_t, CxI8 in_i)   { in_t.i8  = in_i; }
+	CX_FORCE_INLINE void CxAssign(CxCoreType &in_t, CxU8 in_i)   { in_t.u8  = in_i; }
+	CX_FORCE_INLINE void CxAssign(CxCoreType &in_t, CxI16 in_i)  { in_t.i16 = in_i; }
+	CX_FORCE_INLINE void CxAssign(CxCoreType &in_t, CxU16 in_i)  { in_t.u16 = in_i; }
+	CX_FORCE_INLINE void CxAssign(CxCoreType &in_t, CxF32 in_f)  { in_t.f32 = in_f; }
+	CX_FORCE_INLINE void CxAssign(CxCoreType &in_t, CxI32 in_i)  { in_t.i32 = in_i; }
+	CX_FORCE_INLINE void CxAssign(CxCoreType &in_t, CxU32 in_i)  { in_t.u32 = in_i; }
+	CX_FORCE_INLINE void CxAssign(CxCoreType &in_t, void *in_p)  { in_t.ptr = in_p; }
+	CX_FORCE_INLINE void CxAssign(CxCoreType &in_t, CxF64 in_f)  { in_t.f64 = in_f; }
+	CX_FORCE_INLINE void CxAssign(CxCoreType &in_t, CxI64 in_i)  { in_t.i64 = in_i; }
+	CX_FORCE_INLINE void CxAssign(CxCoreType &in_t, CxU64 in_i)  { in_t.u64 = in_i; }
+
+
 	/** @return True if the two values are equal. */
 	CX_FORCE_INLINE CxBool operator==(const CxCoreType &in_v1,
 												 const CxCoreType &in_v2) {

@@ -15,6 +15,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\src\core\common\CxInvasiveStrongPtr.cpp" />
     <ClCompile Include="..\..\..\..\..\src\core\common\CxVector.cpp" />
     <ClCompile Include="..\..\common\CxVector_tests.cpp" />
   </ItemGroup>

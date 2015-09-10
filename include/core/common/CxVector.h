@@ -63,6 +63,12 @@ namespace cat {
 		 */
 		CxVector(const CxVector<T> &in_src);
 
+		/**
+		 * @brief Move constructor, steals the array.
+		 * @param in_src The source vector to move the data from.
+		 */
+		CxVector(CxVector<T> &&in_src);
+
 		/** @brief Deletes the contents of the Vector. */
 		~CxVector();
 
@@ -72,6 +78,13 @@ namespace cat {
 		 * @return A reference to this Vector.
 		 */
 		CxVector<T>& operator=(const CxVector<T> &in_src);
+
+		/**
+		 * @brief Overloaded Move-Assignment operator, steals the src's contents.
+		 * @param in_src The CxVector to move from.
+		 * @return A reference to this Vector.
+		 */
+		CxVector<T>& operator=(CxVector<T> &&in_src);
 
 		/**
 		 * @brief Operator to test to vectors to equality.
@@ -586,11 +599,19 @@ namespace cat {
 			}
 		}
 	}
+	
 	template <typename T>
 	CxVector<T>::CxVector(const CxVector<T> &in_src)
 		: mp_vec(0), m_capacity(0), m_size(0) {
 		CX_ISPTR_INIT;
 		*this = in_src;
+	}
+
+	template <typename T>
+	CxVector<T>::CxVector(CxVector<T> &&in_src)
+		: mp_vec(in_src.mp_vec), m_capacity(in_src.m_capacity), m_size(in_src.m_size) {
+		CX_ISPTR_INIT;
+		in_src.mp_vec = 0;
 	}
 
 	template <typename T>
@@ -614,6 +635,16 @@ namespace cat {
 		else { mp_vec = 0; }
 
 		if (old_vec != 0) { delete[] old_vec; }
+		return *this;
+	}
+
+	template <typename T>
+	CxVector<T> & CxVector<T>::operator=(CxVector<T> &&in_src) {
+	   if (mp_vec != 0) { delete[] mp_vec; }
+		mp_vec = in_src.mp_vec;
+		m_capacity = in_src.m_capacity;
+		m_size = in_src.m_size;
+		in_src.mp_vec = 0;
 		return *this;
 	}
 

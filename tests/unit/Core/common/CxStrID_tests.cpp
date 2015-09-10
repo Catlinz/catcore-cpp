@@ -44,6 +44,14 @@ namespace cat {
 		ass_zero(id2.hash());
 		ass_zero(id2.str());
 		ass_true(id.hash() != id2.hash());
+
+		id = CxStrID("Meow01");
+		id2 = CxStrID("Meow02");
+
+		const CxChar *str2 = id2.str();
+		id = static_cast<CxStrID &&>(id2);
+		ass_zero(id2.str());
+		ass_eq(id.str(), str2);
 		
 		FINISH_TEST;
 	}
@@ -51,8 +59,20 @@ namespace cat {
 	void testCxStrIDComparisons() {
 		BEGIN_TEST;
 
-		CxStrID id0("Meow01");
-		CxStrID id1("Meow02");
+		CxChar *str0;
+		CxChar *str1;
+
+		if (CxStrID::hash("Meow01") < CxStrID::hash("Meow02")) {
+			str0 = str::copy("Meow01");
+			str1 = str::copy("Meow02");
+		}
+		else {
+			str0 = str::copy("Meow02");
+			str1 = str::copy("Meow01");
+		}
+		
+		CxStrID id0(str0);
+		CxStrID id1(str1);
 
 		CxStrID id2 = id0;
 

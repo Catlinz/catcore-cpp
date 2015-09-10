@@ -40,8 +40,17 @@ namespace cat {
 		/** @brief Makes a copy of the string */
 		CX_FORCE_INLINE CxStrID(const CxStrID &in_src);
 
+		/** @brief Move constructor, steals the string. */
+		CX_FORCE_INLINE CxStrID(CxStrID &&in_src);
+
+		/** @brief Destructor... that I soooo totally didn't forget. */
+		CX_FORCE_INLINE ~CxStrID();
+
 		/** @brief Overloaded assignment operator, makes copy of the string */
 		CX_FORCE_INLINE CxStrID & operator=(const CxStrID &in_src);
+
+		/** @brief Overloaded move-assignment operator, steals the string. */
+		CX_FORCE_INLINE CxStrID & operator=(CxStrID &&in_src);
 
 		/** @return True if the two id's are equal */
 		CX_FORCE_INLINE CxBool operator==(const CxStrID &in_other) const {
@@ -65,40 +74,38 @@ namespace cat {
 
 		/**
 		 * @brief Test to see if this ID is less than another ID.
-		 * The test compares the actual strings to see which is less.
+		 * The test compares the string hashes (not the strings).
 		 * @return True if this ID is less than the other ID.
 		 */
 		CX_FORCE_INLINE CxBool operator<(const CxStrID &in_other) const {
-			return str::less(mp_str, in_other.mp_str);
+			return m_hash < in_other.m_hash;
 		}
 		
 		/**
 		 * @brief Test to see if this ID is less than or equal to another ID.
-		 * The test first compares the hashes for equality, then if not 
-		 * equal, compares the strings for less.
+		 * The test compares the string hashes (not the strings).
 		 * @return True if this ID is less than or equal to the other ID.
 		 */
 		CX_FORCE_INLINE CxBool operator<=(const CxStrID &in_other) const {
-			return (m_hash == in_other.m_hash || str::less(mp_str, in_other.mp_str));
+			return (m_hash <= in_other.m_hash);
 		}
 
 		/**
 		 * @brief Test to see if this ID is greater than another ID.
-		 * The test compares the actual strings to see which is greater.
+		 * The test compares the string hashes (not the strings).
 		 * @return True if this ID is greater than the other ID.
 		 */
 		CX_FORCE_INLINE CxBool operator>(const CxStrID &in_other) const {
-			return str::greater(mp_str, in_other.mp_str);
+			return m_hash > in_other.m_hash;
 		}
 
 		/**
 		 * @brief Test to see if this ID is greater than or equal to another ID.
-		 * The test first compares the hashes for equality, then if not 
-		 * equal, compares the strings for greater.
+		 * The test compares the string hashes (not the strings).
 		 * @return True if this ID is greater than or equal to the other ID.
 		 */
 		CX_FORCE_INLINE CxBool operator>=(const CxStrID &in_other) const {
-			return (m_hash == in_other.m_hash || str::greater(mp_str, in_other.mp_str));
+			return (m_hash >= in_other.m_hash);
 		}
 
 		/** @return The hash of the string */
@@ -148,6 +155,14 @@ namespace cat {
 		}
 	}
 
+	CX_FORCE_INLINE CxStrID::CxStrID(CxStrID &&in_src)
+		: mp_str(in_src.mp_str), m_hash(in_src.m_hash) { in_src.mp_str = 0; }
+
+	CX_FORCE_INLINE CxStrID::~CxStrID() {
+		str::free(mp_str);
+		m_hash = 0;
+	}
+
 	CX_FORCE_INLINE CxStrID & CxStrID::operator=(const CxStrID &in_src) {
 		str::free(mp_str);
 		if (in_src.mp_str != 0) {
@@ -155,6 +170,14 @@ namespace cat {
 			m_hash = in_src.m_hash;
 		}
 		else { m_hash = 0; }
+		return *this;
+	}
+
+	CX_FORCE_INLINE CxStrID & CxStrID::operator=(CxStrID &&in_src) {
+		str::free(mp_str);
+		mp_str = in_src.mp_str;
+		m_hash = in_src.m_hash;
+		in_src.mp_str = 0;
 		return *this;
 	}
 

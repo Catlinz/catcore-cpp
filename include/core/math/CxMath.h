@@ -147,7 +147,7 @@ namespace cat {
 	 * @param in_x The number to get the log base 2 of.
 	 * @return The integer value of the log base 2 of x.
 	 */
-	CX_FORCE_INLINE I32 log2i(CxF32 in_x) {
+	CX_FORCE_INLINE CxI32 CxLog2i(CxF32 in_x) {
 		CxI32 y = 0;
 		while (x > 1) { x /= 2; y++; }
 		return y;
@@ -160,6 +160,9 @@ namespace cat {
 	/** @return The minimum value of a and b. */
 	template <typename T>
 	CX_FORCE_INLINE T CxMin(T in_a, T in_b) { return (in_a < in_b) ? in_a : in_b; }
+
+	/** @return A prime number >= the given number */
+	CxI32 CxNextPrime(CxI32 in_n);
 
 	/** @return The value of x^y (x raised to the power of y). */
 	CX_FORCE_INLINE CxF32 CxPow(CxF32 in_x, CxF32 in_y) { return ::powf(in_x, in_y); }

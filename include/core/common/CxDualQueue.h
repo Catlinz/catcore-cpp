@@ -61,6 +61,12 @@ namespace cat {
 		 */
 		CxDualQueue(const CxDualQueue<T>& in_src);
 
+		/**
+		 * @brief Move constructor, tries to steal the queue.
+		 * @param in_src The source queue to move data from.
+		 */
+		CxDualQueue(CxDualQueue<T> &&in_src);
+
 		/**  @brief Destroy the data in the queue. */
 		~CxDualQueue();
 
@@ -70,6 +76,13 @@ namespace cat {
 		 * @return A reference to this CxDualQueue.
 		 */
 		CxDualQueue<T>& operator=(const CxDualQueue<T>& in_src);
+
+		/**
+		 * @brief Steals the contents of the source queue.
+		 * @param in_src The CxDualQueue to move data from.
+		 * @return A reference to this CxDualQueue.
+		 */
+		CxDualQueue<T>& operator=(CxDualQueue<T> &&in_src);
 
 		/**  @return The capacity of the CxDualQueue. */
 		inline int capacity() const {
@@ -244,6 +257,14 @@ namespace cat {
 		  m_rStart(0), m_rEnd(0), m_wStart(0), m_wEnd(0) {
 		*this = in_src;
 	}
+
+	template<class T>
+	CxDualQueue<T>::CxDualQueue(CxDualQueue<T> &&in_src)
+		: mp_queue(in_src.mp_queue), mp_read(in_src.mp_read), mp_write(in_src.mp_write),
+		  m_capacity(in_src.m_capacity),
+		  m_rStart(in_src.m_rStart), m_rEnd(in_src.m_rEnd), m_wStart(in_src.m_wStart), m_wEnd(in_src.m_wEnd) {
+		in_src.mp_queue = 0;
+	}
 	
 	template<class T>
 	CxDualQueue<T>::~CxDualQueue() {
@@ -276,6 +297,32 @@ namespace cat {
 
 		in_src.m_lock.unlock();
 		m_lock.unlock();
+
+		return *this;
+	}
+
+	template<class T>
+	CxDualQueue<T>& CxDualQueue<T>::operator=(CxDualQueue<T> &&in_src) {
+		m_lock.lock();
+		in_src.m_lock.lock();
+
+		if (mp_queue) { delete[] mp_queue; }
+		mp_queue = in_src.mp_queue;
+		mp_read = in_src.mp_read;
+		mp_write = in_src.mp_write;
+		m_capacity = in_src.m_capacity;
+		m_rStart = in_src.m_rStart;  m_rEnd = in_src.m_rEnd;
+		m_wStart = in_src.m_wStart;  m_wEnd = in_src.m_wEnd;
+		
+		in_src.mp_queue = 0;
+		in_src.mp_read = in_src.mp_write = 0;
+		in_src.m_rStart = in_src.m_rEnd = 0;
+		in_src.m_wStart = in_src.m_wEnd = 0;
+
+		in_src.m_lock.unlock();
+		m_lock.unlock();
+
+		return *this;
 	}
 
 	template<class T>

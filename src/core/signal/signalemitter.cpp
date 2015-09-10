@@ -3,7 +3,7 @@
 namespace Cat {
 
 	SignalEmitter::~SignalEmitter() {
-		m_signalMap.eraseAll();
+		m_slots.eraseAll();
 	}	
 
 	Boolean SignalEmitter::connect(OID name, const SignalHandler& handler) {
