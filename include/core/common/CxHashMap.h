@@ -13,6 +13,7 @@
 
 #include "core/Cx.h"
 #include "core/common/CxHash.h"
+#include "core/common/CxStr.h"
 
 namespace cat {
 
@@ -22,32 +23,45 @@ namespace cat {
 	  public:
 		Node *next;
 		K key;  V value;
-		CxU32 hash;  CxBool isSet;
+		CxU32 hash;
 		
-		CX_FORCE_INLINE CxHMNode_() : next(0), hash(0), isSet(0) {}
+		CX_FORCE_INLINE CxHMNode_() : next(0), hash(0), m_isSet(0) {}
+		CxHMNode_(CxHMNode<K, V> *in_src);
 		CxHMNode_(const K &in_key, const V &in_value);
 		CxHMNode_(CxHMNode_<K,V> &inout_src, CxBool in_flag);
 		~CxHMNode_();
 		void copy(CxHMNode_<K,V> *in_n);
+		CX_FORCE_INLINE CxBool isSet() const { return m_isSet; }
 		void move(CxHMNode_<K,V> *in_src);
 		void set(const K &in_key, const V &in_value);
-		void set(CxHMNode_<K,V> *in_src);
+		void set(CxHMNode_<K,V> *in_src);  /* Use move semantics, in_src will be deleted after */
+
+	  private:
+		CxBool m_isSet;
 	};
 
 	template <typename K, typename V>
+	CX_FORCE_INLINE CxHMNode_<K,V>::CxHMNode_(CxHMNode_<K,V> *in_src)
+		: next(0), key(in_src->key), value(in_src->value), hash(in_src->hash),
+		  m_isSet(in_src->m_isSet) {
+		next = (in_n->next == 0) ? 0 : new CxHMNode_<K,V>(in_n->next);
+	}
+	
+	template <typename K, typename V>
 	CX_FORCE_INLINE CxHMNode_<K,V>::CxHMNode_(const K &in_key, const V &in_value)
-		: next(0), key(in_key), value(in_value), isSet(true) {
+		: next(0), key(in_key), value(in_value), m_isSet(true) {
 		hash = CxHash(in_key);
 	}
 
 	template <typename K, typename V>
 	CX_FORCE_INLINE CxHMNode_<K,V>::CxHMNode_(CxHMNode_<K,V> &inout_src, CxBool in_flag)
 		: next(0), key(inout_src.key), value(inout_src.value), hash(inout_src.hash),
-		  isSet(inout_src.isSet) {}
+		  m_isSet(inout_src.m_isSet) {}
 
 	template <typename K, typename V>
 	CX_FORCE_INLINE CxHMNode_<K,V>::~CxHMNode_() {
 		if (next != 0) { delete next;  next = 0; }
+		m_isSet = false;
 	}
 
 	template <typename K, typename V>
@@ -55,20 +69,20 @@ namespace cat {
 		key = in_n->key;
 		value = in_n->value;
 		hash = in_n->hash;
-		isSet = in_n->isSet;
+		m_isSet = in_n->m_isSet;
 		next = (in_n->next == 0) ? 0 : new CxHMNode_<K,V>(in_n->next);
 	}
 
 	template <typename K, typename V>
 	CX_FORCE_INLINE void CxHMNode_<K,V>::move(CxHMNode_<K,V> *in_src) {
+		next = in_src->next;
 		key = in_src->key;
 		value = in_src->value;
 		hash = in_src->hash;
-		isSet = in_src->isSet;
-		next = in_src->next;
+		m_isSet = in_src->m_isSet;
 
 		in_src->next = 0;
-		in_src->isSet = false;
+		in_src->m_isSet = false;
 	}
 
 	template <typename K, typename V>
@@ -76,16 +90,92 @@ namespace cat {
 		key = in_key;
 		value = in_value;
 		hash = CxHash(in_key);
-		isSet = true;
+		m_isSet = true;
 	}
 
 	template <typename K, typename V>
 	CX_FORCE_INLINE void CxHMNode_<K,V>::set(CxHMNode_<K,V> *in_src) {
+		next = 0;
 		key = in_src->key;
 		value = in_src->value;
 		hash = in_src->hash;
-		isSet = in_src->isSet;
+		m_isSet = in_src->m_isSet;
+
+	}
+
+	/* ############## HM NODE SPECIIALIZATION FOR STRING KEYS ######################### */
+
+	template <typename V>
+	class CxHMNode_<CxChar *, V> {
+	  public:
+		Node *next;
+		CxChar *key;  V value;
+		CxU32 hash;
+		
+		CX_FORCE_INLINE CxHMNode_() : next(0), key(0), hash(0) {}
+		CxHMNode_(CxHMNode_<CxChar *, V> *in_src);
+		CxHMNode_(const CxChar *in_key, const V &in_value);
+		CxHMNode_(CxHMNode_<CxChar *,V> &inout_src, CxBool in_flag);
+		~CxHMNode_();
+		void copy(CxHMNode_<CxChar *,V> *in_n);
+		CX_FORCE_INLINE CxBool isSet() const { return key != 0; }
+		void move(CxHMNode_<K,V> *in_src);
+		void set(const CxChar *in_key, const V &in_value);
+		void set(CxHMNode_<K,V> *in_src);
+	};
+
+	template <typename V>
+	CX_FORCE_INLINE CxHMNode_<CxChar *,V>::CxHMNode_(CxHMNode_<CxChar *, V> *in_src)
+		: next(0), key(0), value(in_src->value), hash(in_src->hash){
+		key = str::copy(in_n->key);
+		next = (in_n->next == 0) ? 0 : new CxHMNode_<CxChar *,V>(in_n->next);
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE CxHMNode_<CxChar *,V>::CxHMNode_(const CxChar *in_key, const V &in_value)
+		: next(0), key(in_key), value(in_value) {
+		hash = CxHash(in_key);
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE CxHMNode_<CxChar *,V>::CxHMNode_(CxHMNode_<CxChar *,V> &inout_src, CxBool in_flag)
+		: next(0), key(inout_src.key), value(inout_src.value), hash(inout_src.hash) {}
+
+	template <typename V> CX_FORCE_INLINE CxHMNode_<CxChar *,V>::~CxHMNode_() {
+		if (next != 0) { delete next;  next = 0; }  str::free(key);
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE void CxHMNode_<CxChar *,V>::copy(CxHMNode_<CxChar *,V> *in_n) {
+		key = str::copy(in_n->key);
+		value = in_n->value;
+		hash = in_n->hash;
+		next = (in_n->next == 0) ? 0 : new CxHMNode_<CxChar *,V>(in_n->next);
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE void CxHMNode_<CxChar *,V>::move(CxHMNode_<K,V> *in_src) {
+		next = in_src->next;
+		key = in_src->key;  value = in_src->value;
+		hash = in_src->hash;
+
+		in_src->next = 0;  in_src->key = 0;
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE void CxHMNode<CxChar *,V>::set(const CxChar *in_key, const V &in_value) {
+		key = in_key;
+		value = in_value;
+		hash = CxHash(in_key);
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE void CxHMNode_<CxChar *,V>::set(CxHMNode_<CxChar *,V> *in_src) {
 		next = 0;
+		key = in_src->key;  value = in_src->value;
+		hash = in_src->hash;
+
+		in_src->key = 0;
 	}
 
 	/** @brief Internal class for managing the HashMap data. */
@@ -93,20 +183,20 @@ namespace cat {
 	class CxHMData_ {
 	  public:
 
-		class ConstItr {
+		class Itr {
 		  public:
-			CX_FORCE_INLINE ConstItr() : mp_node(0), mp_map(0), m_mapIdx(0) {}
-			CX_FORCE_INLINE ConstItr(CxHMNode_<K,V> *in_node, CxHMNode_<K,V> *in_map, CxI32 in_idx)
+			CX_FORCE_INLINE Itr() : mp_node(0), mp_map(0), m_mapIdx(0) {}
+			CX_FORCE_INLINE Itr(CxHMNode_<K,V> *in_node, CxHMNode_<K,V> *in_map, CxI32 in_idx)
 				: mp_node(in_node), mp_map(in_map), m_mapIdx(in_idx) {}
 
-			CX_FORCE_INLINE ConstItr(const ConstItr &in_src)
+			CX_FORCE_INLINE Itr(const Itr &in_src)
 				: mp_node(in_src.mp_node), mp_map(in_src.mp_map), m_mapIdx(in_src.m_mapIdx) {}
 
 			/** @return True if the two iterators are equal */
-			CX_FORCE_INLINE CxBool operator==(const ConstItr &in_itr) const { return mp_node == in_itr.mp_node; }
+			CX_FORCE_INLINE CxBool operator==(const Itr &in_itr) const { return mp_node == in_itr.mp_node; }
 
 			/** @return True if the two iterators are NOT equal */
-			CX_FORCE_INLINE CxBool operator!=(const ConstItr &in_itr) const { return mp_node != in_itr.mp_node; }
+			CX_FORCE_INLINE CxBool operator!=(const Itr &in_itr) const { return mp_node != in_itr.mp_node; }
 
 			/** @return A const pointer to the value for the map entry */
 			CX_FORCE_INLINE const V * operator->() const { return &(mp_node->value); }
@@ -120,22 +210,22 @@ namespace cat {
 			CX_FORCE_INLINE const V & value() const { return mp_node->value; }
 
 			/** @brief Get an iterator i positions forward (or back if negative). */
-			ConstItr operator+(CxI32 in_i) const;
+			Itr operator+(CxI32 in_i) const;
 			/** @brief Move to next item and returns itself (prefix)*/
-			ConstItr & operator++();
+			Itr & operator++();
 			/** @brief Move to next item and return previous iterator (postfix)*/
-			ConstItr operator++(CxI32);
+			Itr operator++(CxI32);
 			/** @brief Move iterator i positions and return the iterator */
-			ConstItr & operator+=(CxI32 in_i);
+			Itr & operator+=(CxI32 in_i);
 			
 			/** @brief Get an iterator i positions back (or forward if negative). */
-			ConstItr operator-(CxI32 in_i) const;
+			Itr operator-(CxI32 in_i) const;
 			/** @brief Move to next item and returns itself (prefix) */
-			ConstItr & operator--();
+			Itr & operator--();
 			/** @brief Move to next item and return previous iterator (postfix) */
-			ConstItr operator--(CxI32);
+			Itr operator--(CxI32);
 			/** @brief Move iterator i positions and return the iterator */
-			ConstItr & operator-=(CxI32 in_i);
+			Itr & operator-=(CxI32 in_i);
 			
 			
 		  private:
@@ -143,18 +233,6 @@ namespace cat {
 			CxHMNode_<K,V> *mp_map;
 			CxI32 m_mapIdx;
 			CxI32 m_capacity;
-		};
-
-		class Itr {
-		  public:
-			CX_FORCE_INLINE Itr() : mp_node(0), mp_map(0), mp_mapIdx(0) {}
-			CX_FORCE_INLINE Itr(CxHMNode_<K,V> *in_node, CxHMNode_<K,V> *in_map, CxI32 in_idx)
-				: mp_node(in_node), mp_map(in_map), m_idx(in_idx) {}
-			
-		  private:
-			CxHMNode_<K,V> *mp_node;
-			CxHMNOde_<K,V> *mp_map;
-			CxI32 m_mapIdx;
 		};
 		
 		CxHMData_() : mp_map(0), m_capacity(0), m_size(0), m_maxSize(0), m_maxLoad(0) {}
@@ -191,7 +269,7 @@ namespace cat {
 		Itr find(CxU32 in_hash);
 
 		/** @return A constant iterator to the first occurance of the hashed key */
-		ConstItr find(CxU32 in_hash) const;
+		Itr find(CxU32 in_hash) const;
 
 		/** @brief Free the memory used by the map and reset */
 		void free();
@@ -257,7 +335,7 @@ namespace cat {
 		const CxI32 cap = m_capacity;
 		for (CxI32 i = 0; i < cap; ++i) {
 			CxHMNode_<K,V> *n = mp_map + i;
-			if (n->isSet) {
+			if (n->isSet()) {
 				do {
 					if (!in_map.contains(n->hash, n->value)) { return false; }
 					n = n->next;
@@ -276,7 +354,7 @@ namespace cat {
 	CX_FORCE_INLINE CxHMData_<K,V>::Itr CxHMData_<K,V>::begin() {
 		const CxI32 cap = m_capacity;
 		for (CxI32 i = 0; i < cap; ++i) {
-			if (mp_map[i]->isSet) { return Itr(mp_map + i, mp_map, i); }
+			if (mp_map[i]->isSet()) { return Itr(mp_map + i, mp_map, i); }
 		}
 		return end();
 	}
@@ -293,7 +371,7 @@ namespace cat {
 		CxHMNode_<K,V> default_node;
 		for (CxI32 i = 0; i < cap; ++i) {
 			CxHMNode_<K,V> *n = mp_map + i;
-			if (n->isSet) {
+			if (n->isSet()) {
 				if (n->next != 0) { delete n->next; }
 				*n = default_node;
 			}
@@ -304,7 +382,7 @@ namespace cat {
 	CxBool CxHMData_<K,V>::contains(CxU32 in_hash) const {
 		const CxU32 idx = in_hash % m_capacity;
 		CxHMNode_<K,V> *n = mp_map + idx;
-		if (n->isSet) {
+		if (n->isSet()) {
 			if (n->hash == in_hash) { return true; }
 			else {
 				n = n->next;
@@ -321,7 +399,7 @@ namespace cat {
 	CxBool CxHMData_<K,V>::contains(CxU32 in_hash, const V &in_value) const {
 		const CxU32 idx = in_hash % m_capacity;
 		CxHMNode_<K,V> *n = mp_map + idx;
-		if (n->isSet) {
+		if (n->isSet()) {
 			if (n->hash == in_hash && n->value == in_value) { return true; }
 			else {
 				n = n->next;
@@ -343,7 +421,7 @@ namespace cat {
 			mp_map = new CxHMNode_<K,V>[cap];
 			for (CxI32 i = 0; i < cap; ++i) {
 				CxHMNode_<K,V> *n = in_src.mp_map + i;
-				if (n->isSet) { mp_map[i].copy(n); }
+				if (n->isSet()) { mp_map[i].copy(n); }
 			}
 		}
 		m_capacity = cap;
@@ -358,7 +436,7 @@ namespace cat {
 		CxI32 count = 0;
 		CxHMNode_<K,V> *n = mp_map + idx;
 
-		if (n->isSet) {
+		if (n->isSet()) {
 			do {
 				if (n->hash == in_hash) { ++count; }
 				n = n->next;
@@ -372,7 +450,7 @@ namespace cat {
 		const CxU32 idx = in_hash % m_capacity;
 		CxHMNode_<K,V> *n = mp_map + idx;
 
-		if (n->isSet) {
+		if (n->isSet()) {
 			if (n->hash == in_hash) { return Itr(n, mp_map, idx); }
 			else {
 				n = n->next;
@@ -387,16 +465,16 @@ namespace cat {
 	}
 
 	template <typename K, typename V>
-	CxHMData_<K,V>::ConstItr CxHMData_<K,V>::find(CxU32 in_hash) const {
+	CxHMData_<K,V>::Itr CxHMData_<K,V>::find(CxU32 in_hash) const {
 		const CxU32 idx = in_hash % m_capacity;
 		CxHMNode_<K,V> *n = mp_map + idx;
 
-		if (n->isSet) {
-			if (n->hash == in_hash) { return ConstItr(n, mp_map, idx); }
+		if (n->isSet()) {
+			if (n->hash == in_hash) { return Itr(n, mp_map, idx); }
 			else {
 				n = n->next;
 				while (n != 0) {
-					if (n->hash == in_hash) { return ConstItr(n, mp_map, idx); }
+					if (n->hash == in_hash) { return Itr(n, mp_map, idx); }
 					n = n->next;
 				}
 				return end(); /* No matching entries */
@@ -417,7 +495,7 @@ namespace cat {
 	const V & CxHMData_<K,V>::get(CxU32 in_hash, const V &in_default) const {
 		const CxU32 idx = in_hash % m_capacity;
 		CxHMNode_<K,V> *n = mp_map + idx;
-		if (n->isSet) {
+		if (n->isSet()) {
 			if (n->hash == in_hash) { return n->value; }
 			else {
 				n = n->next;
@@ -434,7 +512,7 @@ namespace cat {
 	const CxHMNode_<K,V> * CxHMData_<K,V>::getNodeByHash(CxU32 in_hash) const {
 		const CxU32 idx = in_hash % m_capacity;
 		CxHMNode_<K,V> *n = mp_map + idx;
-		if (n->isSet) {
+		if (n->isSet()) {
 			if (n->hash == in_hash) { return n; }
 			else {
 				n = n->next;
@@ -451,7 +529,7 @@ namespace cat {
 		const CxI32 cap = m_capacity;
 		for (CxI32 i = 0; i < cap; ++i) {
 			CxHMNode_<K,V> *n = mp_map + i;
-			if (n->isSet) {
+			if (n->isSet()) {
 				do {
 					if (n->value == in_value) { return n; }
 					else { n = n->next; }
@@ -478,7 +556,7 @@ namespace cat {
 		
 		const CxI32 idx = in_hash % m_capacity;
 		CxHMNode_<K,V> *n = mp_map + idx;
-		if (!n->isSet) { n->set(in_key, in_value); }
+		if (!n->isSet()) { n->set(in_key, in_value); }
 		else {
 			while (n->next != 0) { n = n->next; }
 			n->next = new CxHMNode_<K,V>(in_key, in_value);
@@ -506,7 +584,7 @@ namespace cat {
 															 CxI32 in_capacity) {
 		const CxU32 idx = inout_n->hash % in_capacity;
 		CxHMNode_<K,V> *n = inout_map + idx;
-		if (!n->isSet) { /* No value in the bucket yet */
+		if (!n->isSet()) { /* No value in the bucket yet */
 		   n->set(inout_n);
 		}
 		else { /* At least one value in the bucket */
@@ -520,7 +598,7 @@ namespace cat {
 		const CxU32 idx = in_hash % m_capacity;
 		CxHMNode_<K,V> *n = mp_map + idx;
 		/* First, check the case of a single possible match */
-		if (n->isSet && n->next == 0) {
+		if (n->isSet() && n->next == 0) {
 			if (n->hash == in_hash) {
 				*n = CxHMNode<K,V>();  --m_size;
 				return 1;
@@ -528,7 +606,7 @@ namespace cat {
 			else { return 0; }
 		}
 		/* Then check for multiple possible matches */
-		else if (n->isSet) {
+		else if (n->isSet()) {
 			/* We ignore the first value for now, and check it at the end */
 			CxI32 count = 0;
 			CxHMNode_<K,V> *first = n, *prev = n;
@@ -585,7 +663,7 @@ namespace cat {
 		/* If get here, have to search for next item */
 		CxI32 idx = in_itr.m_mapIdx + 1;
 		for (CxI32 idx = in_itr.m_mapIdx + 1; idx < m_capacity; ++idx) {
-			if (mp_map[idx]->isSet) { return Itr(mp_map + idx, mp_map, idx); }
+			if (mp_map[idx]->isSet()) { return Itr(mp_map + idx, mp_map, idx); }
 		}
 
 		/* No next item */
@@ -604,7 +682,7 @@ namespace cat {
 				for (CxI32 i = 0; i < p_cap; ++i) {
 					CxHMNode_<K,V> *n = mp_map + i;
 					/* If have a value in the bucket, rehash them all */
-					if (n->isSet) {
+					if (n->isSet()) {
 						do { rehash(n, map, cap);  n = n->next; } while (n != 0);
 					}
 				}
@@ -644,7 +722,7 @@ namespace cat {
 		const CxU32 idx = in_hash % m_capacity;
 		CxHMNode_<K,V> *n = mp_map + idx;
 
-		if (n->isSet) {
+		if (n->isSet()) {
 			/* Check first node first */
 			if (n->hash == in_hash) {
 				V value = n->value;
@@ -675,16 +753,16 @@ namespace cat {
 	}
 
 	template <typename K, typename V>
-	CX_FORCE_INLINE CxHMData_<K,V>::ConstItr CxHMData_<K,V>::ConstItr::operator+(CxI32 in_i) const {
-		ConstItr i(*this);  i += in_i;  return i;
+	CX_FORCE_INLINE CxHMData_<K,V>::Itr CxHMData_<K,V>::Itr::operator+(CxI32 in_i) const {
+		Itr i(*this);  i += in_i;  return i;
 	}
 
 	template <typename K, typename V>
-	CxHMData_<K,V>::ConstItr & CxHMData_<K,V>::ConstItr::operator++() {
+	CxHMData_<K,V>::Itr & CxHMData_<K,V>::Itr::operator++() {
 		if (mp_node->next == 0) {
 			CxI32 idx = m_mapIdx;
 			for (; idx < m_capacity; ++idx) {
-				if (mp_map[idx]->isSet) {
+				if (mp_map[idx]->isSet()) {
 					mp_node = mp_map + idx;  m_mapIdx = idx;  return *this;
 				}
 			}
@@ -696,19 +774,19 @@ namespace cat {
 	}
 
 	template <typename K, typename V>
-	CX_FORCE_INLINE CxHMData_<K,V>::ConstItr CxHMData_<K,V>::ConstItr::operator++(CxI32) {
-		ConstItr i(*this);  ++(*this);  return i;
+	CX_FORCE_INLINE CxHMData_<K,V>::Itr CxHMData_<K,V>::Itr::operator++(CxI32) {
+		Itr i(*this);  ++(*this);  return i;
 	}
 
 	template <typename K, typename V>
-	CxHMData_<K,V>::ConstItr & CxHMData_<K,V>::ConstItr::operator+=(CxI32 in_i) {
+	CxHMData_<K,V>::Itr & CxHMData_<K,V>::Itr::operator+=(CxI32 in_i) {
 		if (in_i >= 0) {
 			CxI32 idx = m_mapIdx;
 			CxHMNode_<K,V> *n = mp_node;
 			while (in_i > 0) {
 				if (n->next == 0) {
 					for (; idx < m_capacity; ++idx) {
-						if (mp_map[idx]->isSet) { n = mp_map + idx; }
+						if (mp_map[idx]->isSet()) { n = mp_map + idx; }
 					}
 					if (idx == m_capacity) { mp_node = 0;  break; } /* Hit end of map */
 				}
@@ -721,18 +799,18 @@ namespace cat {
 	}
 
 	template <typename K, typename V>
-	CX_FORCE_INLINE CxHMData_<K,V>::ConstItr CxHMData_<K,V>::ConstItr::operator-(CxI32 in_i) const {
-		ConstItr i(*this);  i -= in_i;  return i;
+	CX_FORCE_INLINE CxHMData_<K,V>::Itr CxHMData_<K,V>::Itr::operator-(CxI32 in_i) const {
+		Itr i(*this);  i -= in_i;  return i;
 	}
 
 	template <typename K, typename V>
-	CxHMData_<K,V>::ConstItr & CxHMData_<K,V>::ConstItr::operator--() {
+	CxHMData_<K,V>::Itr & CxHMData_<K,V>::Itr::operator--() {
 		CxTMNode_<K,V> *n = mp_node;
 		CxTMNode_<K,V> *root = mp_map + m_mapIdx;
 		if (n == root) { /* Have to go back up the bucket list */
 			CxI32 idx = m_mapIdx - 1;
 			for (; idx >= 0; --idx) {
-				if (mp_map[idx].isSet) {
+				if (mp_map[idx].isSet()) {
 					root = mp_map + idx;
 					while (root->next != 0) { root = root->next; }
 					mp_node = root;  m_mapIdx = idx;  break;
@@ -747,12 +825,12 @@ namespace cat {
 	}
 
 	template <typename K, typename V>
-	CX_FORCE_INLINE CxHMData_<K,V>::ConstItr CxHMData_<K,V>::ConstItr::operator--(CxI32) {
-		ConstItr i(*this);  --(*this);  return i;
+	CX_FORCE_INLINE CxHMData_<K,V>::Itr CxHMData_<K,V>::Itr::operator--(CxI32) {
+		Itr i(*this);  --(*this);  return i;
 	}
 
 	template <typename K, typename V>
-	CxHMData_<K,V>::ConstItr & CxHMData_<K,V>::ConstItr::operator-=(CxI32 in_i) {
+	CxHMData_<K,V>::Itr & CxHMData_<K,V>::Itr::operator-=(CxI32 in_i) {
 		if (in_i <= 0) {
 			for (CxI32 i = 0; i < in_i; ++i) { (*this)--; }
 			return *this;
@@ -851,7 +929,7 @@ namespace cat {
 		Itr find(const K &in_key);
 
 		/** @return An iterator to the first occurance of the given key */
-		ConstItr find(const K &in_key) const;
+		Itr find(const K &in_key) const;
 
 		/** 
 		 * @brief Insert a new key-value pair into the map.
@@ -998,7 +1076,7 @@ namespace cat {
 	}
 
 	template <typename K, typename V>
-	CX_FORCE_INLINE CxHashMap<K,V>::ConstItr CxHashMap<K,V>::find(const K &in_key) const {
+	CX_FORCE_INLINE CxHashMap<K,V>::Itr CxHashMap<K,V>::find(const K &in_key) const {
 		return m_map.find(CxHash(in_key));
 	}
 
@@ -1056,7 +1134,200 @@ namespace cat {
 	class CxHashMap<CxChar *, V> {
 
 	};
+
+
+	/* ############ HASH MAP SPECIIALIZATION FOR STRING KEYS ################## */
+	/**
+	 * Partial specialization of the hash map to be able to better use string keys.
+	 * The specialization makes it so that string constants can be used to index
+	 * the hashmap, and that the keys are copied before set when inserting.  It also
+	 * hash methods that allow indexing through the actual hashes of the string keys.
+	 * @see CxHashMap<K,V> for class details.	 
+	 */
+	template<typename V>
+	class CxHashMap<CxChar *, V> {
+	  public:
+
+		typedef CxHMData_<CxChar *,V>::Itr Itr;
 		
+		CX_FORCE_INLINE CxHashMap() {}
+		CxHashMap(CxI32 in_capacity, CxF32 in_loadFactor = 0.8f);
+		CxHashMap(const CxHashMap<CxChar *, V> &in_src);
+		CxHashMap(CxHashMap<CxChar *, V> &&in_src);
+		~CxHashMap();
+		CxHashMap<CxChar *, V> operator=(const CxHashMap<CxChar *, V> &in_src);
+		CxHashMap<CxChar *, V> operator=(CxHashMap<CxChar *, V> &&in_src);
+		CxBool operator==(const CxHashMap<CxChar *, V> &in_map) const;
+		CxBool operator!=(const CxHashMap<CxChar *, V> &in_map) const;
+		V & operator[](const CxChar *in_key);
+		const V & operator[](const CxChar *in_key) const;
+		CX_FORCE_INLINE const V & operator[](CxU32 in_hash) const;
+		CX_FORCE_INLINE Itr begin() { return m_map.begin(); }
+		CX_FORCE_INLINE CxI32 capacity() const { return m_map.capacity(); }
+		CX_FORCE_INLINE void clear() { mp_map.clear(); }
+		CxBool contains(const CxChar *in_key) const;
+		CX_FORCE_INLINE CxI32 count() const { return m_map.size(); }
+		CxI32 count(const CxChar *in_key) const;
+		CX_FORCE_INLINE const Itr & end() const { m_map.end(); }
+		Itr find(const CxChar *in_key);
+		Itr find(const CxChar *in_key) const;
+		Itr insert(const CxChar *in_key, const V &in_value);
+		CX_FORCE_INLINE CxBool isEmpty() const { return m_map.size() == 0; }
+		const CxChar * key(const V &in_value) const;
+		const CxChar * key(const V &in_value, const CxChar *in_default) const;
+		CxI32 remove(const CxChar *in_key);
+		CX_FORCE_INLINE Itr remove(Itr &in_itr) { return m_map.remove(in_itr); }
+		void reserve(CxI32 in_capacity);
+		CX_FORCE_INLINE CxI32 size() const { return m_map.size(); }
+		void swap(CxHashMap<CxChar *, V> &inout_map);
+		V take(const CxChar *in_key);
+		const V & value(const CxChar *in_key) const;
+		const V & value(CxU32 in_hash) const;
+		const V & value(const CxChar *in_key, const V &in_default) const;
+		const V & value(CxU32 in_hash, const V &in_default) const;
+		
+		
+	  private:
+		CxHMData_ m_map;
+		V m_defaultValue;
+	};
+
+	template <typename V>
+	CxHashMap<CxChar *, V>::CxHashMap(CxI32 in_capacity, CxF32 in_loadFactor) {
+		m_map.initialise(in_capacity, in_loadFactor);
+	}
+
+	template <typename V>
+	CxHashMap<CxChar *, V>::CxHashMap(const CxHashMap<CxChar *, V> &in_src) {
+		m_map.copy(in_src.m_map);
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE CxHashMap<CxChar *, V>::CxHashMap(CxHashMap<CxChar *, V> &&in_src) {
+		m_map.move(static_cast< CxHMData_<CxChar *, V> &&>(in_src.m_map));
+	}
+
+	template <typename V> CxHashMap<CxChar *, V>::~CxHashMap() {}
+
+	template <typename V>
+	CxHashMap<CxChar *, V> & CxHashMap<CxChar *, V>::operator=(const CxHashMap<CxChar *, V> &in_src) {
+		m_map.copy(in_src.m_map);
+	}
+
+	template <typename V>
+	CxHashMap<CxChar *, V> & CxHashMap<CxChar *, V>::operator=(CxHashMap<CxChar *, V> &&in_src) {
+		m_map.move(static_cast< CxHMData_<CxChar *, V> && >(in_src.m_map));
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE CxBool CxHashMap<CxChar *, V>::operator==(const CxHashMap<CxChar *, V> &in_map) const {
+	   return m_map == in_map.m_map;
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE CxBool CxHashMap<CxChar *, V>::operator!=(const CxHashMap<CxChar *, V> &in_map) const {
+	   return m_map != in_map.m_map;
+	}
+
+	template <typename V> V & CxHashMap<CxChar *, V>::operator[](const CxChar *in_key) {
+		const CxU32 hash = CxHash(in_key);
+		CxHMNode_<CxChar *, V> *n = m_map.getNodeByHash(hash);
+		
+		if (n != 0) { return n->value; }
+		else {
+			return m_map->insert(str::copy(in_key), m_defaultValue).mp_node->value;
+		}
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE const V & CxHashMap<CxChar *, V>::operator[](const CxChar *in_key) const {
+	   return m_map.get(CxHash(in_key), m_defaultValue);
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE const V & CxHashMap<CxChar *, V>::operator[](CxU32 in_hash) const {
+		return m_map.get(in_key, m_defaultValue);
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE CxBool CxHashMap<CxChar *, V>::contains(const CxChar *in_key) const {
+		return m_map.contains(CxHash(in_key));
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE CxI32 CxHashMap<CxChar *, V>::count(const CxChar *in_key) const {
+		return m_map.count(CxHash(in_key));
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE CxHashMap<CxChar *, V>::Itr CxHashMap<CxChar *, V>::find(const CxChar *in_key) {
+		return m_map.find(CxHash(in_key));
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE CxHashMap<CxChar *, V>::Itr CxHashMap<CxChar *, V>::find(const CxChar *in_key) const {
+		return m_map.find(CxHash(in_key));
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE CxHashMap<CxChar *, V>::Itr CxHashMap<CxChar *, V>::insert(const CxChar *in_key,
+																										const V &in_value) {
+		return m_map.insert(CxHash(in_key), str::copy(in_key), in_value);
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE const CxChar * CxHashMap<CxChar *, V>::key(const V &in_value) const {
+		CxHMNode_<CxChar *, V> *n = m_map.getNodeByValue(in_value);
+		return (n != 0) ? n->key : 0;
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE const K & CxHashMap<CxChar *, V>::key(const V &in_value,
+																			const CxChar *in_default) const {
+		CxHMNode_<CxChar *, V> *n = m_map.getNodeByValue(in_value);
+		return (n != 0) ? n->key : in_default;
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE CxI32 CxHashMap<CxChar *, V>::remove(const CxChar *in_key) {
+		return m_map.remove(CxHash(in_key));
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE void CxHashMap<CxChar *, V>::reserve(CxI32 in_capacity) {
+		m_map.resize(in_capacity);
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE void CxHashMap<CxChar *, V>::swap(CxHashMap<CxChar *, V> &inout_map) {
+		m_map.swap(inout_map.m_map);
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE V CxHashMap<CxChar *, V>::take(const CxChar *in_key) {
+		return mp_map.take(CxHash(in_key), m_defaultValue);
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE const V & CxHashMap<CxChar *, V>::value(const CxChar *in_key) const {
+	   return m_map.get(CxHash(in_key), m_defaultValue);
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE const V & CxHashMap<CxChar *, V>::value(CxU32 in_hash) const {
+	   return m_map.get(in_hash, m_defaultValue);
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE const V & CxHashMap<CxChar *, V>::value(const CxChar *in_key,
+																			  const V &in_default) const {
+		return m_map.get(CxHash(in_key), in_default);
+	}
+
+	template <typename V>
+	CX_FORCE_INLINE const V & CxHashMap<CxChar *, V>::value(CxU32 in_hash, const V &in_default) const {
+		return m_map.get(in_hash, in_default);
+	}
 
 } // namespace cat
 
