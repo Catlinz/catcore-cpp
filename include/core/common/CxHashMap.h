@@ -8,7 +8,7 @@
  * @brief Contains a dictionary using a hash table.
  *
  * @author Catlin Zilinski
- * @date Sept 5, 2015
+ * @date Sept 16, 2015
  */
 
 #include "core/Cx.h"
