@@ -40,15 +40,12 @@ namespace cat {
 
 		/**
 		 * @brief Connect a signal of this object to the specified handler.
-		 * @param in_signal The hashed name of the signal to attach the slot to.
+		 * @param in_signal The name of the signal to attach the slot to.
 		 * @param in_slot The slot to attach to the Signal.
 		 * @return True if the slot was successfully attached.
 		 */
-		CxBool connect(CxU32 in_signal, const CxSlot &in_slot);
+		CxBool connect(const CxChar * in_signal, const CxSlot &in_slot);
 		
-		CX_FORCE_INLINE CxBool connect(const CxChar *in_signal, const CxSlot &in_slot) {
-			return connect(CxHash(in_signal), in_slot);
-		}		
 		/**
 		 * @brief Connect a signal of this object to the specified handler.
 		 * @param name The hashed name of the signal to attach the handler to.
@@ -56,54 +53,37 @@ namespace cat {
 		 * @param obj The object to call the slot on.
 		 * @return True if the SignalHandler was successfully attached.
 		 */
-		CX_FORCE_INLINE CxBool connect(CxU32 in_signal, CxSlotFunc in_slot, void* in_recv) {
+		CX_FORCE_INLINE CxBool connect(const CxChar * in_signal, CxSlotFunc in_slot, void* in_recv) {
 			return connect(in_signal, CxSlot(in_slot, in_recv));
 		}
 
-		CX_FORCE_INLINE CxBool connect(const CxChar* in_signal, CxSlotFunc in_slot,
-												 void *in_recv) {
-			return connect(CxHash(in_signal), CxSlot(in_slot, in_recv));
-		}	
-
 		/**
 		 * @brief disconnect a signal of this object from the specified handler.
-		 * @param name The hashed name of the signal to detach the handler from.
-		 * @param handler The SignalHandler to detach from the Signal.
+		 * @param in_signal The name of the signal to detach the handler from.
+		 * @param in_slot The SignalHandler to detach from the Signal.
 		 * @return True if the SignalHandler was successfully detached.
 		 */
-		CxBool disconnect(CxU32 in_signal, const CxSlot &in_slot);
-
-		CX_FORCE_INLINE CxBool disconnect(const CxChar* in_signal, const CxSlot &in_slot) {
-			return disconnect(CxHash(in_signal), in_slot);
-		}
-
+		CxBool disconnect(const CxChar *in_signal, const CxSlot &in_slot);
+		
 		/**
 		 * @brief disconnect a signal of this object from the specified handler.
 		 * @see disconnect(const Char*, SignalHandler*)
-		 * @param name The hashed name of the signal to detach the handler from.
-		 * @param func The static slot method on the object to disconnect.
-		 * @param obj The object to disconnect the slot.
+		 * @param in_signal The name of the signal to detach the handler from.
+		 * @param in_slot The static slot method on the object to disconnect.
+		 * @param in_recv The object to disconnect the slot.
 		 * @return True if the SignalHandler was successfully detached.
 		 */
-		CX_FORCE_INLINE CxBool disconnect(CxU32 in_signal, CxSlotFunc in_slot, void *in_recv) {
-			return disconnect(in_signal, CxSlot(in_slot, in_recv));
-		}
-
 		CX_FORCE_INLINE CxBool disconnect(const CxChar *in_signal, CxSlotFunc in_slot,
 													 void *in_recv) {
-			return disconnect(CxHash(in_signal), CxSlot(in_slot, in_recv));
+			return disconnect(in_signal, CxSlot(in_slot, in_recv));
 		}
 
 		/**
 		 * @brief disconnect all signal handlers from the specified signal.
-		 * @param signal The hashed name of the signal to detach the handler from.
+		 * @param in_signal The name of the signal to detach the handler from.
 		 * @return True if there are no handlers attached anymore.
 		 */
-		CxBool disconnectAll(CxU32 in_signal);
-
-		CX_FORCE_INLINE CxBool disconnectAll(const CxChar* in_signal) {
-			return disconnectAll(CxHash(in_signal));
-		}	
+		CxBool disconnectAll(const CxChar *in_signal);
 
 	  protected:
 		/**
@@ -112,6 +92,7 @@ namespace cat {
 		 * @param data The SignalData to send with the signal.
 		 */
 		void emit(CxU32 in_signal, const CxArgs &in_args);
+		
 		CX_FORCE_INLINE void emit(const CxChar *in_signal, const CxArgs &in_args) {
 			emit(CxHash(in_signal), in_args);
 		}

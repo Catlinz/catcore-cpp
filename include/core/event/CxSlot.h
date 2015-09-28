@@ -54,9 +54,15 @@ namespace cat {
 		 * @brief Call the slot with the specified arguments.
 		 * @param in_args The arguments to pass to the slot.
 		 */
-		CX_FORCE_INLINE call(const CxArgs &in_args) {
+		CX_FORCE_INLINE void call(const CxArgs &in_args) const {
 			mp_slot(mp_recv, in_args);
 		}
+
+		/** @return A pointer to the receiving object */
+		CX_FORCE_INLINE void * recv() const { return mp_recv; }
+
+		/** @return A pointer to the slot function */
+		CX_FORCE_INLINE CxSlotFunc slot() const { return mp_slot; }
 
 	  private:
 		CxSlotFunc mp_slot;

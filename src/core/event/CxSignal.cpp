@@ -2,10 +2,10 @@
 
 namespace cat {
 
-	CxSignalEmitter::~CxSignalEmitter() { m_slots.eraseAll(); }
+	CxSignalEmitter::~CxSignalEmitter() { }
 	
 
-	CxBool CxSignalEmitter::connect(CxU32 in_signal, const CxSlot &in_slot) {
+	CxBool CxSignalEmitter::connect(const CxChar * in_signal, const CxSlot &in_slot) {
 		CxPODVector<CxSlot> &slots = m_slots[in_signal];
 		if (!slots.contains(in_slot)) {
 			slots.append(in_slot);
@@ -17,18 +17,18 @@ namespace cat {
 		}
 	}
 
-	CxBool CxSignalEmitter::disconnect(CxU32 in_signal, const CxSlot &in_slot) {
-		return m_slots.value(in_signal).remove(in_slot);
+	CxBool CxSignalEmitter::disconnect(const CxChar * in_signal, const CxSlot &in_slot) {
+		return m_slots[in_signal].remove(in_slot);
 	}
 
-	CxBool CxSignalEmitter::disconnectAll(CxU32 in_signal) {
-		CxPODVector<CxSlot> &slots = m_slots.value(in_signal);
-		if (slots.size() > 0) { slots->clear();  return true; }
+	CxBool CxSignalEmitter::disconnectAll(const CxChar *in_signal) {
+		CxPODVector<CxSlot> &slots = m_slots[in_signal];
+		if (slots.size() > 0) { slots.clear();  return true; }
 		else { return false; }
 	}
 
 	void CxSignalEmitter::emit(CxU32 in_signal, const CxArgs &in_args) {
-		CxPODVector<CxSlot> &slots = m_slots.value(in_signal);
+		const CxPODVector<CxSlot> &slots = m_slots.value(in_signal);
 
 		const CxI32 nm_slots = slots.count();
 		for (CxI32 i = 0; i < nm_slots; ++i) {
