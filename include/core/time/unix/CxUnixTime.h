@@ -16,17 +16,9 @@
  * @date Sept 29, 2015
  */
 
-#include <time.h>
-
-#if !defined (CLOCK_MONOTONIC) && defined(CLOCK_REALTIME)
-#define CLOCK_MONOTONIC CLOCK_REALTIME
-#endif
-
-#if defined (CX_APPLE)
-#  include "../CxAppleAbsTime.h"
-#else  // CX_UNIX
-#  include "CxUnixAbsTime.h"
-#endif // CX_APPLE
+#include "core/Cx.h"
+#include "core/time/internal/CxTimeDefs.h"
+#include "core/time/CxAbsTime.h"
 
 namespace cat {
 
@@ -211,10 +203,10 @@ namespace cat {
 		CX_FORCE_INLINE CxU32 fracNano() const { return m_t.tv_nsec; }
 
 		/** @return The fraction of seconds in seconds (64 bit). */
-		CX_FORCE_INLINE CxF64 fracSec64() const { return (CxF64)m_t.tv_nsec / (CxF64)CX_NANO_PER_SEC; }
+		CX_FORCE_INLINE CxF64 fracSec64() const { return (CxF64)m_t.tv_nsec * CX_SEC_PER_NANO; }
 
 		/** @return The fraction of seconds in seconds (32 bit). */
-		CX_FORCE_INLINE CxF32 fracSec32() const { return (CxF32)m_t.tv_nsec / (CxF32)CX_NANO_PER_SEC; }
+		CX_FORCE_INLINE CxF32 fracSec32() const { return (CxF32)m_t.tv_nsec * CX_SEC_PER_NANO; }
 		
 		/** @return The value of the Time in microseconds. */
 		CX_FORCE_INLINE CxI64 micro() const {
@@ -236,12 +228,12 @@ namespace cat {
 
 		/**  @return The value of the Time in seconds (32bit fp). */
 		CX_FORCE_INLINE CxF32 sec32() const {
-			return ((CxF32)m_t.tv_sec) + ((CxF32)m_t.tv_nsec / (CxF32)CX_NANO_PER_SEC);
+			return ((CxF32)m_t.tv_sec) + ((CxF32)m_t.tv_nsec * CX_SEC_PER_NANO);
 		}
 
 		/** @return The value of the Time in seconds (64bit fp). */
 		CX_FORCE_INLINE CxF64 sec64() const {
-			return ((CxF64)m_t.tv_sec) + ((CxF64)m_t.tv_nsec / (CxF64)CX_NANO_PER_SEC);
+			return ((CxF64)m_t.tv_sec) + ((CxF64)m_t.tv_nsec * CX_SEC_PER_NANO);
 		}
 
 		/** @brief Set the value of the Time in microseconds. */

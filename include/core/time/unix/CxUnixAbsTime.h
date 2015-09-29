@@ -16,6 +16,9 @@
  * @date Sept 29, 2015
  */
 
+#include "core/Cx.h"
+#include "core/time/internal/CxTimeDefs.h"
+
 namespace cat {
 
 	/**
@@ -151,29 +154,37 @@ namespace cat {
 		/** @return The current time in seconds (32bit). */
 		CX_FORCE_INLINE static CxF32 currentSec32() {
 			timespec t;	clock_gettime(CLOCK_MONOTONIC, &t);
-			return ((CxF32)t.tv_sec) + ((CxF32)t.tv_nsec / (CxF32)CX_NANO_PER_SEC);
+			return ((CxF32)t.tv_sec) + ((CxF32)t.tv_nsec * CX_SEC_PER_NANO);
 		}
 
 		/** @return The current time in seconds (64bit). */
 		CX_FORCE_INLINE static CxF64 currentSec64() {
 			timespec t;	clock_gettime(CLOCK_MONOTONIC, &t);
-			return ((CxF64)t.tv_sec) + ((CxF64)t.tv_nsec / (CxF64)CX_NANO_PER_SEC);
+			return ((CxF64)t.tv_sec) + ((CxF64)t.tv_nsec * CX_SEC_PER_NANO);
 		}
 
 		/** @return The fraction of seconds in microseconds. */
-		CX_FORCE_INLINE CxU32 fracMicro() const { return m_t.tv_nsec / CX_NANO_PER_MICRO; }
+		CX_FORCE_INLINE CxU32 fracMicro() const {
+			return m_t.tv_nsec / CX_NANO_PER_MICRO;
+		}
 
 		/** @return The fraction of seconds in milliseconds. */
-		CX_FORCE_INLINE CxU32 fracMilli() const { return m_t.tv_nsec / CX_NANO_PER_MILLI; }
+		CX_FORCE_INLINE CxU32 fracMilli() const {
+			return m_t.tv_nsec / CX_NANO_PER_MILLI;
+		}
 
 		/** @return The fraction of seconds in nanoseconds. */
 		CX_FORCE_INLINE CxU32 fracNano() const { return m_t.tv_nsec; }
 
 		/** @return The fraction of seconds in seconds (64 bit). */
-		CX_FORCE_INLINE CxF64 fracSec64() const { return (CxF64)m_t.tv_nsec / (CxF64)CX_NANO_PER_SEC; }
+		CX_FORCE_INLINE CxF64 fracSec64() const {
+			return (CxF64)m_t.tv_nsec * CX_SEC_PER_NANO;
+		}
 
 		/** @return The fraction of seconds in seconds (32 bit). */
-		CX_FORCE_INLINE CxF32 fracSec32() const { return (CxF32)m_t.tv_nsec / (CxF32)CX_NANO_PER_SEC; }
+		CX_FORCE_INLINE CxF32 fracSec32() const {
+			return (CxF32)m_t.tv_nsec * CX_SEC_PER_NANO;
+		}
 		
 		/** @return The value of the Time in microseconds. */
 		CX_FORCE_INLINE CxU64 micro() const {
@@ -195,12 +206,12 @@ namespace cat {
 
 		/**  @return The value of the Time in seconds (32bit fp). */
 		CX_FORCE_INLINE CxF32 sec32() const {
-			return ((CxF32)m_t.tv_sec) + ((CxF32)m_t.tv_nsec / (CxF32)CX_NANO_PER_SEC);
+			return ((CxF32)m_t.tv_sec) + ((CxF32)m_t.tv_nsec * CX_SEC_PER_NANO);
 		}
 
 		/** @return The value of the Time in seconds (64bit fp). */
 		CX_FORCE_INLINE CxF64 sec64() const {
-			return ((CxF64)m_t.tv_sec) + ((CxF64)m_t.tv_nsec / (CxF64)CX_NANO_PER_SEC);
+			return ((CxF64)m_t.tv_sec) + ((CxF64)m_t.tv_nsec * CX_SEC_PER_NANO);
 		}
 
 		/** @brief Set the value of the Time in microseconds. */

@@ -11,16 +11,10 @@
  */
 #include "core/Cx.h"
 
-#define CX_NANO_PER_SEC 1000000000
-#define CX_NANO_PER_MILLI 1000000
-#define CX_NANO_PER_MICRO 1000
-#define CX_MICRO_PER_SEC 1000000
-#define CX_MICRO_PER_MILLI 1000
-#define CX_MILLI_PER_SEC 1000
-
 #if defined (CX_WINDOWS)
-#include "core/time/windows/CxWindowsTime.h"
-#else //lif defined (CX_APPLE) || defined (CX_UNIX)
-#include "core/time/unix/CxUnixTime.h"
-#endif
+#  include "core/time/windows/CxWindowsTime.h"
+#else //elif defined (CX_APPLE) || defined (CX_UNIX)
+#  include "core/time/unix/CxUnixTime.h"
+#endif // CX_WINDOWS
+
 #endif // CX_CORE_TIME_CXTIME_H
