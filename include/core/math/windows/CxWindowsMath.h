@@ -21,9 +21,9 @@ namespace cat {
 	 * @param in_x The positive integer value to get the log base 2 of.
 	 * @return The integer value of the log base 2 of x.
 	 */
-	CX_FORCE_INLINE I32 log2i(CxI32 in_x) {
-	  CxU32 y = 0;
-	  _BitScanReverse(&y, (CxU32)x);
+	CX_FORCE_INLINE CxI32 log2i(CxI32 in_x) {
+	  unsigned long y = 0;
+	  _BitScanReverse(&y, (unsigned long)in_x);
 	  return (CxI32)y;
 	}
 

@@ -11,8 +11,8 @@
  * @date May 29, 2015
  */
 
-#include <math.h>
 #include "core/Cx.h"
+#include <math.h>
 
 #if defined(CX_WINDOWS)
 #  include "windows/CxWindowsMath.h"
@@ -51,7 +51,7 @@ namespace cat {
 	/** @return The absolute value of the argument. */
 	CX_FORCE_INLINE CxF64 CxAbs(CxF64 in_val) { return ::fabs(in_val); }
 	/** @return The absolute value of the argument. */
-	CX_FORCE_INLINE CxI32 CxAbs(CxI32 in_val) { return ::abs(a); }
+	CX_FORCE_INLINE CxI32 CxAbs(CxI32 in_val) { return ::abs(in_val); }
 
 	/** @return The angle of the cosine value, in radians, between [0, PI]. */
 	CX_FORCE_INLINE CxF32 CxAcos(CxF32 in_cos) { return ::acosf(in_cos); }
@@ -86,7 +86,7 @@ namespace cat {
 	 * @return A reference to the clamped value.
 	 */
 	template <typename T>
-	CX_FORCE_INLINE T& void CxClamp(T &inout_val, T in_min, T in_max) {
+	CX_FORCE_INLINE T& CxClamp(T &inout_val, T in_min, T in_max) {
 		inout_val = CxMin(in_max, CxMax(inout_val, in_min)); return inout_val;
 	}
 
@@ -103,12 +103,12 @@ namespace cat {
 
 
 	/** @return True if a and b are within epsilon of each other (approx. equal) */
-	CX_FORCE_INLINE CxBool CxEq(CxF32 in_a, CxF32 in_b, CxF32 in_epsilon = CX_REAL_EPSILON) {
+	CX_FORCE_INLINE CxBool CxEq(CxF32 in_a, CxF32 in_b, CxF32 in_epsilon = CX_F32_EPSILON) {
 		return CxAbs(in_a - in_b) < in_epsilon;
 	}
 
 	/** @return True if a and b are within epsilon of each other (approx. equal) */
-	CX_FORCE_INLINE CxBool CxEq(CxF64 in_a, CxF64 in_b, CxF64 in_epsilon = CX_REAL_EPSILON) {
+	CX_FORCE_INLINE CxBool CxEq(CxF64 in_a, CxF64 in_b, CxF64 in_epsilon = CX_F64_EPSILON) {
 		return CxAbs(in_a - in_b) < in_epsilon;
 	}
 
@@ -123,9 +123,9 @@ namespace cat {
 	CX_FORCE_INLINE CxF64 CxFloor(CxF64 in_val) { return ::floor(in_val); }
 
 	/** @return True if the passed in value is a finite floating point number */
-	CX_FORCE_INLINE CxBool CxIsFinite(CxF32 in_val) { return ::isFinite(in_val); }
+	CX_FORCE_INLINE CxBool CxIsFinite(CxF32 in_val) { return ::isfinite(in_val); }
 	/** @return True if the passed in value is a finite floating point number */
-	CX_FORCE_INLINE CxBool CxIsFinite(CxF64 in_val) { return ::isFinite(in_val); }
+	CX_FORCE_INLINE CxBool CxIsFinite(CxF64 in_val) { return ::isfinite(in_val); }
 
 	/** @return The value of log_b(x) (log base b of x). */
 	CX_FORCE_INLINE CxF32 CxLog(CxF32 in_b, CxF32 in_x) { return ::log(in_x) / ::log(in_b); }
@@ -149,7 +149,7 @@ namespace cat {
 	 */
 	CX_FORCE_INLINE CxI32 CxLog2i(CxF32 in_x) {
 		CxI32 y = 0;
-		while (x > 1) { x /= 2; y++; }
+		while (in_x > 1) { in_x /= 2; y++; }
 		return y;
 	}
 
@@ -177,7 +177,7 @@ namespace cat {
 	/** @return -1.0 if the input is negative, otherwise 1.0. */
 	CX_FORCE_INLINE CxF32 CxSign(CxF32 in_val) { return (in_val < 0.0f) ? -1.0f : 1.0f; }
 	/** @return -1.0 if the input is negative, otherwise 1.0. */
-	CX_FORCE_INLINE CxF32 CxSign(CxF64 in_val) { return (in_val < 0.0) ? -1.0 : 1.0; }
+	CX_FORCE_INLINE CxF64 CxSign(CxF64 in_val) { return (in_val < 0.0) ? -1.0 : 1.0; }
 
 	/** @return -1 if the input is negative, otherwise 1. */
 	CX_FORCE_INLINE CxI32 CxSign(CxI32 in_val) { return (in_val < 0) ? -1 : 1; }

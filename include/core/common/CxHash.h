@@ -26,6 +26,20 @@ namespace cat {
 		CxU32 crc32(const CxChar *in_str);
 		
 	} // namespace hash
+
+	/**
+	 * @brief Method to convert a string to a hash.
+	 * @param in_str The string to hash.
+	 * @return The crc32 hash of the string.
+	 */
+	CX_FORCE_INLINE CxU32 CxHash(const CxChar *in_str) {
+		return hash::crc32(in_str);
+	}
+
+	/** @brief Methods to hash integer values.  Just converst to CxU32 */
+	CX_FORCE_INLINE CxU32 CxHash(CxI32 in_val) { return (CxU32)in_val; }
+	CX_FORCE_INLINE CxU32 CxHash(CxU32 in_val) { return in_val; }
+
 	
 } // namespace cat
 
