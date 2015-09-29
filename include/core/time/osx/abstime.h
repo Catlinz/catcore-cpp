@@ -10,7 +10,10 @@
  * @author Catlin Zilinski
  * @date Mar 7, 2015
  */
-
+#if defined (OS_APPLE)
+#include <mach/mach.h>
+#include <mach/mach_time.h>
+#endif // OS_APPLE
 #include "core/time/timedefs.h"
 
 namespace Cat {
