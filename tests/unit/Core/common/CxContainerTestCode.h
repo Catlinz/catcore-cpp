@@ -768,7 +768,7 @@ namespace cat {
 		ass_true(v1.contains(TestObject(1,2,3)));
 		ass_true(v1.contains(TestObject(-1,2,-3)));
 
-		v1.dealloc();
+		v1.free();
 		ass_false(v1.contains(TestObject(0,0,0)));
 		ass_false(v1.contains(TestObject(1,2,3)));
 		ass_false(v1.contains(TestObject(-1,2,-3)));
@@ -912,9 +912,9 @@ namespace cat {
 		ass_eq(v2_c.last(), TestObject(-3,-3,-3));
 	}
 
-	void testCxContainerClassDealloc() {
+	void testCxContainerClassFree() {
 		CONT_TYPE(CxI32) v0;
-		v0.dealloc();
+		v0.free();
 		ass_zero(v0.capacity());
 		ass_zero(v0.data());
 
@@ -922,7 +922,7 @@ namespace cat {
 		ass_eq(v0.size(), 4);
 		ass_eq(v0.capacity(), 6);
 		ass_neq(v0.data(), 0);
-		v0.dealloc();
+		v0.free();
 		ass_zero(v0.capacity());
 		ass_zero(v0.data());
 
@@ -932,12 +932,12 @@ namespace cat {
 		ass_neq(v0.data(), 0);
 		v0.clear();
 		ass_true(v0.capacity() == 6 && v0.data() != 0);
-		v0.dealloc();
+		v0.free();
 		ass_zero(v0.capacity());
 		ass_zero(v0.data());
 
 		CONT_TYPE(TestObject*) v1;
-		v1.deallocPtr();
+		v1.freePtr();
 		ass_zero(v1.capacity());
 		ass_zero(v1.data());
 
@@ -947,7 +947,7 @@ namespace cat {
 		ass_neq(v1.data(), 0);
 		v1.clear();
 		ass_true(v1.capacity() == 2 && v1.data() != 0);
-		v1.deallocPtr();
+		v1.freePtr();
 		ass_zero(v1.capacity());
 		ass_zero(v1.data());
 	}
@@ -1237,7 +1237,7 @@ namespace cat {
 		ass_true(v2[0] == 1 && v2[1] == -1 && v2[2] == -2 && v2[3] == 2 && v2[4] == 3);
 
 		/* Test multiple insert at beginning */
-		v.dealloc();
+		v.free();
 		v.insert(0, 1, 2);
 		ass_eq(v.size(), 2);
 		ass_true(v[0] == 1 && v[1] == 1);
@@ -1254,7 +1254,7 @@ namespace cat {
 					v[5] == 1 && v[6] == 1);
 
 		/* Test multiple insert at end */
-		v1.dealloc();
+		v1.free();
 		v1.insert(0, 1, 2);
 		ass_eq(v1.size(), 2);
 		ass_true(v1[0] == 1 && v1[1] == 1);
@@ -1271,7 +1271,7 @@ namespace cat {
 					v1[6] == 3);
 
 		/* Test multiple insert at middle */
-	   v2.dealloc();
+	   v2.free();
 		v2 << 1 << 2 << 3;
 		v2.insert(1, -1, 2);
 		ass_eq(v2.size(), 5);
@@ -1970,7 +1970,7 @@ namespace cat {
 		ass_eq(v0.capacity(), 10);
 		ass_zero(v0.size());
 
-		v0.dealloc();
+		v0.free();
 		ass_zero(v0.capacity());
 		ass_zero(v0.size());
 
@@ -1995,7 +1995,7 @@ namespace cat {
 		ass_eq(v1.capacity(), 10);
 		ass_zero(v1.size());
 
-		v1.dealloc();
+		v1.free();
 		ass_zero(v1.capacity());
 		ass_zero(v1.size());
 
@@ -2021,7 +2021,7 @@ namespace cat {
 		ass_eq(v0.capacity(), 10);
 		ass_eq(v0.size(), 10);
 
-		v0.dealloc();
+		v0.free();
 		ass_zero(v0.capacity());
 		ass_zero(v0.size());
 
@@ -2054,7 +2054,7 @@ namespace cat {
 		ass_eq(v1.capacity(), 10);
 		ass_eq(v1.size(), 10);
 
-		v1.dealloc();
+		v1.free();
 		ass_zero(v1.capacity());
 		ass_zero(v1.size());
 

@@ -132,12 +132,12 @@ namespace cat {
 	}
 
 	/**
-	 * @tests dealloc()
-	 * @tests deallocPtr()
+	 * @tests free()
+	 * @tests freePtr()
 	 */
-	void testCxVectorDealloc() {
+	void testCxVectorFree() {
 		BEGIN_TEST;
-		testCxContainerClassDealloc();
+		testCxContainerClassFree();
 		FINISH_TEST;
 	}
 
@@ -344,7 +344,7 @@ int main(int argc, char **argv) {
 	cat::testCxVectorContains();
 	cat::testCxVectorCount();
 	cat::testCxVectorFirstLast();
-	cat::testCxVectorDealloc();
+	cat::testCxVectorFree();
 	cat::testCxVectorEndsWith();
 	cat::testCxVectorErase();
 	cat::testCxVectorFill();
