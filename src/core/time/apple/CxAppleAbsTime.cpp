@@ -9,6 +9,6 @@ namespace cat {
 		mach_timebase_info(&timeBaseInfo);
 		return timeBaseInfo;
 	}
-	mach_timebase_info_data_t AbsTime::sx_timebaseInfo = xInitTimeBaseInfo();
+	mach_timebase_info_data_t CxAbsTime::sx_timebaseInfo = xInitTimeBaseInfo();
 	
 } // namespace cat

@@ -17,6 +17,10 @@
 #  include <mach/mach_time.h>
 #endif // CX_APPLE
 
+#if defined(CX_WINDOWS)
+#  include <Windows.h>
+#endif // CX_WINDOWS
+
 #include <time.h>
 
 #if defined(CX_APPLE) || defined(CX_UNIX)
