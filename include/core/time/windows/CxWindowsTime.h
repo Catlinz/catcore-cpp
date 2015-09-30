@@ -41,8 +41,16 @@ namespace cat {
 		/** @brief Default copy constructor. */
 		CX_FORCE_INLINE CxTime(const CxTime &in_src) : CxAbsTime(in_src) {}
 
+		/** @brief Create from an CxAbsTime */
+		CX_FORCE_INLINE CxTime(const CxAbsTime &in_src) : CxAbsTime(in_src) {}
+
 		/** @brief Default assignment operator. */
 		CX_FORCE_INLINE CxTime& operator=(const CxTime& in_src) {
+			m_t = in_src.m_t;  return *this;
+		}
+
+		/** @brief Assign from CxAbsTime */
+		CX_FORCE_INLINE CxTime& operator=(const CxAbsTime& in_src) {
 			m_t = in_src.m_t;  return *this;
 		}
 		
@@ -51,7 +59,7 @@ namespace cat {
 			return CxAbsTime::operator==(in_t);
 		}
 
-		/**  @return True if the two time vals are NOT equal. */
+		/**  @Return True if the two time vals are NOT equal. */
 		CX_FORCE_INLINE CxBool operator!=(const CxTime& in_t) const {
 		   return CxAbsTime::operator!=(in_t);
 		}

@@ -185,6 +185,26 @@ namespace cat {
 		CX_FORCE_INLINE CxF32 fracSec32() const {
 			return (CxF32)m_t.tv_nsec * CX_SEC_PER_NANO;
 		}
+
+		/** @return A new time value from microseconds */
+		static CX_FORCE_INLINE CxAbsTime fromMicro(CxU64 in_micro) {
+			CxAbsTime t;  t.setMicro(in_micro);  return t;
+		}
+
+		/** @return A new time value from milliseconds */
+		static CX_FORCE_INLINE CxAbsTime fromMilli(CxU64 in_milli) {
+			CxAbsTime t;  t.setMilli(in_milli);  return t;
+		}
+
+		/** @return A new time value from nanoseconds */
+		static CX_FORCE_INLINE CxAbsTime fromMicro(CxU64 in_nano) {
+			CxAbsTime t;  t.setNano(in_nano);  return t;
+		}
+
+		/** @return A new time value from seconds */
+		static CX_FORCE_INLINE CxAbsTime fromSec(CxF64 in_sec) {
+			CxAbsTime t;  t.setSec(in_sec);  return t;
+		}
 		
 		/** @return The value of the Time in microseconds. */
 		CX_FORCE_INLINE CxU64 micro() const {
@@ -215,21 +235,24 @@ namespace cat {
 		}
 
 		/** @brief Set the value of the Time in microseconds. */
-		CX_FORCE_INLINE void setMicro(CxU64 in_micro) {
-			m_t.tv_sec = in_micro / CX_MICRO_PER_SEC;
-			m_t.tv_nsec = (in_micro - (m_t.tv_sec * CX_MICRO_PER_SEC)) * CX_NANO_PER_MICRO;
+		CX_FORCE_INLINE void setMicro(CxI64 in_micro) {
+			const CxI64 sec = in_micro / CX_MICRO_PER_SEC;
+			m_t.tv_sec = sec;
+			m_t.tv_nsec = (in_micro - (sec * CX_MICRO_PER_SEC)) * CX_NANO_PER_MICRO;
 		}
 
 		/** @brief Set the value of the Time in milliseconds. */
-		CX_FORCE_INLINE void setMilli(CxU64 in_milli) {
-			m_t.tv_sec = in_milli / CX_MILLI_PER_SEC;
-			m_t.tv_nsec = (in_milli - (m_t.tv_sec * CX_MILLI_PER_SEC)) * CX_NANO_PER_MILLI;
+		CX_FORCE_INLINE void setMilli(CxI64 in_milli) {
+			const CxI64 sec = in_milli / CX_MILLI_PER_SEC;
+			m_t.tv_sec = sec;
+			m_t.tv_nsec = (in_milli - (sec * CX_MILLI_PER_SEC)) * CX_NANO_PER_MILLI;
 		}
 
 		/** @brief Set the value of the Time in nanoseconds. */
-		CX_FORCE_INLINE void setNano(CxU64 in_nano) {
-			m_t.tv_sec = in_nano / CX_NANO_PER_SEC;
-			m_t.tv_nsec = (in_nano - (m_t.tv_sec * CX_NANO_PER_SEC))
+		CX_FORCE_INLINE void setNano(CxI64 in_nano) {
+			const CxI64 sec = in_nano / CX_NANO_PER_SEC;
+			m_t.tv_sec = sec;
+			m_t.tv_nsec = (in_nano - (sec * CX_NANO_PER_SEC))
 		}
 
 		/** @brief Set the value of the Time in platform dependant units. */
@@ -237,8 +260,9 @@ namespace cat {
 		
 		/** @brief Set the value of the Time in seconds (64bit fp). */
 		CX_FORCE_INLINE void setSec(CxF64 in_seconds) {
-			m_t.tv_sec = (time_t)in_seconds;
-			m_t.tv_nsec = (long)((in_seconds - (CxF64)(m_t.tv_sec)) * CX_NANO_PER_MILLI);
+			const time_t sec = (time_t)in_seconds;
+			m_t.tv_sec = sec;
+			m_t.tv_nsec = (long)((in_seconds - (CxF64)(sec)) * CX_NANO_PER_SEC);
 		}
 
 		/** @brief Set the value of the Time to the current time. */
@@ -246,7 +270,7 @@ namespace cat {
 			clock_gettime(CLOCK_MONOTONIC, &m_t);
 		}
 
-	  private:
+	  protected:
 		timespec m_t;
 	};
 

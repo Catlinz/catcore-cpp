@@ -27,9 +27,9 @@ namespace cat {
 	class CxAbsTime {
 	public:
 		/** @brief Create an empty CxAbsTime */		
-		Cx_FORCE_INLINE CxAbsTime() : m_t(0) {}
+		CX_FORCE_INLINE CxAbsTime() : m_t(0) {}
 
-		/** @brief Create a new CxAbsTime from the specified osx time. */
+		/** @Brief Create a new CxAbsTime from the specified osx time. */
 		CX_FORCE_INLINE CxAbsTime(uint64_t in_time) : m_t(in_time) {}
 
 		/** @brief Default copy constructor */
@@ -225,6 +225,26 @@ namespace cat {
 
 		/** @return The fraction of seconds in seconds (32 bit). */
 		CX_FORCE_INLINE CxF32 fracSec32() const { return (CxF32)fracSec64(); }
+
+		/** @return A new time value from microseconds */
+		static CX_FORCE_INLINE CxAbsTime fromMicro(CxU64 in_micro) {
+		   return CxAbsTime(microToRaw(in_micro));
+		}
+
+		/** @return A new time value from milliseconds */
+		static CX_FORCE_INLINE CxAbsTime fromMilli(CxU64 in_milli) {
+			return CxAbsTime(milliToRaw(in_milli));
+		}
+
+		/** @return A new time value from nanoseconds */
+		static CX_FORCE_INLINE CxAbsTime fromNano(CxU64 in_nano) {
+		   return CxAbsTime(nanoToRaw(in_nano));
+		}
+
+		/** @return A new time value from seconds */
+		static CX_FORCE_INLINE CxAbsTime fromSec(CxF64 in_sec) {
+			return CxAbsTime(secToRaw(in_sec));
+		}
 		
 		/** @return The value of the CxAbsTime in microseconds. */
 		CX_FORCE_INLINE CxU64 micro() const { return rawToMicro(m_t); }

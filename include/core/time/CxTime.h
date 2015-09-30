@@ -13,7 +13,9 @@
 
 #if defined (CX_WINDOWS)
 #  include "core/time/windows/CxWindowsTime.h"
-#else //elif defined (CX_APPLE) || defined (CX_UNIX)
+#elif defined (CX_APPLE)
+#  include "core/time/apple/CxAppleTime.h"
+#else // CX_UNIX
 #  include "core/time/unix/CxUnixTime.h"
 #endif // CX_WINDOWS
 

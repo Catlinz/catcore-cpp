@@ -2,6 +2,9 @@
 
 #if defined(CX_WINDOWS)
 #  include "windows/CxWindowsTime.cpp"
-#else // elif defined(CX_UNIX) || defined(CX_APPLE)
+#elif defined(CX_APPLE)
+#  include "apple/CxAppleTime.cpp"
+#else // CX_UNIX
 #  include "unix/CxUnixTime.cpp"
 #endif // CX_WINDOWS
+
