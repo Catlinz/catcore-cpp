@@ -77,12 +77,14 @@ namespace cat {
 
 		/** @return A new time value that is the sum of lhs + rhs */
 		CX_FORCE_INLINE CxAbsTime operator+(const CxAbsTime& in_rhs) const {
-			return CxAbsTime(m_t.QuadPart - in_rhs.m_t.QuadPart);
+		   CxAbsTime t(*this);
+			t += in_rhs;  return t;
 		}
 
 		/** @return A new Time that is the difference of this - in_rhs. */
 		CX_FORCE_INLINE CxAbsTime operator-(const CxAbsTime& in_rhs) const {
-			return CxAbsTime(m_t.QuadPart - in_rhs.m_t.QuadPart);
+		   CxAbsTime t(*this);
+			t -= in_rhs;  return t;
 		}
 
 		/** @return This time after adding the rhs to it. */
@@ -135,31 +137,59 @@ namespace cat {
 
 		/** @return The fraction of seconds in microseconds. */
 		CX_FORCE_INLINE CxU32 fracMicro() const {
-			const CxF64 sec = (CxF64)m_t.QuadPard / (CxF64)s_freq.QuadPart;
+			const CxF64 sec = (CxF64)m_t.QuadPart / (CxF64)s_freq.QuadPart;
 			return (CxU32)((sec - ((CxI64)sec)) * CX_MICRO_PER_SEC);
 		}
 
 		/** @return The fraction of seconds in milliseconds. */
 		CX_FORCE_INLINE CxU32 fracMilli() const {
-			const CxF64 sec = (CxF64)m_t.QuadPard / (CxF64)s_freq.QuadPart;
+			const CxF64 sec = (CxF64)m_t.QuadPart / (CxF64)s_freq.QuadPart;
 			return (CxU32)((sec - ((CxI64)sec)) * CX_MILLI_PER_SEC);
 		}
 
 		/** @return The fraction of seconds in nanoseconds. */
 		CX_FORCE_INLINE CxU32 fracNano() const {
-			const CxF64 sec = (CxF64)m_t.QuadPard / (CxF64)s_freq.QuadPart;
+			const CxF64 sec = (CxF64)m_t.QuadPart / (CxF64)s_freq.QuadPart;
 			return (CxU32)((sec - ((CxI64)sec)) * CX_NANO_PER_SEC);
 		}
 
 		/** @return The fraction of seconds in seconds (64 bit). */
 		CX_FORCE_INLINE CxF64 fracSec64() const {
-		   const CxF64 sec = (CxF64)m_t.QuadPard / (CxF64)s_freq.QuadPart;
+		   const CxF64 sec = (CxF64)m_t.QuadPart / (CxF64)s_freq.QuadPart;
 			return sec - ((CxI64)sec);
 		}
 
 		/** @return The fraction of seconds in seconds (32 bit). */
 		CX_FORCE_INLINE CxF32 fracSec32() const {
 			return (CxF32)fracSec64();
+		}
+
+		/** @return A new CxTime value from a microsecond value */
+		static CX_FORCE_INLINE CxTime fromMicro(CxI64 in_micro) {
+			LARGE_INTEGER t;
+			t.QuadPart = (in_micro * s_freq.QuadPart)  / CX_MICRO_PER_SEC;
+			return CxAbsTime(t);
+		}
+
+		/** @return A new CxTime value from a millisecond value */
+		static CX_FORCE_INLINE CxTime fromMilli(CxI64 in_milli) {
+			LARGE_INTEGER t;
+			t.QuadPart = (in_milli * s_freq.QuadPart)  / CX_MILLI_PER_SEC;
+			return CxAbsTime(t);
+		}
+
+		/** @return A new CxTime value from a nanosecond value */
+		static CX_FORCE_INLINE CxTime fromNano(CxI64 in_nano) {
+			LARGE_INTEGER t;
+			t.QuadPart = (in_nano * s_freq.QuadPart)  / CX_NANO_PER_SEC;
+			return CxAbsTime(t);
+		}
+
+		/** @return A new CxTime value from a seconds value */
+		static CX_FORCE_INLINE CxTime fromSec(CxF64 in_seconds) {
+			LARGE_INTEGER t;
+			t.QuadPart = (CxI64)(in_seconds * s_freq.QuadPart);
+			return CxAbsTime(t);
 		}
 		
 		/** @return The value of the Time in microseconds. */
@@ -197,26 +227,28 @@ namespace cat {
 
 		/** @brief Set the value of the Time in milliseconds. */
 		CX_FORCE_INLINE void setMilli(CxI64 in_milli) {
-			m_t.QuadPart = (in_micro * s_freq.QuadPart) / CX_MILLI_PER_SEC;
+			m_t.QuadPart = (in_milli * s_freq.QuadPart) / CX_MILLI_PER_SEC;
 		}
 
 		/** @brief Set the value of the Time in nanoseconds. */
 		CX_FORCE_INLINE void setNano(CxI64 in_nano) {
-			m_t.QuadPart = (in_micro * s_freq.QuadPart) / CX_NANO_PER_SEC;
+			m_t.QuadPart = (in_nano * s_freq.QuadPart) / CX_NANO_PER_SEC;
 		}
 
 		/** @brief Set the value of the Time in platform dependant units. */
-		CX_FORCE_INLINE void setRaw(const LARGE_INGETER & in_time) { m_t = in_time; }
+		CX_FORCE_INLINE void setRaw(const LARGE_INTEGER & in_time) { m_t = in_time; }
 		
 		/** @brief Set the value of the Time in seconds (64bit fp). */
 		CX_FORCE_INLINE void setSec(CxF64 in_seconds) {
-		   m_t.QuadPart = in_micro * s_freq.QuadPart;
+		   m_t.QuadPart = (CxI64)(in_seconds * s_freq.QuadPart);
 		}
 
 		/** @brief Set the value of the Time to the current time. */
 		CX_FORCE_INLINE void setToCurrentTime() { QueryPerformanceCounter(&m_t); }
 
-	  private:
+		friend class CxTime;
+		
+	  protected:
 	   LARGE_INTEGER m_t;
 		static LARGE_INTEGER s_freq;
 	};
