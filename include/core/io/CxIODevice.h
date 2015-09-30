@@ -26,7 +26,7 @@ namespace cat {
 	class CxIODevice {
 	  public:
 		/** @brief Enum of possible open modes */
-		enum CxIOMode {
+		enum IOModeFlag {
 			kNotOpen = 0, /**< Device is not open */
 
 			/* Main flags */
@@ -40,6 +40,7 @@ namespace cat {
 			kText = 1 << 4, /**< Device is opened in text mode */
 			kUnbuffered = 1 << 5, /**< Don't use any internal buffering */
 		};
+		CX_FLAGS(IOModeFlag, IOMode);
 
 		/** @brief Set all the default values. */
 		CX_FORCE_INLINE CxIODevice() : m_mode(kNotOpen) {}
@@ -48,10 +49,10 @@ namespace cat {
 		virtual ~CxIODevice() {}
 
 		/** @return True if the IODevice is open in a readable mode */
-		CX_FORCE_INLINE CxBool canRead() const { return (m_mode & kRead) != 0; }
+		CX_FORCE_INLINE CxBool canRead() const { return m_mode.isSet(kRead); }
 
 		/** @return True if the IODevice is open in a writable mode */
-		CX_FORCE_INLINE CxBool canWrite() const { return (m_mode & kWrite) != 0; }
+		CX_FORCE_INLINE CxBool canWrite() const { return m_mode.isSet(kWrite); }
 
 		/** @brief Method to close the IODevice. */
 		CX_INLINE virtual void close() { m_mode = kNotOpen; }
@@ -67,17 +68,17 @@ namespace cat {
 		CX_FORCE_INLINE CxBool isOpen() const { return m_mode != kNotOpen; }
 
 		/** @return True if the IODevice is open in text mode */
-		CX_FORCE_INLINE CxBool isText() const { return (m_mode & kText) != 0; }
+		CX_FORCE_INLINE CxBool isText() const { return m_mode.isSet(kText); }
 
 		/** @return The mode flags in while the IODevice is opened. */
-		CX_FORCE_INLINE CxI32 mode() const { return m_mode; }
+		CX_FORCE_INLINE IOMode mode() const { return m_mode; }
 
 		/**
 		 * @brief Method to open the IODevice for reading and/or writing.
 		 * @param in_mode A combination of CxIOMode flags decribing the mode.
 		 * @return True if the IODevice was opened successfully.
 		 */
-		virtual CxBool open(CxI32 in_mode) = 0;
+		virtual CxBool open(IOMode in_mode) = 0;
 
 		/**
 		 * @brief Method to read data from the device without moving forward.
@@ -140,7 +141,7 @@ namespace cat {
 		virtual CxI64 write(void *in_data, CxI64 in_bytes) = 0;
 		
 	  protected:
-	   CxI32 m_mode;
+	   IOMode m_mode;
 		
 	};
 
