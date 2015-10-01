@@ -47,7 +47,7 @@ namespace cat {
 	enum CxIdentity { kCxIdentity = 1 };
 
 	/** @return The absolute value of the argument. */
-	CX_FORCE_INLINE CxF32 CxAbs(CxF32 in_val) { return ::fabs(in_val); }
+	CX_FORCE_INLINE CxF32 CxAbs(CxF32 in_val) { return ::fabsf(in_val); }
 	/** @return The absolute value of the argument. */
 	CX_FORCE_INLINE CxF64 CxAbs(CxF64 in_val) { return ::fabs(in_val); }
 	/** @return The absolute value of the argument. */

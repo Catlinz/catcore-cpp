@@ -1,4 +1,5 @@
 #include "core/time/CxTime.h"
+#include "core/math/CxMath.h"
 #include "core/CxTestCore.h"
 
 namespace cat {
@@ -158,6 +159,94 @@ namespace cat {
 		CxF64 t5 = CxTime::currentSec64();
 		ass_true(t0.sec64() <= t5);
 
+		t0.setToCurrentTime();
+		ass_true(t5 <= t0.sec64());
+
+		FINISH_TEST;
+	}
+
+	void testCxTimeFromTo() {
+		BEGIN_TEST;
+
+		CxTime t0 = CxTime::fromMicro(2500000);
+		CxTime t1 = CxTime::fromMilli(2500);
+		CxTime t2 = CxTime::fromNano(2500000000);
+		CxTime t3 = CxTime::fromSec(2.5);
+
+		ass_true(t0.micro() - 2500000 >= -1 && t0.micro() - 2500000 <= 1);
+		ass_true(t0.milli() - 2500 >= -1 && t0.milli() - 2500 <= 1);
+		ass_true(t0.nano() - 2500000000 >= -200 && t0.nano() - 2500000000 <= 200);
+		ass_true(CxAbs(t0.sec32() - 2.5) < 0.0001);
+		ass_true(CxAbs(t0.sec64() - 2.5) < 0.000001);
+
+		t0.setMicro(2500000);
+		ass_true(t0.micro() - 2500000 >= -1 && t0.micro() - 2500000 <= 1);
+		ass_true(t0.milli() - 2500 >= -1 && t0.milli() - 2500 <= 1);
+		ass_true(t0.nano() - 2500000000 >= -200 && t0.nano() - 2500000000 <= 200);
+		ass_true(CxAbs(t0.sec32() - 2.5) < 0.0001);
+		ass_true(CxAbs(t0.sec64() - 2.5) < 0.000001);
+
+		ass_true(t1.micro() - 2500000 >= -1 && t1.micro() - 2500000 <= 1);
+		ass_true(t1.milli() - 2500 >= -1 && t1.milli() - 2500 <= 1);
+		ass_true(t1.nano() - 2500000000 >= -200 && t1.nano() - 2500000000 <= 200);
+		ass_true(CxAbs(t1.sec32() - 2.5) < 0.0001);
+		ass_true(CxAbs(t1.sec64() - 2.5) < 0.000001);
+
+		t1.setMilli(2500);
+		ass_true(t1.micro() - 2500000 >= -1 && t1.micro() - 2500000 <= 1);
+		ass_true(t1.milli() - 2500 >= -1 && t1.milli() - 2500 <= 1);
+		ass_true(t1.nano() - 2500000000 >= -200 && t1.nano() - 2500000000 <= 200);
+		ass_true(CxAbs(t1.sec32() - 2.5) < 0.0001);
+		ass_true(CxAbs(t1.sec64() - 2.5) < 0.000001);
+
+		ass_true(t2.micro() - 2500000 >= -1 && t2.micro() - 2500000 <= 1);
+		ass_true(t2.milli() - 2500 >= -1 && t2.milli() - 2500 <= 1);
+		ass_true(t2.nano() - 2500000000 >= -200 && t2.nano() - 2500000000 <= 200);
+		ass_true(CxAbs(t2.sec32() - 2.5) < 0.0001);
+		ass_true(CxAbs(t2.sec64() - 2.5) < 0.000001);
+
+		t2.setNano(2500000000);
+		ass_true(t2.micro() - 2500000 >= -1 && t2.micro() - 2500000 <= 1);
+		ass_true(t2.milli() - 2500 >= -1 && t2.milli() - 2500 <= 1);
+		ass_true(t2.nano() - 2500000000 >= -200 && t2.nano() - 2500000000 <= 200);
+		ass_true(CxAbs(t2.sec32() - 2.5) < 0.0001);
+		ass_true(CxAbs(t2.sec64() - 2.5) < 0.000001);
+
+		ass_true(t3.micro() - 2500000 >= -1 && t3.micro() - 2500000 <= 1);
+		ass_true(t3.milli() - 2500 >= -1 && t3.milli() - 2500 <= 1);
+		ass_true(t3.nano() - 2500000000 >= -200 && t3.nano() - 2500000000 <= 200);
+		ass_true(CxAbs(t3.sec32() - 2.5) < 0.0001);
+		ass_true(CxAbs(t3.sec64() - 2.5) < 0.000001);
+
+		t3.setSec(2.5);
+		ass_true(t3.micro() - 2500000 >= -1 && t3.micro() - 2500000 <= 1);
+		ass_true(t3.milli() - 2500 >= -1 && t3.milli() - 2500 <= 1);
+		ass_true(t3.nano() - 2500000000 >= -200 && t3.nano() - 2500000000 <= 200);
+		ass_true(CxAbs(t3.sec32() - 2.5) < 0.0001);
+		ass_true(CxAbs(t3.sec64() - 2.5) < 0.000001);
+		
+		FINISH_TEST;
+	}
+
+	void testCxTimeFracPart() {
+		BEGIN_TEST;
+
+		CxTime t0 = CxTime::fromSec(2.5);
+		CxTime t1 = CxTime::fromSec(-2.5);
+
+		ass_true((CxI64)t0.fracMicro() - 500000 >= -1 && (CxI64)t0.fracMicro() - 500000 <= 1);
+		ass_true((CxI64)t0.fracMilli() - 500 >= -1 && (CxI64)t0.fracMilli() - 500 <= 1);
+		ass_true((CxI64)t0.fracNano() - 500000000 >= -200 && (CxI64)t0.fracNano() - 500000000 <= 200);
+		ass_true(CxAbs(t0.fracSec32() - 0.5) < 0.0001);
+		ass_true(CxAbs(t0.fracSec64() - 0.5) < 0.000001);
+
+
+		ass_true((CxI64)t1.fracMicro() - 500000 >= -1 && (CxI64)t1.fracMicro() - 500000 <= 1);
+		ass_true((CxI64)t1.fracMilli() - 500 >= -1 && (CxI64)t1.fracMilli() - 500 <= 1);
+		ass_true((CxI64)t1.fracNano() - 500000000 >= -200 && (CxI64)t1.fracNano() - 500000000 <= 200);
+		ass_true(CxAbs(t1.fracSec32() - 0.5) < 0.0001);
+		ass_true(CxAbs(t1.fracSec64() - 0.5) < 0.000001);
+		
 		FINISH_TEST;
 	}
 	
@@ -169,6 +258,8 @@ int main(int argc, char **argv) {
 	cat::testCxTimeComparison();
 	cat::testCxTimeArithmetic();
 	cat::testCxTimeCurrent();
+	cat::testCxTimeFromTo();
+	cat::testCxTimeFracPart();
 	
 	return 0;
 }

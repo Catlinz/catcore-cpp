@@ -13,7 +13,7 @@
  * the speed.
  *
  * @author Catlin Zilinski
- * @date Sept 29, 2015
+ * @Date Sept 29, 2015
  */
 
 #include "core/Cx.h"
@@ -66,22 +66,22 @@ namespace cat {
 
 		/** @return True if lhs < rhs. */
 		CX_FORCE_INLINE CxBool operator<(const CxTime& in_rhs) const {
-		   return CxAbsTime::operator<(in_t);
+		   return CxAbsTime::operator<(in_rhs);
 		}
 
 		/** @return True if lhs <= rhs. */
 		CX_FORCE_INLINE CxBool operator<=(const CxTime& in_rhs) const {
-			return CxAbsTime::operator<=(in_t);
+			return CxAbsTime::operator<=(in_rhs);
 		}
 
 	   /** @return True if lhs > rhs. */
 		CX_FORCE_INLINE CxBool operator>(const CxTime& in_rhs) const {
-			return CxAbsTime::operator>(in_t);
+			return CxAbsTime::operator>(in_rhs);
 		}
 		
 	   /** @return True if lhs >= rhs. */
 		CX_FORCE_INLINE CxBool operator>=(const CxTime& in_rhs) const {
-			return CxAbsTime::operator>=(in_t);
+			return CxAbsTime::operator>=(in_rhs);
 		}
 
 		/** @return A new time value that is the sum of lhs + rhs */
@@ -138,44 +138,44 @@ namespace cat {
 		/** @return A new CxTime value from a microsecond value */
 		static CX_FORCE_INLINE CxTime fromMicro(CxI64 in_micro) {
 			LARGE_INTEGER t;
-			t.QuadPart = (in_micro * s_freq.QuadPart)  / CX_MICRO_PER_SEC;
+			t.QuadPart = (in_micro * CxAbsTime::s_freq.QuadPart)  / CX_MICRO_PER_SEC;
 			return CxTime(t);
 		}
 
 		/** @return A new CxTime value from a millisecond value */
 		static CX_FORCE_INLINE CxTime fromMilli(CxI64 in_milli) {
 			LARGE_INTEGER t;
-			t.QuadPart = (in_milli * s_freq.QuadPart)  / CX_MILLI_PER_SEC;
+			t.QuadPart = (in_milli * CxAbsTime::s_freq.QuadPart)  / CX_MILLI_PER_SEC;
 			return CxTime(t);
 		}
 
 		/** @return A new CxTime value from a nanosecond value */
 		static CX_FORCE_INLINE CxTime fromNano(CxI64 in_nano) {
 			LARGE_INTEGER t;
-			t.QuadPart = (in_nano * s_freq.QuadPart)  / CX_NANO_PER_SEC;
+			t.QuadPart = (in_nano * CxAbsTime::s_freq.QuadPart)  / CX_NANO_PER_SEC;
 			return CxTime(t);
 		}
 
 		/** @return A new CxTime value from a seconds value */
 		static CX_FORCE_INLINE CxTime fromSec(CxF64 in_seconds) {
 			LARGE_INTEGER t;
-			t.QuadPart = (CxI64)(in_seconds * s_freq.QuadPart);
+			t.QuadPart = (CxI64)(in_seconds * CxAbsTime::s_freq.QuadPart);
 			return CxTime(t);
 		}
 		
 		/** @return The value of the Time in microseconds. */
 		CX_FORCE_INLINE CxI64 micro() const {
-			return (m_t.QuadPart * CX_MICRO_PER_SEC) / s_freq.QuadPart;
+			return (m_t.QuadPart * CX_MICRO_PER_SEC) / CxAbsTime::s_freq.QuadPart;
 		}
 
 		/** @return The value of the Time in milliseconds. */
 		CX_FORCE_INLINE CxI64 milli() const {
-			return (m_t.QuadPart * CX_MILLI_PER_SEC) / s_freq.QuadPart;
+			return (m_t.QuadPart * CX_MILLI_PER_SEC) / CxAbsTime::s_freq.QuadPart;
 		}
 		
 		/** @return The value of the Time in nanoseconds. */
 		CX_FORCE_INLINE CxI64 nano() const {
-			return (m_t.QuadPart * CX_NANO_PER_SEC) / s_freq.QuadPart;
+			return (m_t.QuadPart * CX_NANO_PER_SEC) / CxAbsTime::s_freq.QuadPart;
 		}
 	};
 
