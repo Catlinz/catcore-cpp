@@ -122,7 +122,7 @@ namespace cat {
 		   LARGE_INTEGER t;  QueryPerformanceCounter(&t);
 			return (t.QuadPart * CX_NANO_PER_SEC) / s_freq.QuadPart;
 		}
-
+1
 		/** @return The current time in seconds (32bit). */
 		CX_FORCE_INLINE static CxF32 currentSec32() {
 		   LARGE_INTEGER t;  QueryPerformanceCounter(&t);

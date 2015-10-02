@@ -18,7 +18,6 @@
 
 #include "core/Cx.h"
 #include "core/time/internal/CxTimeDefs.h"
-#include "core/time/CxAbsTime.h"
 
 namespace cat {
 
@@ -40,23 +39,6 @@ namespace cat {
 
 		/** @brief Default copy constructor. */
 		CX_FORCE_INLINE CxTime(const CxTime &in_src) : m_t(in_src.m_t) {}
-
-		/** @brief Copy constructor to copy from an CxAbsTime. */
-		CX_FORCE_INLINE  CxTime(const CxAbsTime& in_t) {
-			const CxU64 n = in_t.nano();
-			const CxU64 sec = n / CX_NANO_PER_SEC;
-			m_t.tv_sec = sec;
-			m_t.tv_nsec = (n - (sec * CX_NANO_PER_SEC));
-		}
-
-		/** @brief Overloaded assignment operator to assign from CxAbsTime. */
-		CX_FORCE_INLINE CxTime& operator=(const CxAbsTime &in_src) {
-			const CxU64 n = in_time.nano();
-			const CxU64 sec = n / CX_NANO_PER_SEC;
-			m_t.tv_sec = sec;
-			m_t.tv_nsec = (n - (sec * CX_NANO_PER_SEC));
-			return *this;
-		}
 
 		/** @brief Default assignment operator. */
 		CX_FORCE_INLINE CxTime& operator=(const CxTime& in_src) {
@@ -104,43 +86,55 @@ namespace cat {
 		}
 
 		/** @return A new time value that is the sum of lhs + rhs */
-		CX_FORCE_INLINE CxTime operator+(const CxTime& in_rhs) const {
+		CX_INLINE CxTime operator+(const CxTime& in_rhs) const {
 			timespec t = m_t;
 			t.tv_nsec += in_rhs.m_t.tv_nsec;
 			t.tv_sec += in_rhs.m_t.tv_sec;
-			if (t.tv_nsec > CX_NANO_PER_SEC) {
+			if (t.tv_nsec >= CX_NANO_PER_SEC) {
 				t.tv_sec += 1; t.tv_nsec -= CX_NANO_PER_SEC;
+			}
+			else if (t.tv_nsec <= -CX_NANO_PER_SEC) {
+				t.tv_sec -= 1;  t.tv_nsec += CX_NANO_PER_SEC;
 			}
 			return CxTime(t);
 		}
 
 		/** @return A new Time that is the difference of this - in_rhs. */
-		CX_FORCE_INLINE CxTime operator-(const CxTime& in_rhs) const {
+		CX_INLINE CxTime operator-(const CxTime& in_rhs) const {
 			timespec t = m_t;
 			t.tv_sec -= in_rhs.m_t.tv_sec;
 			t.tv_nsec -= in_rhs.m_t.tv_nsec;
-			if (t.tv_nsec < 0) {
+			if (t.tv_nsec <= -CX_NANO_PER_SEC) {
 				t.tv_sec -= 1; t.tv_nsec += CX_NANO_PER_SEC;
+			}
+			else if (t.tv_nsec >= CX_NANO_PER_SEC) {
+				t.tv_sec += 1;  t.tv_nsec -= CX_NANO_PER_SEC;
 			}
 			return CxTime(t);
 		}
 
 		/** @return This time after adding the rhs to it. */
-		CX_FORCE_INLINE CxTime& operator+=(const CxTime& in_rhs) {
+		CX_INLINE CxTime& operator+=(const CxTime& in_rhs) {
 			m_t.tv_sec += in_rhs.m_t.tv_sec;
 			m_t.tv_nsec += in_rhs.m_t.tv_nsec;
-			if (m_t.tv_nsec > CX_NANO_PER_SEC) {
+			if (m_t.tv_nsec >= CX_NANO_PER_SEC) {
 				m_t.tv_sec += 1; m_t.tv_nsec -= CX_NANO_PER_SEC;
+			}
+			else if (m_t.tv_nsec <= -CX_NANO_PER_SEC) {
+				m_t.tv_sec -= 1; m_t.tv_nsec += CX_NANO_PER_SEC;
 			}
 			return *this;
 		}
 
 		/** @return This time after subtracting the rhs from it. */
-		CX_FORCE_INLINE CxTime& operator-=(const CxTime& in_rhs) {
+		CX_INLINE CxTime& operator-=(const CxTime& in_rhs) {
 			m_t.tv_sec -= in_rhs.m_t.tv_sec;
 			m_t.tv_nsec -= in_rhs.m_t.tv_nsec;
-			if (m_t.tv_nsec > 0) {
+			if (m_t.tv_nsec <= -CX_NANO_PER_SEC) {
 				m_t.tv_sec -= 1; m_t.tv_nsec += CX_NANO_PER_SEC;
+			}
+			else if (m_t.tv_nsec >= CX_NANO_PER_SEC) {
+				m_t.tv_sec += 1; m_t.tv_nsec -= CX_NANO_PER_SEC;
 			}
 			return *this;			
 		}
@@ -148,7 +142,7 @@ namespace cat {
 		/** @return The current time value using the system clock. */
 		CX_FORCE_INLINE static CxTime current() {
 			timespec t;
-			const CxU64 n = CxAbsTime::currentNano();
+			const CxU64 n = currentNano();
 			const CxU64 sec = n / CX_NANO_PER_SEC;
 			t.tv_sec = sec;
 			t.tv_nsec = (n - (sec * CX_NANO_PER_SEC));
