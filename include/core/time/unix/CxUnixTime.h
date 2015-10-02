@@ -76,22 +76,22 @@ namespace cat {
 		}
 
 		/** @return A new time value that is the sum of lhs + rhs */
-		CX_INLINE CxTime operator+(const CxTime& in_rhs) const {
+		CX_FORCE_INLINE CxTime operator+(const CxTime& in_rhs) const {
 			return CxTime(m_t + in_rhs.m_t);
 		}
 
 		/** @return A new Time that is the difference of this - in_rhs. */
-		CX_INLINE CxTime operator-(const CxTime& in_rhs) const {
+		CX_FORCE_INLINE CxTime operator-(const CxTime& in_rhs) const {
 			return CxTime(m_t - in_rhs.m_t);
 		}
 
 		/** @return This time after adding the rhs to it. */
-		CX_INLINE CxTime& operator+=(const CxTime& in_rhs) {
+		CX_FORCE_INLINE CxTime& operator+=(const CxTime& in_rhs) {
 		   m_t += in_rhs.m_t;
 		}
 
 		/** @return This time after subtracting the rhs from it. */
-		CX_INLINE CxTime& operator-=(const CxTime& in_rhs) {
+		CX_FORCE_INLINE CxTime& operator-=(const CxTime& in_rhs) {
 		   m_t -= in_rhs.m_t;
 		}
 

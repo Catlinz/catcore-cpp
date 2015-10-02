@@ -25,7 +25,7 @@ namespace cat {
 	 * @version 1
 	 * @since Sept. 29, 2015
 	 */
-	class CxTime : public CxAbsTime {
+	class CxTime {
 	  public:
 		/** @brief Create a zero CxTime value */		
 		CX_FORCE_INLINE CxTime() {m_t.QuadPart = 0; }
