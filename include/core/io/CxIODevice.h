@@ -48,6 +48,9 @@ namespace cat {
 		/** @brief Virtual destructor for base classes. */
 		virtual ~CxIODevice() {}
 
+		/** @return True if the device is at the end */
+		virtual CxBool atEnd() = 0;
+
 		/** @return True if the IODevice is open in a readable mode */
 		CX_FORCE_INLINE CxBool canRead() const { return m_mode.isSet(kRead); }
 

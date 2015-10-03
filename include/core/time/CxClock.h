@@ -10,7 +10,7 @@
  * @date Sept. 29, 2015
  */
 
-#include "core/time/CxAbsTime.h"
+#include "core/time/CxTime.h"
 
 namespace cat {
 
@@ -33,7 +33,7 @@ namespace cat {
 		CX_FORCE_INLINE CxClock() {}
 
 		/** @return The elapsed time between last two ticks. */
-		CX_FORCE_INLINE const CxAbsTime & elapsed() const { return m_elapsed; }
+		CX_FORCE_INLINE const CxTime & elapsed() const { return m_elapsed; }
 		
 		/** @return A reference to the global clock. */
 		CX_FORCE_INLINE static CxClock& global() { return s_global; }
@@ -45,18 +45,18 @@ namespace cat {
 
 		/** @brief 'Tick' the clock (store the elapsed time btwn ticks */
 		CX_FORCE_INLINE void tick() {
-			const CxAbsTime t = CxAbsTime::current();
+			const CxTime t = CxTime::current();
 			m_elapsed = t - m_lastTick;
 			m_lastTick = t;
 		}
 		
 		/** @return Time since the clock started. */
-		CX_FORCE_INLINE CxAbsTime time() const { m_lastTick - m_start; }
+		CX_FORCE_INLINE CxTime time() const { m_lastTick - m_start; }
 
 	  private:
-		CxAbsTime m_start;
-		CxAbsTime m_lastTick;
-		CxAbsTime m_elapsed;
+		CxTime m_start;
+		CxTime m_lastTick;
+		CxTime m_elapsed;
 
 		static CxClock s_global; /**< A global clock */
 	};
