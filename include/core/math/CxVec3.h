@@ -11,6 +11,7 @@
  * @date June 1, 2015
  */
 
+#include "core/Cx.h"
 #include "core/math/CxMath.h"
 
 #if !defined(CX_REAL64)
@@ -37,7 +38,8 @@ namespace cat {
 		 * @brief Initialise all elements to the same value.
 		 * @param in_val The value to initialise the elements to.
 		 */
-		explicit CX_FORCE_INLINE CxVec3(CxReal in_val) : x(in_val), y(in_val), z(in_val) {}
+		explicit CX_FORCE_INLINE CxVec3(CxReal in_val)
+			: x(in_val), y(in_val), z(in_val) {}
 
 		/**
 		 * @brief Initialise the elements from an array.
@@ -82,7 +84,7 @@ namespace cat {
 		}
 
 		/** @return True if the two vectors are not strictly equal. */
-		CX_FORCE_INLINE CxBool operator==(const CxVec3 &in_v) const {
+		CX_FORCE_INLINE CxBool operator!=(const CxVec3 &in_v) const {
 			return (x != in_v.x) || (y != in_v.y) || (z != in_v.z);
 		}
 
@@ -165,7 +167,7 @@ namespace cat {
 		}
 
 		/** @brief Divide this vector by another vector, element-wise. */
-		CX_FORCE_INLINE CxVec3& operator*=(const CxVec3 &in_v) {
+		CX_FORCE_INLINE CxVec3& operator/=(const CxVec3 &in_v) {
 			CXD_IF_ERR(in_v.x == 0.0f || in_v.y == 0.0f || in_v.z == 0.0f,
 						  "Cannot divide by a vector with a zero element.");
 			x *= in_v.x; y *= in_v.y; z *= in_v.z; return *this;
@@ -237,7 +239,17 @@ namespace cat {
 		}
 
 		/** @brief Set the vector to a zero vector. */
-		CX_FORCE_INLINE void setZero() { x = y = z = 0.0f; }
+		CX_FORCE_INLINE void setZero() { x = y = z = 0; }
+		
+		/** @brief Methods to set only two components of the vector. */
+		CX_FORCE_INLINE void setXY(CxReal in_x, CxReal in_y) { x = in_x;  y = in_y; }
+		CX_FORCE_INLINE void setXZ(CxReal in_x, CxReal in_z) { x = in_x;  z = in_z; }
+		CX_FORCE_INLINE void setYZ(CxReal in_y, CxReal in_z) { y = in_y;  z = in_z; }
+
+		/** @brief Method to set all the components of the vector. */
+		CX_FORCE_INLINE void setXYZ(CxReal in_x, CxReal in_y, CxReal in_z) {
+			x = in_x;  y = in_y;  z = in_z;
+		}
 	};
 
 	/**
