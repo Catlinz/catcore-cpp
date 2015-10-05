@@ -14,13 +14,8 @@
 #include "core/Cx.h"
 #include "core/math/CxMath.h"
 
-#if !defined(CX_REAL64)
-#  define CX_VEC3_UNIT_EPS 1e-4f
+#  define CX_VEC3_UNIT_EPS 1e-6f
 #  define CX_VEC3_NORM_EPS 1e-10f
-#else
-#  define CX_VEC3_UNIT_EPS 1e-6
-#  define CX_VEC3_NORM_EPS 1e-20f
-#endif
 
 namespace cat {
 

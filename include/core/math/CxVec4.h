@@ -15,13 +15,8 @@
 #include "core/math/CxMath.h"
 #include "core/math/CxVec3.h"
 
-#if !defined(CX_REAL64)
-#  define CX_VEC4_UNIT_EPS 1e-4f
+#  define CX_VEC4_UNIT_EPS 1e-6f
 #  define CX_VEC4_NORM_EPS 1e-10f
-#else
-#  define CX_VEC4_UNIT_EPS 1e-6
-#  define CX_VEC4_NORM_EPS 1e-20f
-#endif
 
 namespace cat {
 
@@ -42,7 +37,7 @@ namespace cat {
 
 		/** @brief Initialise the elements from an array. */
 		explicit CX_FORCE_INLINE CxVec4(const CxReal *in_arr)
-			: x(in_arr[0]), y(in_arr[1]), z(in_arr[2]), w(in_arr[2]) {}
+			: x(in_arr[0]), y(in_arr[1]), z(in_arr[2]), w(in_arr[3]) {}
 
 		/**
 		 * @brief Initialise the vector from a CxVec3.
