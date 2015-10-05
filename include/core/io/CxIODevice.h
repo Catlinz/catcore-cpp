@@ -61,6 +61,12 @@ namespace cat {
 		CX_INLINE virtual void close() { m_mode = kNotOpen; }
 
 		/**
+		 * @brief Flush the output from a device if the device supports it.
+		 * @return True if the flush was successful.
+		 */
+		virtual CxBool flush() = 0;
+
+		/**
 		 * @brief Read a character from the device.
 		 * @param out_char The character to read into.
 		 * @return True if the character was read.

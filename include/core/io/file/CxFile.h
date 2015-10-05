@@ -47,7 +47,19 @@ namespace cat {
 			kCloseHandle = 0, /**< File handles passed in will be closed with close() */
 			kDontCloseHandle = 1  /**< File handles passed in will only be flushed by close() */
 		};
-		
+
+		/** @brief An error enum for files */
+		enum FileError {
+			kNoError = 0,
+			kOpenError = 1,  /**< Failed to open the file */
+			kReadError = 2,  /**< Failed to read from the file */
+			kWriteError = 3, /**< Failed to write to the file */
+			kSeekError = 4,  /**< Failed to change position in the file */
+			kAccessError = 5, /**< Failed to access file */
+			kExistsError = 6, /**< File already exists */
+
+			kUnknownError = 10, /**< Something bad happened... */
+		};
 		
 		/** @brief Set all the default values. */
 		CX_FORCE_INLINE CxFile() : CxIODevice() {}
@@ -60,6 +72,31 @@ namespace cat {
 
 		/** @brief Method to close the IODevice. */
 		virtual void close();
+
+		/**
+		 * @brief Make a copy of the file.
+		 * This method copies the current file to newName.  This file is closed 
+		 * before it is copied.  If there already exists a file in the 
+		 * destination, then the copy will fail.
+		 * @param in_newName The new filename to copy the file to.
+		 * @return True if the file was copied successfully.
+		 */
+		CxBool copy(const CxStr16 &in_newName);
+
+		/** @return The last error encountered. */
+		CX_FORCE_INLINE FileError error() const { return m_err; }
+		
+		/** @return True if the file exists. */
+		CxBool exists() const;
+
+		/** @return The name (full path) of the file */
+		CX_FORCE_INLINE CxStr16 & filename();
+
+		/**
+		 * @brief Flush the output from a device if the device supports it.
+		 * @return True if the flush was successful.
+		 */
+		virtual CxBool flush();
 
 		/**
 		 * @brief Method to open the IODevice for reading and/or writing.
