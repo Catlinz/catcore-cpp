@@ -11,6 +11,7 @@
  * @date June 2, 2015
  */
 
+#include "core/Cx.h"
 #include "core/math/CxMath.h"
 #include "core/math/CxVec3.h"
 
@@ -32,18 +33,14 @@ namespace cat {
 		CX_FORCE_INLINE CxVec4() {}
 	
 		/** @brief Initialise the vector to all zeros. */
-		CX_FORCE_INLINE CxVec4(CxZero) : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
+		CX_FORCE_INLINE CxVec4(CxZero)
+			: x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
 
-		/**
-		 * @brief Initialise all elements to the same value.
-		 * @param in_val The value to initialise the elements to.
-		 */
-		explicit CX_FORCE_INLINE CxVec4(CxReal in_val) : x(in_val), y(in_val), z(in_val), w(in_val) {}
+		/** @brief Initialise all elements to the same value. */
+		explicit CX_FORCE_INLINE CxVec4(CxReal in_val)
+			: x(in_val), y(in_val), z(in_val), w(in_val) {}
 
-		/**
-		 * @brief Initialise the elements from an array.
-		 * @param in_arr The array of reals.
-		 */
+		/** @brief Initialise the elements from an array. */
 		explicit CX_FORCE_INLINE CxVec4(const CxReal *in_arr)
 			: x(in_arr[0]), y(in_arr[1]), z(in_arr[2]), w(in_arr[2]) {}
 
@@ -55,13 +52,7 @@ namespace cat {
 		CX_FORCE_INLINE CxVec4(const CxVec3 &in_v, CxReal in_w)
 			: x(in_v.x), y(in_v.y), z(in_v.z), w(in_w) {}
 
-		/**
-		 * @brief Initialise the elements of the vector.
-		 * @param in_x The x-component of the vector.
-		 * @param in_y The y-component of the vector.
-		 * @param in_z The z-component of the vector.
-		 * @param in_w The w-component of the vector.
-		 */
+		/** @brief Initialise the elements of the vector. */
 		CX_FORCE_INLINE CxVec4(CxReal in_x, CxReal in_y, CxReal in_z, CxReal in_w)
 			: x(in_x), y(in_y), z(in_z), w(in_w) {}
 
@@ -92,7 +83,7 @@ namespace cat {
 		}
 
 		/** @return True if the two vectors are not strictly equal. */
-		CX_FORCE_INLINE CxBool operator==(const CxVec4 &in_v) const {
+		CX_FORCE_INLINE CxBool operator!=(const CxVec4 &in_v) const {
 			return (x != in_v.x) || (y != in_v.y) || (z != in_v.z) || (w != in_v.w);
 		}
 
@@ -175,7 +166,7 @@ namespace cat {
 		}
 
 		/** @brief Divide this vector by another vector, element-wise. */
-		CX_FORCE_INLINE CxVec4& operator*=(const CxVec4 &in_v) {
+		CX_FORCE_INLINE CxVec4& operator/=(const CxVec4 &in_v) {
 			CXD_IF_ERR(in_v.x == 0.0f || in_v.y == 0.0f || in_v.z == 0.0f || in_v.w == 0.0f,
 						  "Cannot divide by a CxVec4 with a zero element.");
 			x *= in_v.x; y *= in_v.y; z *= in_v.z; w *= in_v.w;  return *this;
@@ -251,6 +242,11 @@ namespace cat {
 
 		/** @return A CxVec3 from the x, y and z components of this vector. */
 		CX_FORCE_INLINE CxVec3 xyz() const { return CxVec3(x, y, z); }
+
+		/** @brief Method to set all the components of the vector. */
+		CX_FORCE_INLINE void setXYZW(CxReal in_x, CxReal in_y, CxReal in_z CxReal in_w) {
+			x = in_x;  y = in_y;  z = in_z;  w = in_w;
+		}
 	};
 
 	/**
