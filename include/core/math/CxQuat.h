@@ -45,7 +45,7 @@ namespace cat {
 
 		/**
 		 * @brief Initialise the quaternion from an axis and angle.
-		 * @param in_axis The normalised axis of rotation.
+		 * @param in_axis The normalized axis of rotation.
 		 * @param in_angleRad The angle to rotate by in radians.
 		 */
 		CxQuat(const CxVec3 &in_axis, CxReal in_angleRad);
@@ -176,7 +176,7 @@ namespace cat {
 			return CxSqrt(magnitudeSquared());
 		}
 
-		/** @brief Normalise the quaternion. */
+		/** @brief Normalize the quaternion. */
 		CX_FORCE_INLINE void normalize() {
 			const CxReal mag_squared = magnitudeSquared();
 			if (mag_squared > CX_QUAT_NORM_EPS) {
@@ -184,7 +184,7 @@ namespace cat {
 			}
 		}
 
-		/** @return A copy of the quaternion, normalised. */
+		/** @return A copy of the quaternion, normalized. */
 		CX_FORCE_INLINE CxQuat normalized() const {
 			const CxReal mag_squared = magnitudeSquared();
 			return (mag_squared > CX_QUAT_NORM_EPS) ? (*this) * CxRecipSqrt(mag_squared) : CxQuat(0.0f);
@@ -355,7 +355,7 @@ namespace cat {
 
 	/** @return Return true if the two quaternions (a and b) are equal within a given error. */
 	CX_FORCE_INLINE CxQuat CxEq(const CxQuat &in_a, const CxQuat &in_b, CxReal in_epsilon = CX_REAL_EPSILON) {
-		return CxEq(in_a.x, in_b.x) && CxEq(in_a.y, in_b.y) && CxEq(in_a.z, in_b.z) && CxEq(in_a.z, in_b.z);
+		return CxEq(in_a.x, in_b.x) && CxEq(in_a.y, in_b.y) && CxEq(in_a.z, in_b.z) && CxEq(in_a.w, in_b.w);
 	}
 
 	/** @return True if all elements of the quaternion are finite values (not NaN or INF). */

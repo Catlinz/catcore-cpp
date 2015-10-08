@@ -205,31 +205,31 @@ namespace cat {
 			return CxMin(x, CxMin(y, z));
 		}
 
-		/** @brief Normalise the vector. */
-		CX_FORCE_INLINE void normalise() {
+		/** @brief Normalize the vector. */
+		CX_FORCE_INLINE void normalize() {
 			const CxReal mag_squared = magnitudeSquared();
 			if (mag_squared > CX_VEC3_NORM_EPS) {
 				(*this) *= CxRecipSqrt(mag_squared);
 			}
 		}
 
-		/** @brief Normalise the vector, assuming the vector is non-zero. */
-		CX_FORCE_INLINE void normaliseNonZero() {
+		/** @brief Normalize the vector, assuming the vector is non-zero. */
+		CX_FORCE_INLINE void normalizeNonZero() {
 			const CxReal mag_squared = magnitudeSquared();
-			CXD_IF_CRASH((mag_squared == 0.0f), "Cannot normalise a zero-vector.");
+			CXD_IF_CRASH((mag_squared == 0.0f), "Cannot normalize a zero-vector.");
 			(*this) *= CxRecipSqrt(mag_squared);
 		}
 
-		/** @return A copy of the vector, normalised. */
-		CX_FORCE_INLINE CxVec3 normalised() const {
+		/** @return A copy of the vector, normalized. */
+		CX_FORCE_INLINE CxVec3 normalized() const {
 			const CxReal mag_squared = magnitudeSquared();
 			return (mag_squared > CX_VEC3_NORM_EPS) ? (*this) * CxRecipSqrt(mag_squared) : CxVec3(0.0f);
 		}
 
-		/** @return A copy of the vector, normalised, assuming that the vector is non-zero.*/
-		CX_FORCE_INLINE CxVec3 normalisedNonZero() const {
+		/** @return A copy of the vector, normalized, assuming that the vector is non-zero.*/
+		CX_FORCE_INLINE CxVec3 normalizedNonZero() const {
 			const CxReal mag_squared = magnitudeSquared();
-			CXD_IF_CRASH((mag_squared == 0.0f), "Cannot normalise a zero-vector.");
+			CXD_IF_CRASH((mag_squared == 0.0f), "Cannot normalize a zero-vector.");
 			return (*this) * CxRecipSqrt(mag_squared);
 		}
 

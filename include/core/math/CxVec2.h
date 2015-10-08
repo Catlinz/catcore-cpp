@@ -14,13 +14,8 @@
 #include "core/Cx.h"
 #include "core/math/CxMath.h"
 
-#if !defined(CX_REAL64)
-#  define CX_VEC2_UNIT_EPS 1e-4f
+#  define CX_VEC2_UNIT_EPS 1e-6f
 #  define CX_VEC2_NORM_EPS 1e-10f
-#else
-#  define CX_VEC2_UNIT_EPS 1e-6
-#  define CX_VEC2_NORM_EPS 1e-20f
-#endif
 
 namespace cat {
 
@@ -209,31 +204,31 @@ namespace cat {
 			return CxMin(x, y);
 		}
 
-		/** @brief Normalise the vector. */
-		CX_FORCE_INLINE void normalise() {
+		/** @brief Normalize the vector. */
+		CX_FORCE_INLINE void normalize() {
 			const CxReal mag_squared = magnitudeSquared();
 			if (mag_squared > CX_VEC2_NORM_EPS) {
 				(*this) *= CxRecipSqrt(mag_squared);
 			}
 		}
 
-		/** @brief Normalise the vector, assuming the vector is non-zero. */
-		CX_FORCE_INLINE void normaliseNonZero() {
+		/** @brief Normalize the vector, assuming the vector is non-zero. */
+		CX_FORCE_INLINE void normalizeNonZero() {
 			const CxReal mag_squared = magnitudeSquared();
-			CXD_IF_CRASH((mag_squared == 0.0f), "Cannot normalise a zero-vector.");
+			CXD_IF_CRASH((mag_squared == 0.0f), "Cannot normalize a zero-vector.");
 			(*this) *= CxRecipSqrt(mag_squared);
 		}
 
-		/** @return A copy of the vector, normalised. */
-		CX_FORCE_INLINE CxVec2 normalised() const {
+		/** @return A copy of the vector, normalized. */
+		CX_FORCE_INLINE CxVec2 normalized() const {
 			const CxReal mag_squared = magnitudeSquared();
 			return (mag_squared > CX_VEC2_NORM_EPS) ? (*this) * CxRecipSqrt(mag_squared) : CxVec2(0.0f);
 		}
 
-		/** @return A copy of the vector, normalised, assuming that the vector is non-zero.*/
-		CX_FORCE_INLINE CxVec2 normalisedNonZero() const {
+		/** @return A copy of the vector, normalized, assuming that the vector is non-zero.*/
+		CX_FORCE_INLINE CxVec2 normalizedNonZero() const {
 			const CxReal mag_squared = magnitudeSquared();
-			CXD_IF_CRASH((mag_squared == 0.0f), "Cannot normalise a zero-vector.");
+			CXD_IF_CRASH((mag_squared == 0.0f), "Cannot normalize a zero-vector.");
 			return (*this) * CxRecipSqrt(mag_squared);
 		}
 

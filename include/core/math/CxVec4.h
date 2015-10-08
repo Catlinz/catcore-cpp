@@ -204,31 +204,31 @@ namespace cat {
 			return CxMin(CxMin(x, y), CxMin(z, w));
 		}
 
-		/** @brief Normalise the vector. */
-		CX_FORCE_INLINE void normalise() {
+		/** @brief Normalize the vector. */
+		CX_FORCE_INLINE void normalize() {
 			const CxReal mag_squared = magnitudeSquared();
 			if (mag_squared > CX_VEC4_NORM_EPS) {
 				(*this) *= CxRecipSqrt(mag_squared);
 			}
 		}
 
-		/** @brief Normalise the vector, assuming the vector is non-zero. */
-		CX_FORCE_INLINE void normaliseNonZero() {
+		/** @brief Normalize the vector, assuming the vector is non-zero. */
+		CX_FORCE_INLINE void normalizeNonZero() {
 			const CxReal mag_squared = magnitudeSquared();
-			CXD_IF_CRASH((mag_squared == 0.0f), "Cannot normalise a zero-vector.");
+			CXD_IF_CRASH((mag_squared == 0.0f), "Cannot normalize a zero-vector.");
 			(*this) *= CxRecipSqrt(mag_squared);
 		}
 
-		/** @return A copy of the vector, normalised. */
-		CX_FORCE_INLINE CxVec4 normalised() const {
+		/** @return A copy of the vector, normalized. */
+		CX_FORCE_INLINE CxVec4 normalized() const {
 			const CxReal mag_squared = magnitudeSquared();
 			return (mag_squared > CX_VEC4_NORM_EPS) ? (*this) * CxRecipSqrt(mag_squared) : CxVec4(0.0f);
 		}
 
-		/** @return A copy of the vector, normalised, assuming that the vector is non-zero.*/
-		CX_FORCE_INLINE CxVec4 normalisedNonZero() const {
+		/** @return A copy of the vector, normalized, assuming that the vector is non-zero.*/
+		CX_FORCE_INLINE CxVec4 normalizedNonZero() const {
 			const CxReal mag_squared = magnitudeSquared();
-			CXD_IF_CRASH((mag_squared == 0.0f), "Cannot normalise a zero-vector.");
+			CXD_IF_CRASH((mag_squared == 0.0f), "Cannot normalize a zero-vector.");
 			return (*this) * CxRecipSqrt(mag_squared);
 		}
 
@@ -339,7 +339,7 @@ namespace cat {
 
 	/** @return Return true if the two vectors (a and b) are equal within a given error. */
 	CX_FORCE_INLINE CxVec4 CxEq(const CxVec4 &in_a, const CxVec4 &in_b, CxReal in_epsilon = CX_REAL_EPSILON) {
-		return CxEq(in_a.x, in_b.x) && CxEq(in_a.y, in_b.y) && CxEq(in_a.z, in_b.z) && CxEq(in_a.z, in_b.z);
+		return CxEq(in_a.x, in_b.x) && CxEq(in_a.y, in_b.y) && CxEq(in_a.z, in_b.z) && CxEq(in_a.w, in_b.w);
 	}
 
 	/** @return A vector containing each original element as an exponent of e [e^x, e^y, e^z]. */
