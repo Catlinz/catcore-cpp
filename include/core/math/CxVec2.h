@@ -27,9 +27,7 @@ namespace cat {
 		CX_FORCE_INLINE CxVec2() {}
 	
 		/** @brief Initialise the vector to all zeros. */
-		CX_FORCE_INLINE CxVec2(CxZero in_z) : x(0.0f), y(0.0f) {
-			CX_UNUSED(in_z);
-		}
+		CX_FORCE_INLINE CxVec2(CxZero) : x(0.0f), y(0.0f) {}
 
 		/**
 		 * @brief Initialise all elements to the same value.

@@ -15,7 +15,7 @@
 #include "core/math/CxMath.h"
 #include "core/math/CxVec3.h"
 
-#  define CX_VEC4_UNIT_EPS 1e-6f
+#  define CX_VEC4_UNIT_EPS 1e-8f
 #  define CX_VEC4_NORM_EPS 1e-10f
 
 namespace cat {
@@ -164,19 +164,19 @@ namespace cat {
 		CX_FORCE_INLINE CxVec4& operator/=(const CxVec4 &in_v) {
 			CXD_IF_ERR(in_v.x == 0.0f || in_v.y == 0.0f || in_v.z == 0.0f || in_v.w == 0.0f,
 						  "Cannot divide by a CxVec4 with a zero element.");
-			x *= in_v.x; y *= in_v.y; z *= in_v.z; w *= in_v.w;  return *this;
+			x /= in_v.x; y /= in_v.y; z /= in_v.z; w /= in_v.w;  return *this;
 		}
 
 		/** @brief Divide this vector by a scalar. */
 		CX_FORCE_INLINE CxVec4& operator/=(CxReal in_s) {
-			in_s = 1.0f / in_s;
-			x *= in_s; y *= in_s; z *= in_s; w *= in_s;  return *this;
+			const CxReal s = 1.0f / in_s;
+			x *= s; y *= s; z *= s; w *= s;  return *this;
 		}
 	
 		/** @return True if the vector is roughly of unit length. */
 		CX_FORCE_INLINE CxBool isUnit() const {
 			const CxReal unit_eps = CX_VEC4_UNIT_EPS;
-			return CxAbs(magnitudeSquared() - 1) < unit_eps;
+			return CxAbs(magnitudeSqr() - 1) < unit_eps;
 		}
 	
 		/** @return True if all the elements are exactly zero */
@@ -185,13 +185,13 @@ namespace cat {
 		}
 
 		/** @return The square of the vector's magnitude (length). */
-		CX_FORCE_INLINE CxReal magnitudeSquared() const {
+		CX_FORCE_INLINE CxReal magnitudeSqr() const {
 			return (x*x) + (y*y) + (z*z) + (w*w);
 		}
 
 		/** @return The the vector's magnitude (length). */
 		CX_FORCE_INLINE CxReal magnitude() const {
-			return CxSqrt(magnitudeSquared());
+			return CxSqrt(magnitudeSqr());
 		}
 
 		/** @return The maximum element of the vector. */
@@ -206,7 +206,7 @@ namespace cat {
 
 		/** @brief Normalize the vector. */
 		CX_FORCE_INLINE void normalize() {
-			const CxReal mag_squared = magnitudeSquared();
+			const CxReal mag_squared = magnitudeSqr();
 			if (mag_squared > CX_VEC4_NORM_EPS) {
 				(*this) *= CxRecipSqrt(mag_squared);
 			}
@@ -214,20 +214,20 @@ namespace cat {
 
 		/** @brief Normalize the vector, assuming the vector is non-zero. */
 		CX_FORCE_INLINE void normalizeNonZero() {
-			const CxReal mag_squared = magnitudeSquared();
+			const CxReal mag_squared = magnitudeSqr();
 			CXD_IF_CRASH((mag_squared == 0.0f), "Cannot normalize a zero-vector.");
 			(*this) *= CxRecipSqrt(mag_squared);
 		}
 
 		/** @return A copy of the vector, normalized. */
 		CX_FORCE_INLINE CxVec4 normalized() const {
-			const CxReal mag_squared = magnitudeSquared();
+			const CxReal mag_squared = magnitudeSqr();
 			return (mag_squared > CX_VEC4_NORM_EPS) ? (*this) * CxRecipSqrt(mag_squared) : CxVec4(0.0f);
 		}
 
 		/** @return A copy of the vector, normalized, assuming that the vector is non-zero.*/
 		CX_FORCE_INLINE CxVec4 normalizedNonZero() const {
-			const CxReal mag_squared = magnitudeSquared();
+			const CxReal mag_squared = magnitudeSqr();
 			CXD_IF_CRASH((mag_squared == 0.0f), "Cannot normalize a zero-vector.");
 			return (*this) * CxRecipSqrt(mag_squared);
 		}
@@ -248,14 +248,6 @@ namespace cat {
 			x = in_x;  y = in_y;  z = in_z;  w = in_w;
 		}
 	};
-
-	/**
-	 * @brief Overloaded method to multiply a scalar by a vector (in_s * in_v).
-	 * @return The vector result of in_s * in_v.
-	 */
-	CX_FORCE_INLINE CxVec4 operator*(CxReal in_s, const CxVec4 &in_v) {
-		return CxVec4(in_s*in_v.x, in_s*in_v.y, in_s*in_v.z, in_s*in_v.w);
-	}
 
 	/** @return A vector containing the absolute value of each element. */
 	CX_FORCE_INLINE CxVec4 CxAbs(const CxVec4& in_v) {
@@ -289,7 +281,6 @@ namespace cat {
 	 * @param in_max The highest value to clamp to.
 	 * @return A reference to the clamped vector.
 	 */
-	template <>
 	CX_FORCE_INLINE CxVec4 & CxClamp(CxVec4& in_v, CxReal in_min, CxReal in_max) {
 		CxClamp(in_v.x, in_min, in_max);
 		CxClamp(in_v.y, in_min, in_max);
@@ -315,7 +306,6 @@ namespace cat {
 	}
 
 	/** @return A vector with each element clamped to a given range [min,max]. */
-	template<>
 	CX_FORCE_INLINE CxVec4 CxClamped(const CxVec4& in_v, CxReal in_min, CxReal in_max) {
 		return CxVec4(CxClamped(in_v.x, in_min, in_max),
 						  CxClamped(in_v.y, in_min, in_max),
@@ -325,7 +315,7 @@ namespace cat {
 
 	/** @return A vector with each element clamped to a given range [min,max]. */
 	template<>
-	CX_FORCE_INLINE CxVec4 CxClamped(const CxVec4& in_v, const CxVec4 &in_min, const CxVec4 &in_maxx) {
+	CX_FORCE_INLINE CxVec4 CxClamped(const CxVec4& in_v, const CxVec4 &in_min, const CxVec4 &in_max) {
 		return CxVec4(CxClamped(in_v.x, in_min.x, in_max.x),
 						  CxClamped(in_v.y, in_min.y, in_max.y),
 						  CxClamped(in_v.z, in_min.z, in_max.z),
@@ -343,8 +333,11 @@ namespace cat {
 	}
 
 	/** @return Return true if the two vectors (a and b) are equal within a given error. */
-	CX_FORCE_INLINE CxVec4 CxEq(const CxVec4 &in_a, const CxVec4 &in_b, CxReal in_epsilon = CX_REAL_EPSILON) {
-		return CxEq(in_a.x, in_b.x) && CxEq(in_a.y, in_b.y) && CxEq(in_a.z, in_b.z) && CxEq(in_a.w, in_b.w);
+	CX_FORCE_INLINE CxBool CxEq(const CxVec4 &in_a, const CxVec4 &in_b, CxReal in_epsilon = CX_REAL_EPSILON) {
+		return (CxEq(in_a.x, in_b.x, in_epsilon) &&
+				  CxEq(in_a.y, in_b.y, in_epsilon) &&
+				  CxEq(in_a.z, in_b.z, in_epsilon) &&
+				  CxEq(in_a.w, in_b.w, in_epsilon));
 	}
 
 	/** @return A vector containing each original element as an exponent of e [e^x, e^y, e^z]. */
@@ -359,7 +352,7 @@ namespace cat {
 
 	/** @return True if all elements of the vector are finite values (not NaN or INF). */
 	CX_FORCE_INLINE CxBool CxIsFinite(const CxVec4 &in_v) {
-		return isFinite(in_v.x) && isFinite(in_v.y) && isFinite(in_v.z) && isFinite(in_v.w);
+		return CxIsFinite(in_v.x) && CxIsFinite(in_v.y) && CxIsFinite(in_v.z) && CxIsFinite(in_v.w);
 	}
 
 	/** @return A vector containing the log base b of each element in the vector. */

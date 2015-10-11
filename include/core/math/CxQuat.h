@@ -15,7 +15,7 @@
 #include "core/math/CxMath.h"
 #include "core/math/CxVec3.h"
 
-#  define CX_QUAT_UNIT_EPS 1e-6f
+#  define CX_QUAT_UNIT_EPS 1e-8f
 #  define CX_QUAT_NORM_EPS 1e-10f
 
 namespace cat {
@@ -152,13 +152,13 @@ namespace cat {
 		/** @return True if the quaternion is roughly of unit length. */
 		CX_FORCE_INLINE CxBool isCloseToUnit() const {
 			const CxReal unit_eps = 1e-3f;
-			return CxAbs(magnitudeSquared() - 1) < unit_eps;
+			return CxAbs(magnitudeSqr() - 1) < unit_eps;
 		}
 
 		/** @return True if the quaternion is roughly of unit length. */
 		CX_FORCE_INLINE CxBool isUnit() const {
 			const CxReal unit_eps = CX_QUAT_UNIT_EPS;
-			return CxAbs(magnitudeSquared() - 1) < unit_eps;
+			return CxAbs(magnitudeSqr() - 1) < unit_eps;
 		}
 	
 		/** @return True if all the elements are exactly zero */
@@ -167,18 +167,18 @@ namespace cat {
 		}
 
 		/** @return The square of the quaternion's magnitude (length). */
-		CX_FORCE_INLINE CxReal magnitudeSquared() const {
+		CX_FORCE_INLINE CxReal magnitudeSqr() const {
 			return (x*x) + (y*y) + (z*z) + (w*w);
 		}
 
 		/** @return The the quaternion's magnitude (length). */
 		CX_FORCE_INLINE CxReal magnitude() const {
-			return CxSqrt(magnitudeSquared());
+			return CxSqrt(magnitudeSqr());
 		}
 
 		/** @brief Normalize the quaternion. */
 		CX_FORCE_INLINE void normalize() {
-			const CxReal mag_squared = magnitudeSquared();
+			const CxReal mag_squared = magnitudeSqr();
 			if (mag_squared > CX_QUAT_NORM_EPS) {
 				(*this) *= CxRecipSqrt(mag_squared);
 			}
@@ -186,7 +186,7 @@ namespace cat {
 
 		/** @return A copy of the quaternion, normalized. */
 		CX_FORCE_INLINE CxQuat normalized() const {
-			const CxReal mag_squared = magnitudeSquared();
+			const CxReal mag_squared = magnitudeSqr();
 			return (mag_squared > CX_QUAT_NORM_EPS) ? (*this) * CxRecipSqrt(mag_squared) : CxQuat(0.0f);
 		}
 
@@ -354,13 +354,16 @@ namespace cat {
 	}
 
 	/** @return Return true if the two quaternions (a and b) are equal within a given error. */
-	CX_FORCE_INLINE CxQuat CxEq(const CxQuat &in_a, const CxQuat &in_b, CxReal in_epsilon = CX_REAL_EPSILON) {
-		return CxEq(in_a.x, in_b.x) && CxEq(in_a.y, in_b.y) && CxEq(in_a.z, in_b.z) && CxEq(in_a.w, in_b.w);
+	CX_FORCE_INLINE CxBool CxEq(const CxQuat &in_a, const CxQuat &in_b, CxReal in_epsilon = CX_REAL_EPSILON) {
+		return (CxEq(in_a.x, in_b.x, in_epsilon) &&
+				  CxEq(in_a.y, in_b.y, in_epsilon) &&
+				  CxEq(in_a.z, in_b.z, in_epsilon) &&
+				  CxEq(in_a.w, in_b.w, in_epsilon));
 	}
 
 	/** @return True if all elements of the quaternion are finite values (not NaN or INF). */
 	CX_FORCE_INLINE CxBool CxIsFinite(const CxQuat &in_v) {
-		return isFinite(in_v.x) && isFinite(in_v.y) && isFinite(in_v.z) && isFinite(in_v.w);
+		return CxIsFinite(in_v.x) && CxIsFinite(in_v.y) && CxIsFinite(in_v.z) && CxIsFinite(in_v.w);
 	}
 
 	/**

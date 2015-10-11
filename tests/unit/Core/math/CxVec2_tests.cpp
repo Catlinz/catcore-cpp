@@ -107,7 +107,7 @@ namespace cat {
 
 		ass_true(v0.magnitude() == 0 && v0.magnitudeSqr() == 0);
 		ass_true(v2.magnitude() == 1 && v2.magnitudeSqr() == 1);
-		ass_true(v3.magnitude() == 1 && v2.magnitudeSqr() == 1);
+		ass_true(v3.magnitude() == 1 && v3.magnitudeSqr() == 1);
 		ass_true(CxEq(v1.magnitude(), kCxSqrtTwo) && v1.magnitudeSqr() == 2);
 		ass_true(CxEq(v4.magnitude(), CxSqrt(20.f)) && v4.magnitudeSqr() == 20);
 	   ass_true(CxEq(v5.magnitude(), kCxSqrtTwo) && v5.magnitudeSqr() == 2);
