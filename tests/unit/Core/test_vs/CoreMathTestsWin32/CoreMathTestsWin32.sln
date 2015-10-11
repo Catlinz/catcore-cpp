@@ -7,6 +7,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CoreMathTestsWin32", "CoreM
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CxVec2Tests", "..\CxVec2Tests\CxVec2Tests.vcxproj", "{96677808-ACEA-48AA-82CC-ED7B597061EB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CxVec3Tests", "..\CxVec3Tests\CxVec3Tests.vcxproj", "{04024920-2C03-4409-948B-26F0A30B6966}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CxVec4Tests", "..\CxVec4Tests\CxVec4Tests.vcxproj", "{08A378BE-59CF-4430-A9D4-C36CD056490F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -21,6 +25,14 @@ Global
 		{96677808-ACEA-48AA-82CC-ED7B597061EB}.Debug|Win32.Build.0 = Debug|Win32
 		{96677808-ACEA-48AA-82CC-ED7B597061EB}.Release|Win32.ActiveCfg = Release|Win32
 		{96677808-ACEA-48AA-82CC-ED7B597061EB}.Release|Win32.Build.0 = Release|Win32
+		{04024920-2C03-4409-948B-26F0A30B6966}.Debug|Win32.ActiveCfg = Debug|Win32
+		{04024920-2C03-4409-948B-26F0A30B6966}.Debug|Win32.Build.0 = Debug|Win32
+		{04024920-2C03-4409-948B-26F0A30B6966}.Release|Win32.ActiveCfg = Release|Win32
+		{04024920-2C03-4409-948B-26F0A30B6966}.Release|Win32.Build.0 = Release|Win32
+		{08A378BE-59CF-4430-A9D4-C36CD056490F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{08A378BE-59CF-4430-A9D4-C36CD056490F}.Debug|Win32.Build.0 = Debug|Win32
+		{08A378BE-59CF-4430-A9D4-C36CD056490F}.Release|Win32.ActiveCfg = Release|Win32
+		{08A378BE-59CF-4430-A9D4-C36CD056490F}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

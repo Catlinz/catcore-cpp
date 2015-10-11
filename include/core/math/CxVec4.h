@@ -68,7 +68,7 @@ namespace cat {
 
 		/** @brief Const array style element access. */
 		CX_FORCE_INLINE const CxReal& operator[](CxI32 in_idx) const {
-			CXD_IF_ERR((in_idx < 0 || in_idx > 2), "CxVec4 index out of bounds!");
+			CXD_IF_ERR((in_idx < 0 || in_idx > 3), "CxVec4 index out of bounds!");
 			return reinterpret_cast<const CxReal *>(this)[in_idx];
 		}
 
@@ -119,7 +119,7 @@ namespace cat {
 
 		/** @return The vector result of element-wise division of this / in_v. */
 		CX_FORCE_INLINE CxVec4 operator/(const CxVec4 &in_v) const {
-			CXD_IF_ERR((in_v.x == 0.0f || in_v.y == 0.0f || in_v.z == 0.0f || in_w.z == 0.0f),
+			CXD_IF_ERR((in_v.x == 0.0f || in_v.y == 0.0f || in_v.z == 0.0f || in_v.w == 0.0f),
 						  "Cannot divide by vector with zero element.");
 			return CxVec4(x/in_v.x, y/in_v.y, z/in_v.z, w/in_v.w);
 		}
@@ -244,7 +244,7 @@ namespace cat {
 		}
 
 		/** @brief Method to set all the components of the vector. */
-		CX_FORCE_INLINE void setXYZW(CxReal in_x, CxReal in_y, CxReal in_z CxReal in_w) {
+		CX_FORCE_INLINE void setXYZW(CxReal in_x, CxReal in_y, CxReal in_z, CxReal in_w) {
 			x = in_x;  y = in_y;  z = in_z;  w = in_w;
 		}
 	};
@@ -357,7 +357,7 @@ namespace cat {
 
 	/** @return A vector containing the log base b of each element in the vector. */
 	CX_FORCE_INLINE CxVec4 CxLog(CxReal in_b, const CxVec4& in_v) {
-		return CxVec4(CxLog(in_b, in_v.x), CxLog(in_b, in_v.y), CxLog(in_b, in_v.z), CxLog(in_b, in_v.z));
+		return CxVec4(CxLog(in_b, in_v.x), CxLog(in_b, in_v.y), CxLog(in_b, in_v.z), CxLog(in_b, in_v.w));
 	}
 
 	/** @return A vector containing the natural logarithm of each element. */
