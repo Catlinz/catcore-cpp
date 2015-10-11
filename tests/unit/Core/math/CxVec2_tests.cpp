@@ -429,10 +429,10 @@ namespace cat {
 		/* Exponential, pow and Log */
 		v0 = CxVec2(1, 2);
 		r = CxExp(v0);
-		ass_true(CxEq(CxVec2(kCxE, kCxE*kCxE), r));
+		ass_true(CxEq(CxVec2(kCxE, kCxE*kCxE), r, 0.000001f));
 
 		r = CxLog(kCxE, v0);
-		ass_true(CxEq(CxVec2(kCxE, kCxE*kCxE), r));
+		ass_true(CxEq(CxVec2(0, 0.693147181f), r, 0.00001f));
 		r = CxLog(10, v0);
 		ass_true(CxEq(CxVec2(0, 0.30102999566f), r, 0.0001f));
 		

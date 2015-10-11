@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CoreMathTestsWin32", "CoreMathTestsWin32\CoreMathTestsWin32.vcxproj", "{D59B3837-13B1-4372-88CD-178C270F4BE6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CxVec2Tests", "..\CxVec2Tests\CxVec2Tests.vcxproj", "{96677808-ACEA-48AA-82CC-ED7B597061EB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D59B3837-13B1-4372-88CD-178C270F4BE6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D59B3837-13B1-4372-88CD-178C270F4BE6}.Debug|Win32.Build.0 = Debug|Win32
+		{D59B3837-13B1-4372-88CD-178C270F4BE6}.Release|Win32.ActiveCfg = Release|Win32
+		{D59B3837-13B1-4372-88CD-178C270F4BE6}.Release|Win32.Build.0 = Release|Win32
+		{96677808-ACEA-48AA-82CC-ED7B597061EB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{96677808-ACEA-48AA-82CC-ED7B597061EB}.Debug|Win32.Build.0 = Debug|Win32
+		{96677808-ACEA-48AA-82CC-ED7B597061EB}.Release|Win32.ActiveCfg = Release|Win32
+		{96677808-ACEA-48AA-82CC-ED7B597061EB}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
