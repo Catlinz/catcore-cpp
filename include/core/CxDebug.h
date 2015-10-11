@@ -52,6 +52,17 @@
 #  define CXD_OUT(fmt, ...)														\
 	do { if (IS_DEBUG) fprintf(stdout, fmt, __VA_ARGS__); } while (0)
 
+#  define CXD_IF_CRASH(cond, fmt, ...)										\
+	do { if (IS_DEBUG) {															\
+			if (cond) {																\
+				fprintf(stderr, "#----> FATAL %s:%d:%s(): " fmt "\n",	\
+						  __FILE__, __LINE__, __func__, __VA_ARGS__);	\
+				fflush(stderr);													\
+				assert(false);														\
+			}																			\
+		}																				\
+	} while (0)
+
 #  define CXD_IF_ERR(cond, fmt, ...)										\
 	do { if (IS_DEBUG) {															\
 			if (cond) {																\

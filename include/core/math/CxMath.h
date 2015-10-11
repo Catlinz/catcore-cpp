@@ -22,6 +22,13 @@
 #  include "xplt/CxXPltMath.h"
 #endif
 
+#if !defined(CX_INF)
+#  define CX_INF INFINITY
+#endif
+#if !defined(CX_NAN)
+#  define CX_NAN NAN
+#endif
+
 namespace cat {
 	
 	/* Some useful math constants */
@@ -31,7 +38,8 @@ namespace cat {
 	const CxReal kCxQuarterPi		= (CxReal)0.7853981633974483;
 	const CxReal kCxRecipPi			= (CxReal)0.3183098861837907;
 	const CxReal kCxRecipTwoPi		= (CxReal)0.1591549430918953;
-		
+
+	const CxReal kCxE             = (CxReal)2.7182818284590452;
 
 	const CxReal kCxSqrtTwo			= (CxReal)1.4142135623730950;
 	const CxReal kCxTwoSqrtTwo		= (CxReal)2.8284271247461901;
@@ -86,13 +94,15 @@ namespace cat {
 	 * @return A reference to the clamped value.
 	 */
 	template <typename T>
-	CX_FORCE_INLINE T& CxClamp(T &inout_val, T in_min, T in_max) {
+	CX_FORCE_INLINE T& CxClamp(T &inout_val, const T &in_min, const T &in_max) {
+		CXD_ASSERT(in_min < in_max);
 		inout_val = CxMin(in_max, CxMax(inout_val, in_min)); return inout_val;
 	}
 
 	/** @return The input value clamped to the range [min,max]. */
 	template <typename T>
-	CX_FORCE_INLINE T CxClamped(T in_val, T in_min, T in_max) {
+	CX_FORCE_INLINE T CxClamped(const T &in_val, const T &in_min, const T &in_max) {
+		CXD_ASSERT(in_min < in_max);
 		return CxMin(in_max, CxMax(in_val, in_min));
 	}
 
@@ -155,11 +165,15 @@ namespace cat {
 
 	/** @return The maximum value of a and b. */
 	template <typename T>
-	CX_FORCE_INLINE T CxMax(T in_a, T in_b) { return (in_a < in_b) ? in_b : in_a; }
+	CX_FORCE_INLINE T CxMax(const T &in_a, const T &in_b) {
+		return (in_a < in_b) ? in_b : in_a;
+	}
 
 	/** @return The minimum value of a and b. */
 	template <typename T>
-	CX_FORCE_INLINE T CxMin(T in_a, T in_b) { return (in_a < in_b) ? in_a : in_b; }
+	CX_FORCE_INLINE T CxMin(const T &in_a, const T &in_b) {
+		return (in_a < in_b) ? in_a : in_b;
+	}
 
 	/** @return A prime number >= the given number */
 	CxI32 CxNextPrime(CxI32 in_n);

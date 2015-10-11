@@ -78,20 +78,20 @@ namespace cat {
 #define CX_MAX_I8 127
 #define CX_MIN_I8 (-128)
 
-#define CX_F32_EPSILON 1e-20f
-#define CX_F64_EPSILON 1e-180
+#define CX_F32_EPSILON 1e-15f
+#define CX_F64_EPSILON 1e-100
 	
 	/* Define the size of a Real value */
 #if !defined(CX_REAL64)
 	typedef CxF32 CxReal;
 #  define CX_MAX_REAL CX_MAX_F32
 #  define CX_MIN_REAL CX_MIN_F32
-#  define CX_EPSILON CxReal(1e-20f)
+#  define CX_REAL_EPSILON CxReal(1e-20f)
 #else
 	typedef CxF64 CxReal;
 #  define CX_MAX_REAL CX_MAX_F64
 #  define CX_MIN_REAL CX_MIN_F64
-#  define CX_EPSILON CxReal(1e-180)
+#  define CX_REAL_EPSILON CxReal(1e-180)
 #endif
 
 	/**
