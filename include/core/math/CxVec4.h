@@ -238,6 +238,11 @@ namespace cat {
 		/** @return A CxVec3 from the x, y and z components of this vector. */
 		CX_FORCE_INLINE CxVec3 xyz() const { return CxVec3(x, y, z); }
 
+		/** @brief Set the first three components of the vector */
+		CX_FORCE_INLINE void setXYZ(CxReal in_x, CxReal in_y, CxReal in_z) {
+			x = in_x;  y = in_y;  z = in_z;
+		}
+
 		/** @brief Method to set all the components of the vector. */
 		CX_FORCE_INLINE void setXYZW(CxReal in_x, CxReal in_y, CxReal in_z CxReal in_w) {
 			x = in_x;  y = in_y;  z = in_z;  w = in_w;

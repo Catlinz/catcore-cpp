@@ -276,7 +276,7 @@ namespace cat {
 		 */
 		void setPerspective(CxReal in_fov, CxReal in_aspect, CxReal in_n, CxReal in_f);
 
-		/** @brief Set the matrix to a rotation matrix from a unit quaternion. */
+		/** @brief Set the 3x3 matrix to a rotation matrix from a unit quaternion. */
 		void setQuat(const CxQuat &in_q);
 
 
@@ -634,7 +634,6 @@ namespace cat {
 		col0.x = 1.0f - yy2 - zz2;  col0.y = xy2 + zw2;         col0.z = xz2 - yw2; col0.w = 0;
 		col1.x = xy2 - zw2;         col1.y = 1.0f - xx2 - zz2;  col1.z = yz2 + xw2; col1.w = 0;
 		col2.x = xz2 + yw2;         col2.y = yz2 - xw2;         col2.z = 1.0f - xx2 - yy2;  col2.w = 0;
-		col3.setXYZW(0,0,0,1);
 	}
 
 	CX_FORCE_INLINE CxVec4 CxMat4::transform(CxVec4 &in_v) const {

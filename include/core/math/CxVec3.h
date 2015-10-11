@@ -21,6 +21,10 @@ namespace cat {
 
 	class CxVec3 {
 	  public:
+		static const CxVec3 kLeft, kRight;
+		static const CxVec3 kUp, kDown;
+		static const CxVec3 kForward, kBackward;
+		
 		CxReal x, y, z;
 
 		/** @brief Vector is initialise to garbage. */
@@ -246,6 +250,13 @@ namespace cat {
 			x = in_x;  y = in_y;  z = in_z;
 		}
 	};
+
+	CxVec3 CxVec3::kLeft(-1,0,0);
+	CxVec3 CxVec3::kRight(1,0,0);
+	CxVec3 CxVec3::kUp(0,1,0);
+	CxVec3 CxVec3::kDown(0,-1,0);
+	CxVec3 CxVec3::kForward(0,0,1);
+	CxVec3 CxVec3::kBackward(0,0,-1);
 
 	/**
 	 * @brief Overloaded method to multiply a scalar by a vector (in_s * in_v).

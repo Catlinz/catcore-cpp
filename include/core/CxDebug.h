@@ -11,10 +11,19 @@
  * @date May 9, 2015
  */
 
+#if defined(DEBUG_2)
+#  if !defined(DEBUG)
+#    define DEBUG
+#  endif
+#endif
+
+
 #if defined(DEBUG)
 #  define IS_DEBUG 1
 #  include <assert.h>
 #  include <stdio.h>
+
+#  define CXD_ASSERT(exp) assert(exp)
 
 #  define CXD_CRASH(fmt, ...)												\
 	do { if (IS_DEBUG) {														\
@@ -130,8 +139,14 @@
 	} while (0)
 
 #  define CX_TODO(x)
+#  if defined(DEBUG_2)
+#    define CXD2_ASSERT(exp) assert(exp)
+#  else
+#    define CXD2_ASSERT(exp)
+#  endif // DEBUG_2
 #else
 #  define IS_DEBUG 0
+#  define CXD_ASSERT(exp)
 #  define CXD_CRASH(fmt, ...)
 #  define CXD_ERR(fmt, ...)
 #  define CXD_WARN(fmt, ...)
@@ -148,6 +163,8 @@
 #  define CXD_ISVALID_F32(x)
 #  define CXD_ISVALID_F64(x)
 #  define CXD_ISVALID_REAL(x)
+
+#  define CXD2_ASSERT(exp)
 
 #endif // defined DEBUG && !defined(STRIP_DEBUG)
 
