@@ -14,7 +14,7 @@
 #include "core/Cx.h"
 #include "core/math/CxMath.h"
 
-#  define CX_VEC2_UNIT_EPS 1e-8f
+#  define CX_VEC2_UNIT_EPS 1e-7f
 #  define CX_VEC2_NORM_EPS 1e-10f
 
 namespace cat {

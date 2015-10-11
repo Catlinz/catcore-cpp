@@ -15,10 +15,12 @@
 #include "core/math/CxMath.h"
 #include "core/math/CxVec3.h"
 
-#  define CX_QUAT_UNIT_EPS 1e-8f
+#  define CX_QUAT_UNIT_EPS 1e-7f
 #  define CX_QUAT_NORM_EPS 1e-10f
 
 namespace cat {
+
+	class CxMat3;
 
 	class CxQuat {
 	  public:
@@ -80,7 +82,7 @@ namespace cat {
 
 		/** @brief Const array style element access. */
 		CX_FORCE_INLINE const CxReal& operator[](CxI32 in_idx) const {
-			CXD_IF_ERR((in_idx < 0 || in_idx > 2), "CxQuat index out of bounds!");
+			CXD_IF_ERR((in_idx < 0 || in_idx > 3), "CxQuat index out of bounds!");
 			return reinterpret_cast<const CxReal *>(this)[in_idx];
 		}
 
@@ -151,7 +153,7 @@ namespace cat {
 
 		/** @return True if the quaternion is roughly of unit length. */
 		CX_FORCE_INLINE CxBool isCloseToUnit() const {
-			const CxReal unit_eps = 1e-3f;
+			const CxReal unit_eps = 1e-5f;
 			return CxAbs(magnitudeSqr() - 1) < unit_eps;
 		}
 
@@ -187,7 +189,7 @@ namespace cat {
 		/** @return A copy of the quaternion, normalized. */
 		CX_FORCE_INLINE CxQuat normalized() const {
 			const CxReal mag_squared = magnitudeSqr();
-			return (mag_squared > CX_QUAT_NORM_EPS) ? (*this) * CxRecipSqrt(mag_squared) : CxQuat(0.0f);
+			return (mag_squared > CX_QUAT_NORM_EPS) ? (*this) * CxRecipSqrt(mag_squared) : CxQuat(kCxZero);
 		}
 
 		/**
@@ -201,7 +203,7 @@ namespace cat {
 		CxVec3 rotateInv(const CxVec3 &in_v) const;
 
 		/** @brief Method to set all the components of the quaternion. */
-		CX_FORCE_INLINE void setXYZW(CxReal in_x, CxReal in_y, CxReal in_z CxReal in_w) {
+		CX_FORCE_INLINE void setXYZW(CxReal in_x, CxReal in_y, CxReal in_z, CxReal in_w) {
 			x = in_x;  y = in_y;  z = in_z;  w = in_w;
 		}
 		
@@ -245,7 +247,7 @@ namespace cat {
 		const CxVec3 axis = CxCross(in_startVec, in_endVec);
 		x = axis.x;  y = axis.y;  z = axis.z;
 		w = CxDot(in_startVec, in_endVec);
-		w += length();
+		w += magnitude();
 		normalize();
 	}
 
@@ -299,9 +301,9 @@ namespace cat {
 		const CxF32 dot2 = vxx2 + vyy2 + vzz2;
 		const CxF32 w2 = 2*w;
 				
-		return CxVec3(v.x*( xx-yy-zz+ww) + x*(dot2 - vxx2) + w2*(v.z*y - v.y*z),
-						  v.y*(-xx+yy-zz+ww) + y*(dot2 - vyy2) + w2*(v.x*z - v.z*x),
-						  v.z*(-xx-yy+zz+ww) + z*(dot2 - vzz2) + w2*(v.y*x - v.x*y));
+		return CxVec3(in_v.x*( xx-yy-zz+ww) + x*(dot2 - vxx2) + w2*(in_v.z*y - in_v.y*z),
+						  in_v.y*(-xx+yy-zz+ww) + y*(dot2 - vyy2) + w2*(in_v.x*z - in_v.z*x),
+						  in_v.z*(-xx-yy+zz+ww) + z*(dot2 - vzz2) + w2*(in_v.y*x - in_v.x*y));
 	}
 	
 	CX_FORCE_INLINE CxVec3 CxQuat::rotateInv(const CxVec3 &in_v) const {
@@ -313,19 +315,19 @@ namespace cat {
 		const CxF32 dot2 = vxx2 + vyy2 + vzz2;
 		const CxF32 w2 = 2*w;
 				
-		return CxVec3(v.x*( xx-yy-zz+ww) - x*(vxx2 - dot2) + w2*(v.y*z - v.z*y),
-						  v.y*(-xx+yy-zz+ww) - y*(vyy2 - dot2) + w2*(v.z*x - v.x*z),
-						  v.z*(-xx-yy+zz+ww) - z*(vzz2 - dot2) + w2*(v.x*y - v.y*x));
+		return CxVec3(in_v.x*( xx-yy-zz+ww) - x*(vxx2 - dot2) + w2*(in_v.y*z - in_v.z*y),
+						  in_v.y*(-xx+yy-zz+ww) - y*(vyy2 - dot2) + w2*(in_v.z*x - in_v.x*z),
+						  in_v.z*(-xx-yy+zz+ww) - z*(vzz2 - dot2) + w2*(in_v.x*y - in_v.y*x));
 	}
 
 	CX_FORCE_INLINE CxVec3 CxQuat::translation(CxReal in_dx, CxReal in_dy, CxReal in_dz) const {
 		const CxReal x2 = 2.0f*x;              const CxReal y2 = 2.0f*y;
 		const CxReal z2 = 2.0f*z;
-		const CxReal f1 = x*dy + w*dz - y*dx;  const CxReal f2 = x*dz - w*dy - z*dx;
-		const CxReal f3 = y*dz + w*dx - z*dy;
-		return CxVec3(dx + y2*f1 + z2*f2,
-						  dy - x2*f1 + z2*f3,
-						  dz - x2*f2 - y2*f3);
+		const CxReal f1 = x*in_dy + w*in_dz - y*in_dx;  const CxReal f2 = x*in_dz - w*in_dy - z*in_dx;
+		const CxReal f3 = y*in_dz + w*in_dx - z*in_dy;
+		return CxVec3(in_dx + y2*f1 + z2*f2,
+						  in_dy - x2*f1 + z2*f3,
+						  in_dz - x2*f2 - y2*f3);
 	}
 
 	CX_FORCE_INLINE CxVec3 CxQuat::xAxis() const {
@@ -400,10 +402,10 @@ namespace cat {
 		/* 1.) Make sure don't divide by zero (cos(1) = 1).
 		 * 2.) Use linear interpolation when near 180 to prevent NaN.
 		 */
-		if (q1_dot_q2 < 0.999f) {
-			const CxReal angle = CxAcos(q1_dot_q2);
+		if (a_dot_b < 0.999f) {
+			const CxReal angle = CxAcos(a_dot_b);
 			const CxReal s_a_recip = 1.0f / CxSin(angle);
-			const CxReal a_t = t*angle;
+			const CxReal a_t = in_t*angle;
 			const CxReal s1 = CxSin(angle - a_t)*s_a_recip;
 			const CxReal s2 = CxSin(a_t)*s_a_recip;
 			return CxQuat((in_a.x*s1 + qb.x*s2), (in_a.y*s1 + qb.y*s2),
