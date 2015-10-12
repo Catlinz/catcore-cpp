@@ -26,7 +26,7 @@ namespace cat {
 
 		/** @brief Initialise the matrix to all zeros. */
 		CX_INLINE CxMat4(CxZero)
-			: col0(CxZero), col1(CxZero), col2(CxZero), col3(CxZero) {}
+			: col0(kCxZero), col1(kCxZero), col2(kCxZero), col3(kCxZero) {}
 
 		/** @brief Initialise to the identity matrix. */
 		CX_INLINE CxMat4(CxIdentity)
@@ -34,11 +34,11 @@ namespace cat {
 			  col2(0, 0, 1, 0), col3(0, 0, 0, 1) {}
 
 		/** @brief Initialise the matrix from an array. */
-		explicit CX_INLINE CxMat4(const CxReal *in_arr)
-			: col0(in_arr[0],  in_arr[1],  in_arr[2],  in_arr[3]),
-			  col1(in_arr[4],  in_arr[5],  in_arr[6],  in_arr[7]),
-			  col2(in_arr[8],  in_arr[9],  in_arr[10], in_arr[11]),
-			  col3(in_arr[12], in_arr[13], in_arr[14], in_arr[15]) {}
+		explicit CX_INLINE CxMat4(const CxReal *in_src)
+			: col0(in_src[0],  in_src[1],  in_src[2],  in_src[3]),
+			  col1(in_src[4],  in_src[5],  in_src[6],  in_src[7]),
+			  col2(in_src[8],  in_src[9],  in_src[10], in_src[11]),
+			  col3(in_src[12], in_src[13], in_src[14], in_src[15]) {}
 
 		/**
 		 * @brief Initialise from a 3x3 rotation matrix (set rest to identity).
@@ -121,10 +121,10 @@ namespace cat {
 		}
 
 		/** @brief Array access of the columns of the matrix. */
-		CX_FORCE_INLINE CxReal & operator[](CxI32 in_idx) { return (&col0)[in_idx]; }
+		CX_FORCE_INLINE CxReal & operator[](CxI32 in_idx) { return (&(col0.x))[in_idx]; }
 
 		/** @brief Array access of the columns of the matrix. */
-		CX_FORCE_INLINE CxReal operator[](CxI32 in_idx) const { return (&col0)[in_idx]; }
+		CX_FORCE_INLINE CxReal operator[](CxI32 in_idx) const { return (&(col0.x))[in_idx]; }
 
 		/**
 		 * @brief Access an element of the matrix by it's column and row.
@@ -133,11 +133,11 @@ namespace cat {
 		 * @return The value at m[col][row].
 		 */
 		CX_FORCE_INLINE CxReal & operator()(CxI32 in_col, CxI32 in_row) {
-			return (&col0)[in_col*3 + in_row];
+			return (&(col0.x))[in_col*3 + in_row];
 		}
 		/** @see operator(CxI32, CxI32) */
 		CX_FORCE_INLINE CxReal operator()(CxI32 in_col, CxI32 in_row) const {
-			return (&col0)[in_col*3 + in_row];
+			return (&(col0.x))[in_col*3 + in_row];
 		}
 
 		/** @return A copy of the matrix with all entries negated. */
@@ -292,10 +292,10 @@ namespace cat {
 		CxVec3 transform(const CxVec3 &in_v) const;
 
 		/** @return A vector r transformed by the inverse matrix (r = M^-1v). */
-		CxVec3 transformInverse(const CxVec3 &in_v) const;
+		CxVec3 transformInv(const CxVec3 &in_v) const;
 		
 		/** @return A vector r transformed by the transposed matrix (r = M^Tv). */
-		CxVec3 transformTransposed(const CxVec3 &in_v) const;
+		CxVec3 transformTranspose(const CxVec3 &in_v) const;
 
 		/**
 		 * @brief Rotate a vector by the 3x3 rotational portion of the matrix.
@@ -305,10 +305,10 @@ namespace cat {
 	   CxVec3 transform3x3(const CxVec3 &in_v) const;
 
 		/** @return A vector r transformed by the inverse of the upper 3x3 matrix */
-	   CxVec3 transform3x3Inverse(const CxVec3 &in_v) const;
+	   CxVec3 transform3x3Inv(const CxVec3 &in_v) const;
 
 		/** @return A vector r transformed by the transpose of the upper 3x3 matrix */
-	   CxVec3 transform3x3Transposed(const CxVec3 &in_v) const;
+	   CxVec3 transform3x3Transpose(const CxVec3 &in_v) const;
 
 		/** @return The translation portion of the matrix [c3.x, c3.y, c3.z] */
 		CX_FORCE_INLINE CxVec3 translation() const {
@@ -498,7 +498,7 @@ namespace cat {
 		}
 		else {
 			CXD_WARN("Trying to get Inverse of non-invertable CxMat4");
-			return CxMat4(CxIdentity);
+			return CxMat4(kCxIdentity);
 		}
 	}
 
@@ -652,7 +652,7 @@ namespace cat {
 						  col0.z*x + col1.z*y + col2.z*z + col3.z);
 	}
 
-	CX_INLINE CxVec3 CxMat4::transformInverse(CxVec3 &in_v) const {
+	CX_INLINE CxVec3 CxMat4::transformInv(CxVec3 &in_v) const {
 		const CxReal det_m = determinant();
 		const CxReal x = in_v.x;  const CxReal y = in_v.y;  const CxReal z = in_v.z;
 		if (det_m != 0) {
@@ -689,7 +689,7 @@ namespace cat {
 		}
 	}
 
-	CX_FORCE_INLINE CxVec3 CxMat4::transformTransposed(CxVec3 &in_v) const {
+	CX_FORCE_INLINE CxVec3 CxMat4::transformTranspose(CxVec3 &in_v) const {
 		const CxReal x = in_v.x;  const CxReal y = in_v.y;  const CxReal z = in_v.z;
 		/* (dot(col0, v), dot(col1, v), dot(col2, v)) */
 		return CxVec3(col0.x*x + col0.y*y + col0.z*z + col0.w,
@@ -704,7 +704,7 @@ namespace cat {
 						  col0.z*x + col1.z*y + col2.z*z);
 	}
 
-	CX_FORCE_INLINE CxVec3 CxMat4::transform3x3Inverse(CxVec3 &in_v) const {
+	CX_FORCE_INLINE CxVec3 CxMat4::transform3x3Inv(CxVec3 &in_v) const {
 		const CxReal det_m = determinant3x3();
 		if (det_m != 0) {
 			const CxReal dr = 1.0f/det_m;

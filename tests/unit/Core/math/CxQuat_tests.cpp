@@ -1,4 +1,5 @@
 #include "core/math/CxQuat.h"
+#include "core/math/CxMat3.h"
 #include "core/CxTestCore.h"
 
 namespace cat {
@@ -109,7 +110,7 @@ namespace cat {
 		ass_true(v3.isCloseToUnit() && (-v3).isCloseToUnit());
 		ass_true(v3a.isCloseToUnit() && (-v3a).isCloseToUnit());
 		ass_true(v4.isCloseToUnit() || v5.isCloseToUnit() || v7.isCloseToUnit());
-		v0 = CxQuat(1, 0.01f, 0, 0);
+		v0 = CxQuat(1, 0.1f, 0, 0);
 		ass_false(v0.isCloseToUnit());
 
 		v0.setXYZW(-3, 2, 1, 4);
@@ -476,15 +477,43 @@ namespace cat {
 	void testCxQuatFromMat3() {
 		BEGIN_TEST;
 
-		assert(false);
+		CxMat3 m0(CxVec3(0.875595017799836f,
+							  0.4200310908994311f,
+							  -0.23855239986623264f),
+					 CxVec3(-0.3817526348378421f,
+							  0.9043038598460277f,
+							  0.1910483050485956f),
+					 CxVec3(0.29597008395861607f,
+							  -0.07621293686382874f,
+							  0.9521519299230139f)
+			);
+		CxQuat q0(m0);
+		ass_true(q0.isUnit());
+		ass_true(CxEq(CxQuat(0.0691723f, 0.1383446f, 0.207516898f, 0.96592583f), q0, 0.000001f));
 
-		FINISH_TEST;
-	}
 
-	void testCxQuatFromStartEnd() {
-		BEGIN_TEST;
+		CxMat3 m1(CxVec3(-0.5851705825303655f,
+							  0.810819106826205f,
+							  -0.012155877040681329f),
+					 CxVec3(-0.32307431220147687f,
+							  -0.21936198656181954f,
+							  0.9205994284417055f),
+					 CxVec3(0.7437730689777732f,
+							  0.5426349554324782f,
+							  0.39031900671909026f)
+			);
+		CxQuat q1(m1);
+		ass_true(q1.isUnit());
+		ass_true(CxEq(CxQuat(0.24691719f, 0.49383438247f, 0.74075157371f, 0.3826834324f), q1, 0.000001f));
 
-		assert(false);
+
+		CxMat3 m2(CxVec3(1,0,0),
+					 CxVec3(0, -0.7071067811865475, 0.7071067811865476),
+					 CxVec3(0, -0.7071067811865476, -0.7071067811865475));
+		CxQuat q2(m2);
+		ass_true(q2.isCloseToUnit());
+		ass_true(CxEq(CxQuat(0.9238795325f,0,0,0.3826834324f), q2, 0.000001f));
+
 
 		FINISH_TEST;
 	}
@@ -492,23 +521,121 @@ namespace cat {
 	void testCxQuatMult() {
 		BEGIN_TEST;
 
-		assert(false);
+		CxQuat q0(CxVec3(1,2,3).normalized(), 30*kCxDegToRad);
+		CxQuat q1 = q0*q0;
+		ass_true(CxEq(q1.angle(), 60*kCxDegToRad, 0.000001f));
+		ass_true(CxEq(q1.axis(), CxVec3(1,2,3).normalized(), 0.00001f));
 
+		CxQuat q2 = q1*q0;
+		ass_true(CxEq(q2.angle(), 90*kCxDegToRad, 0.000001f));
+		ass_true(CxEq(q2.axis(), CxVec3(1,2,3).normalized(), 0.00001f));
+
+
+		q0 = CxQuat(CxVec3(1,2,3).normalized(), 21*kCxDegToRad);
+		q1 = CxQuat(CxVec3(1,2,3).normalized(), 34*kCxDegToRad);
+
+		q2 = q0*q1;
+		ass_true(CxEq(q2.angle(), 55*kCxDegToRad, 0.000001f));
+		ass_true(CxEq(q2.axis(), CxVec3(1,2,3).normalized(), 0.00001f));
+
+
+		q0 = CxQuat(CxVec3(1,2,3).normalized(), 34*kCxDegToRad);
+		q1 = CxQuat(CxVec3(3,2,1).normalized(), -21*kCxDegToRad);
+
+		q2 = q0*q1;
+		ass_true(CxEq(q2.angle(), 23.888825f*kCxDegToRad, 0.0001f));
+		ass_true(CxEq(q2.axis(), CxVec3(-0.23035485f, 0.145261293f, 0.96220362f), 0.00001f));
+
+		q2 = q1*q0;
+		ass_true(CxEq(q2.angle(), 23.888825f*kCxDegToRad, 0.00001f));
+		ass_true(CxEq(q2.axis(), CxVec3(-0.3774636f, 0.439478747f, 0.81509489f), 0.00001f));
+
+		q2 = q0;
+		q2 *= q1;
+	   ass_true(CxEq(q2.angle(), 23.888825f*kCxDegToRad, 0.0001f));
+		ass_true(CxEq(q2.axis(), CxVec3(-0.23035485f, 0.145261293f, 0.96220362f), 0.00001f));
+
+		q2 = q1;
+		q2 *= q0;
+		ass_true(CxEq(q2.angle(), 23.888825f*kCxDegToRad, 0.00001f));
+		ass_true(CxEq(q2.axis(), CxVec3(-0.3774636f, 0.439478747f, 0.81509489f), 0.00001f));
+		
+		FINISH_TEST;
+	}
+	
+	void testCxQuatFromStartEnd() {
+		BEGIN_TEST;
+
+		CxVec3 v0(1,0,0);
+		CxVec3 v1(0,1,0);
+
+		CxQuat q0(v0, v1);
+		ass_true(CxEq(CxQuat(0,0,0.707106781f,0.707106781f), q0, 0.000001f));
+		ass_true(CxEq(q0.angle(), kCxDegToRad*90.f, 0.000001f));
+		ass_true(CxEq(q0.axis(), CxVec3(0,0,1), 0.000001f));
+
+		v0 = CxVec3(1,1,1).normalized();
+		v1 = CxVec3(3,2,1).normalized();
+		q0 = CxQuat(v0, v1);
+		ass_true(CxEq(q0.axis(), CxCross(v0,v1).normalized(), 0.00001f));
+
+		CxVec3 v2 = q0.rotate(v0);
+		ass_true(CxEq(v2, v1, 0.000001f));
+		
+		
 		FINISH_TEST;
 	}
 
 	void testCxQuatRotate() {
 		BEGIN_TEST;
 
-		assert(false);
+	   CxQuat q0(CxVec3(0,0,1), kCxDegToRad*90.f);
+		CxVec3 v0(1,0,0);
+		CxVec3 r = q0.rotate(v0);
+		ass_true(CxEq(CxVec3(0,1,0), r, 0.000001f));
+		r = q0.rotateInv(r);
+		ass_true(CxEq(v0, r, 0.00001f));
 
+		q0 = CxQuat(CxVec3(1,2,3).normalized(), kCxDegToRad*130.f);
+		v0 = CxVec3(1,9,2);
+		r = q0.rotate(v0);
+		ass_true(CxEq(CxVec3(-2.41812f, 0.286744f, 8.948211f), r, 0.00001f));
+		ass_true(CxEq(v0.magnitude(), r.magnitude(), 0.00001f));
+
+		r = q0.rotateInv(r);
+		ass_true(CxEq(r, v0, 0.00001f));
+
+
+		q0 = CxQuat(CxVec3(1,2,-3).normalized(), kCxDegToRad*-130.f);
+		v0 = CxVec3(1,-9,2);
+		r = q0.rotate(v0);
+		ass_true(CxEq(CxVec3(1.367229f, 1.411028f, 9.063095f), r, 0.00001f));
+		ass_true(CxEq(v0.magnitude(), r.magnitude(), 0.00001f));
+
+		r = q0.rotateInv(r);
+		ass_true(CxEq(r, v0, 0.00001f));
+		
 		FINISH_TEST;
 	}
 
 	void testCxQuatTranslation() {
 		BEGIN_TEST;
 
-		assert(false);
+		CxQuat q0(CxVec3(1,2,3).normalized(), kCxDegToRad*130.f);
+		CxVec3 dx = q0.translation(3, -4, 43);
+		CxVec3 v0 = (q0.xAxis() * 3) + (q0.yAxis()*-4) + (q0.zAxis()*43);
+		ass_true(CxEq(v0, dx, 0.0001f));
+
+
+		q0 = CxQuat(CxVec3(1,2,-3).normalized(), kCxDegToRad*-130.f);
+		dx = q0.translation(3, -4, 43);
+		v0 = (q0.xAxis() * 3) + (q0.yAxis()*-4) + (q0.zAxis()*43);
+		ass_true(CxEq(v0, dx, 0.0001f));
+
+		q0 = CxQuat(CxVec3(1,2,3).normalized(), kCxDegToRad*30.f);
+		dx = q0.translation(1, -1, 0.5f);
+		v0 = (q0.xAxis()) + (q0.yAxis()*-1) + (q0.zAxis()*0.5f);
+		ass_true(CxEq(v0, dx, 0.0001f));
 
 		FINISH_TEST;
 	}
@@ -521,8 +648,8 @@ int main(int argc, char **argv) {
 	cat::testCxQuatNormalize();
 	cat::testCxQuatFromAxisAngle();
 	cat::testCxQuatFromMat3();
-	cat::testCxQuatFromStartEnd();
 	cat::testCxQuatMult();
+	cat::testCxQuatFromStartEnd();
 	cat::testCxQuatRotate();
 	cat::testCxQuatTranslation();
 	return 0;

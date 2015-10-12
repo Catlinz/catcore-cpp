@@ -35,7 +35,7 @@ namespace cat {
 
 		/** @brief Initialise the matrix to all zeros */
 		CX_INLINE CxMat3(CxZero)
-			: col0(CxZero), col1(CxZero), col2(CxZero) {}
+			: col0(kCxZero), col1(kCxZero), col2(kCxZero) {}
 
 		/** @brief Initialise to identity matrix. */
 		CX_INLINE CxMat3(CxIdentity)
@@ -47,9 +47,9 @@ namespace cat {
 		 * values are the x,y,z of the first column of the matrix, etc.
 		 */
 		explicit CX_INLINE CxMat3(const CxReal *in_src)
-			: col0(in_arr[0], in_arr[1], in_arr[2]),
-			  col1(in_arr[3], in_arr[4], in_arr[5]),
-			  col2(in_arr[6], in_arr[7], in_arr[8]) {}
+			: col0(in_src[0], in_src[1], in_src[2]),
+			  col1(in_src[3], in_src[4], in_src[5]),
+			  col2(in_src[6], in_src[7], in_src[8]) {}
 
 		/** @brief Initialise from a unit (rotation) quaternion */
 		explicit CxMat3(const CxQuat &in_q);
@@ -95,15 +95,15 @@ namespace cat {
 		 * The matrix is accessed in column major format so the first three entries are 
 		 * the first column of the matrix, etc.
 		 */
-		CX_FORCE_INLINE CxReal & operator[](CxI32 in_idx) { return (&col0)[in_idx]; }
-		CX_FORCE_INLINE CxReal operator[](CxI32 in_idx) const { return (&col0)[in_idx]; }
+		CX_FORCE_INLINE CxReal & operator[](CxI32 in_idx) { return (&(col0.x))[in_idx]; }
+		CX_FORCE_INLINE CxReal operator[](CxI32 in_idx) const { return (&(col0.x))[in_idx]; }
 
 		/** @brief Access an element of the matrix by its column and row. */
 		CX_FORCE_INLINE CxReal & operator()(CxI32 in_col, CxI32 in_row) {
-			return (&col0)[in_col*3 + in_row];
+			return (&(col0.x))[in_col*3 + in_row];
 		}
 		CX_FORCE_INLINE const CxReal operator()(CxI32 in_col, CxI32 in_row) const {
-			return (&col0)[in_col*3 + in_row];
+			return (&(col0.x))[in_col*3 + in_row];
 		}
 
 		/** @return A copy of the matrix will all entries negated. */
@@ -188,10 +188,10 @@ namespace cat {
 		CxVec3 transform(const CxVec3 &in_v) const;
 
 		/** @return A vector r transformed by the inverse matrix (r = M^-1v). */
-		CxVec3 transformInverse(const CxVec3 &in_v) const;
+		CxVec3 transformInv(const CxVec3 &in_v) const;
 		
 		/** @return A vector r transformed by the transposed matrix (r = M^Tv). */
-		CxVec3 transformTransposed(const CxVec3 &in_v) const;
+		CxVec3 transformTranspose(const CxVec3 &in_v) const;
 
 		/** @brief Transpose this matrix in place */
 		void transpose();
@@ -200,13 +200,13 @@ namespace cat {
 		CxMat3 transposed() const;
 
 		/** @return The transformed x-axis basis vector */
-		CX_FORCE_INLINE CxVec3 & xAxis() const { return col0; }
+		CX_FORCE_INLINE const CxVec3 & xAxis() const { return col0; }
 
 		/** @return The transformed y-axis basis vector */
-		CX_FORCE_INLINE CxVec3 & yAxis() const { return col1; }
+		CX_FORCE_INLINE const CxVec3 & yAxis() const { return col1; }
 
 		/** @return The transformed z-axis basis vector */
-		CX_FORCE_INLINE CxVec3 & zAxis() const { return col2; }
+		CX_FORCE_INLINE const CxVec3 & zAxis() const { return col2; }
 		
 
 	};
@@ -305,7 +305,7 @@ namespace cat {
 		}
 		else {
 			CXD_WARN("Trying to get Inverse of non-invertable CxMat3");
-			return CxMat3(CxIdentity);
+			return CxMat3(kCxIdentity);
 		}
 	}
 
@@ -357,7 +357,7 @@ namespace cat {
 						  col0.z*x + col1.z*y + col2.z*z);
 	}
 
-	CX_FORCE_INLINE CxVec3 CxMat3::transformInverse(const CxVec3 &in_v) const {
+	CX_FORCE_INLINE CxVec3 CxMat3::transformInv(const CxVec3 &in_v) const {
 		const CxReal det_m = determinant();
 		if (det_m != 0) {
 			const CxReal dr = 1.0f/det_m;
@@ -402,17 +402,17 @@ namespace cat {
 
 	/* From CxQuat.h */
 	CX_INLINE CxQuat::CxQuat(const CxMat3 &in_m) {
-		const CxReal m00 = m.col0.x;
-		const CxReal m11 = m.col1.y;
-		const CxReal m22 = m.col2.z;
+		const CxReal m00 = in_m.col0.x;
+		const CxReal m11 = in_m.col1.y;
+		const CxReal m22 = in_m.col2.z;
 		 
 		const CxReal trace = m00 + m11 + m22;
-		const CxReal m01 = m.col0.y;  const CxReal m02 = m.col0.z;
-		const CxReal m10 = m.col1.x;  const CxReal m12 = m.col1.z;
-		const CxReal m20 = m.col2.x;  const CxReal m21 = m.col2.y;
+		const CxReal m01 = in_m.col0.y;  const CxReal m02 = in_m.col0.z;
+		const CxReal m10 = in_m.col1.x;  const CxReal m12 = in_m.col1.z;
+		const CxReal m20 = in_m.col2.x;  const CxReal m21 = in_m.col2.y;
 		
 		if (trace > 0) {
-			const CxReal s = CxSqrt(tr + 1.0f); /* s=2w */
+			const CxReal s = CxSqrt(trace + 1.0f); /* s=2w */
 			const CxReal s_recip = 0.5f/s;
 			w = s*0.5f;
 			x = (m12 - m21) * s_recip;
@@ -428,7 +428,7 @@ namespace cat {
 			w = (m12 - m21) * s_recip;
 		}
 		else if (m11 > m22) {
-			const CxReal s = CxSqrt(m00 + m11 - m22 + 1.0f); /* s=2y */
+			const CxReal s = CxSqrt(m11 - m00 - m22 + 1.0f); /* s=2y */
 			const CxReal s_recip = 0.5f/s;
 			y = s*0.5f;
 			x = (m10 + m01) * s_recip;
@@ -436,7 +436,7 @@ namespace cat {
 			w = (m20 - m02) * s_recip;
 		}
 		else {
-			const CxReal s = CxSqrt(m11 - m00 + m22 + 1.0f); /* s=2z */
+			const CxReal s = CxSqrt(m22 - m00 - m11 + 1.0f); /* s=2z */
 			const CxReal s_recip = 0.5f/s;
 			z = s*0.5f;
 			x = (m02 + m20) * s_recip;

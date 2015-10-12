@@ -153,7 +153,7 @@ namespace cat {
 
 		/** @return True if the quaternion is roughly of unit length. */
 		CX_FORCE_INLINE CxBool isCloseToUnit() const {
-			const CxReal unit_eps = 1e-5f;
+			const CxReal unit_eps = 1e-3f;
 			return CxAbs(magnitudeSqr() - 1) < unit_eps;
 		}
 
@@ -193,12 +193,12 @@ namespace cat {
 		}
 
 		/**
-		 * @brief Rotate a vector by the quaternion (assumes unit length for both).
+		 * @brief Rotate a vector by the quaternion (assumes unit quaternion).
 		 */
 		CxVec3 rotate(const CxVec3 &in_v) const;
 
 		/**
-		 * @brief Inversly rotate a vector by the quaternion (assumes unit length for both).
+		 * @brief Inversly rotate a vector by the quaternion (assumes unit quaternion).
 		 */
 		CxVec3 rotateInv(const CxVec3 &in_v) const;
 
@@ -264,6 +264,7 @@ namespace cat {
 		const CxReal new_z = w*in_q.z + z*in_q.w + x*in_q.y - y*in_q.x;
 		w = w*in_q.w - x*in_q.x - y*in_q.y - z*in_q.z;
 		x = new_x;  y = new_y;  z = new_z;
+		return *this;
 	}
 
 	CX_FORCE_INLINE CxVec3 CxQuat::axis() const {
@@ -323,7 +324,8 @@ namespace cat {
 	CX_FORCE_INLINE CxVec3 CxQuat::translation(CxReal in_dx, CxReal in_dy, CxReal in_dz) const {
 		const CxReal x2 = 2.0f*x;              const CxReal y2 = 2.0f*y;
 		const CxReal z2 = 2.0f*z;
-		const CxReal f1 = x*in_dy + w*in_dz - y*in_dx;  const CxReal f2 = x*in_dz - w*in_dy - z*in_dx;
+		const CxReal f1 = x*in_dy + w*in_dz - y*in_dx;
+		const CxReal f2 = x*in_dz - w*in_dy - z*in_dx;
 		const CxReal f3 = y*in_dz + w*in_dx - z*in_dy;
 		return CxVec3(in_dx + y2*f1 + z2*f2,
 						  in_dy - x2*f1 + z2*f3,

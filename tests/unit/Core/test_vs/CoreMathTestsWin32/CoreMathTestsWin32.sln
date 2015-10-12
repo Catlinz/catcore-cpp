@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CxVec3Tests", "..\CxVec3Tes
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CxVec4Tests", "..\CxVec4Tests\CxVec4Tests.vcxproj", "{08A378BE-59CF-4430-A9D4-C36CD056490F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CxQuatTests", "..\CxQuatTests\CxQuatTests.vcxproj", "{AA8CF87D-24D6-4939-905D-E16C59F40D17}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -33,6 +35,10 @@ Global
 		{08A378BE-59CF-4430-A9D4-C36CD056490F}.Debug|Win32.Build.0 = Debug|Win32
 		{08A378BE-59CF-4430-A9D4-C36CD056490F}.Release|Win32.ActiveCfg = Release|Win32
 		{08A378BE-59CF-4430-A9D4-C36CD056490F}.Release|Win32.Build.0 = Release|Win32
+		{AA8CF87D-24D6-4939-905D-E16C59F40D17}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AA8CF87D-24D6-4939-905D-E16C59F40D17}.Debug|Win32.Build.0 = Debug|Win32
+		{AA8CF87D-24D6-4939-905D-E16C59F40D17}.Release|Win32.ActiveCfg = Release|Win32
+		{AA8CF87D-24D6-4939-905D-E16C59F40D17}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
