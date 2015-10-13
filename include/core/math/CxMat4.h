@@ -295,7 +295,7 @@ namespace cat {
 		CxVec3 transformInv(const CxVec3 &in_v) const;
 		
 		/** @return A vector r transformed by the transposed matrix (r = M^Tv). */
-		CxVec3 transformTranspose(const CxVec3 &in_v) const;
+		CxVec3 transformTrans(const CxVec3 &in_v) const;
 
 		/**
 		 * @brief Rotate a vector by the 3x3 rotational portion of the matrix.
@@ -308,7 +308,7 @@ namespace cat {
 	   CxVec3 transform3x3Inv(const CxVec3 &in_v) const;
 
 		/** @return A vector r transformed by the transpose of the upper 3x3 matrix */
-	   CxVec3 transform3x3Transpose(const CxVec3 &in_v) const;
+	   CxVec3 transform3x3Trans(const CxVec3 &in_v) const;
 
 		/** @return The translation portion of the matrix [c3.x, c3.y, c3.z] */
 		CX_FORCE_INLINE CxVec3 translation() const {
@@ -449,8 +449,8 @@ namespace cat {
 		const CxReal m10 = col1.x;  const CxReal m11 = col1.y; const CxReal m12 = col1.z;
 		const CxReal m20 = col2.x;  const CxReal m21 = col2.y; const CxReal m22 = col2.z;
 
-		return (m00*(m11*m22 - m21*m12) -
-				  m01*(m12*m20 - m10*m22) -
+		return (m00*(m11*m22 - m21*m12) +
+				  m01*(m12*m20 - m10*m22) +
 				  m02*(m10*m21 - m11*m20));
 	}
 
@@ -689,7 +689,7 @@ namespace cat {
 		}
 	}
 
-	CX_FORCE_INLINE CxVec3 CxMat4::transformTranspose(CxVec3 &in_v) const {
+	CX_FORCE_INLINE CxVec3 CxMat4::transformTrans(CxVec3 &in_v) const {
 		const CxReal x = in_v.x;  const CxReal y = in_v.y;  const CxReal z = in_v.z;
 		/* (dot(col0, v), dot(col1, v), dot(col2, v)) */
 		return CxVec3(col0.x*x + col0.y*y + col0.z*z + col0.w,
@@ -714,7 +714,7 @@ namespace cat {
 			const CxReal m00 = col0.x;    const CxReal m01 = col0.y;    const CxReal m02 = col0.z;
 
 			return CxVec3(dx*(m11*m22 - m12*m21) + dy*(m12*m20 - m10*m22) + dz*(m10*m21 - m11*m20),
-							  dx*(m02*m21 - m01*m22) + dy*(m00*m22 - m02*m20) + dz*(m00*m21 - m01*m20),
+							  dx*(m02*m21 - m01*m22) + dy*(m00*m22 - m02*m20) + dz*(m01*m20 - m00*m21),
 							  dx*(m01*m12 - m02*m11) + dy*(m02*m10 - m00*m12) + dz*(m00*m11 - m01*m10));
 		}
 		else {
@@ -723,7 +723,7 @@ namespace cat {
 		}
 	}
 
-	CX_FORCE_INLINE CxVec3 CxMat4::transform3x3Transposed(CxVec3 &in_v) const {
+	CX_FORCE_INLINE CxVec3 CxMat4::transform3x3Trans(CxVec3 &in_v) const {
 		const CxReal x = in_v.x;  const CxReal y = in_v.y;  const CxReal z = in_v.z;
 		/* (dot(col0, v), dot(col1, v), dot(col2, v)) */
 		return CxVec3(col0.x*x + col0.y*y + col0.z*z,
@@ -750,6 +750,20 @@ namespace cat {
 						  col0.y, col1.y, col2.y, col3.y,
 						  col0.z, col1.z, col2.z, col3.z,
 						  col0.w, col1.w, col2.w, col3.w);
+	}
+
+	/** @return Return true if the two 4x4 matrices (a and b) are equal within a given error. */
+	CX_INLINE CxBool CxEq(const CxMat4 &in_a, const CxMat4 &in_b, CxReal in_epsilon = CX_REAL_EPSILON) {
+		return (CxEq(in_a.col0, in_b.col0, in_epsilon) &&
+				  CxEq(in_a.col1, in_b.col1, in_epsilon) &&
+				  CxEq(in_a.col2, in_b.col2, in_epsilon) &&
+				  CxEq(in_a.col3, in_b.col3, in_epsilon));
+	}
+
+	/** @return True if all elements of the 4x4 matrix are finite values (not NaN or INF). */
+	CX_INLINE CxBool CxIsFinite(const CxMat4 &in_m){
+		return (CxIsFinite(in_m.col0) && CxIsFinite(in_m.col1) &&
+				  CxIsFinite(in_m.col2) && CxIsFinite(in_m.col3));
 	}
 } // namespace cat
 

@@ -132,7 +132,7 @@ namespace cat {
 
 		/** @return The result of dividing this matrix by a scalar */
 		CX_INLINE CxMat3 operator/(CxReal in_s) const {
-			const CxReal r_s = 1.0f/in_s;
+			const CxReal r_s = ((CxReal)1.0)/in_s;
 			return CxMat3(col0*r_s, col1*r_s, col2*r_s);
 		}
 
@@ -191,7 +191,7 @@ namespace cat {
 		CxVec3 transformInv(const CxVec3 &in_v) const;
 		
 		/** @return A vector r transformed by the transposed matrix (r = M^Tv). */
-		CxVec3 transformTranspose(const CxVec3 &in_v) const;
+		CxVec3 transformTrans(const CxVec3 &in_v) const;
 
 		/** @brief Transpose this matrix in place */
 		void transpose();
@@ -272,8 +272,8 @@ namespace cat {
 		const CxReal m10 = col1.x;  const CxReal m11 = col1.y; const CxReal m12 = col1.z;
 		const CxReal m20 = col2.x;  const CxReal m21 = col2.y; const CxReal m22 = col2.z;
 
-		return (m00*(m11*m22 - m21*m12) -
-				  m01*(m12*m20 - m10*m22) -
+		return (m00*(m11*m22 - m21*m12) +
+				  m01*(m12*m20 - m10*m22) +
 				  m02*(m10*m21 - m11*m20));
 	}
 
@@ -367,7 +367,7 @@ namespace cat {
 			const CxReal m00 = col0.x;    const CxReal m01 = col0.y;    const CxReal m02 = col0.z;
 
 			return CxVec3(dx*(m11*m22 - m12*m21) + dy*(m12*m20 - m10*m22) + dz*(m10*m21 - m11*m20),
-							  dx*(m02*m21 - m01*m22) + dy*(m00*m22 - m02*m20) + dz*(m00*m21 - m01*m20),
+							  dx*(m02*m21 - m01*m22) + dy*(m00*m22 - m02*m20) + dz*(m01*m20 - m00*m21),
 							  dx*(m01*m12 - m02*m11) + dy*(m02*m10 - m00*m12) + dz*(m00*m11 - m01*m10));
 		}
 		else {
@@ -376,7 +376,7 @@ namespace cat {
 		}
 	}
 
-	CX_FORCE_INLINE CxVec3 CxMat3::transformTranspose(const CxVec3 &in_v) const {
+	CX_FORCE_INLINE CxVec3 CxMat3::transformTrans(const CxVec3 &in_v) const {
 		const CxReal x = in_v.x;  const CxReal y = in_v.y;  const CxReal z = in_v.z;
 		/* (dot(col0, v), dot(col1, v), dot(col2, v)) */
 		return CxVec3(col0.x*x + col0.y*y + col0.z*z,
@@ -389,9 +389,9 @@ namespace cat {
 		const CxReal m10 = col1.x; const CxReal m12 = col1.z;
 		const CxReal m20 = col2.x;  const CxReal m21 = col2.y;
 
-		col0.y = col1.x;  col0.z = col2.x;
-		col1.x = col0.y;  col1.z = col2.y;
-		col2.x = col0.z;  col2.y = col1.z;
+		col0.y = m10;  col0.z = m20;
+		col1.x = m01;  col1.z = m21;
+		col2.x = m02;  col2.y = m12;
 	}
 
 	CX_FORCE_INLINE CxMat3 CxMat3::transposed() const {
@@ -443,6 +443,18 @@ namespace cat {
 			y = (m21 + m12) * s_recip;
 			w = (m01 - m10) * s_recip;
 		}
+	}
+
+	/** @return Return true if the two 3x3 matrices (a and b) are equal within a given error. */
+	CX_INLINE CxBool CxEq(const CxMat3 &in_a, const CxMat3 &in_b, CxReal in_epsilon = CX_REAL_EPSILON) {
+		return (CxEq(in_a.col0, in_b.col0, in_epsilon) &&
+				  CxEq(in_a.col1, in_b.col1, in_epsilon) &&
+				  CxEq(in_a.col2, in_b.col2, in_epsilon));
+	}
+
+	/** @return True if all elements of the 3x3 matrix are finite values (not NaN or INF). */
+	CX_INLINE CxBool CxIsFinite(const CxMat3 &in_m){
+		return (CxIsFinite(in_m.col0) && CxIsFinite(in_m.col1) && CxIsFinite(in_m.col2));
 	}
 	
 } // namespace cat
