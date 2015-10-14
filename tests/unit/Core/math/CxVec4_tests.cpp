@@ -8,7 +8,8 @@ namespace cat {
 	 * @tests CxVec4(CxZero)
 	 * @tests CxVec4(CxReal)
 	 * @tests CxVec4(const CxReal *)
-	 * @tests CxVec4(CxReal, CxReal)
+	 * @tests CxVec4(const CxVec3&, CxReal)
+	 * @tests CxVec4(CxReal, CxReal, CxReal, CxReal)
 	 * @tests CxVec4(const CxVec4 &)
 	 * @tests operator=(const CxVec4 &)
 	 * @tests operator[](CxI32)
@@ -43,9 +44,11 @@ namespace cat {
 		CxVec4 v3(va);
 		ass_true(v3.x == 9 && v3.y == -4 && v3.z == 2 && v3.w == 8);
 
+		CxVec4 v33(CxVec3(1,2,3),4);
+		ass_true(v33.x == 1 && v33.y == 2 && v33.z == 3 && v33.w == 4);
+		
 		CxVec4 v4(-22, 93, 2, 9);
 		ass_true(v4.x == -22 && v4.y == 93 && v4.z == 2 && v4.w == 9);
-
 
 		CxVec4 v5(v3);
 		ass_true(v5.x == 9 && v5.y == -4 && v5.z == 2 && v5.w == 8);
