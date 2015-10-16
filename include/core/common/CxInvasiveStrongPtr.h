@@ -60,10 +60,7 @@ namespace cat {
 		CX_FORCE_INLINE CxInvasiveStrongPtr(T *in_ptr)
 			: mp_ptr(in_ptr) { mp_ptr->retain(); }
 		
-		/**
-		 * @brief Copy constructor, makes sure to increment the reference count.
-		 * @param src The source object to copy from.
-		 */
+		/** @brief Copy constructor, makes sure to increment the reference count. */
 		CX_FORCE_INLINE CxInvasiveStrongPtr(const CxInvasiveStrongPtr<T> &in_src)
 			: mp_ptr(in_src.mp_ptr) { if (mp_ptr) { mp_ptr->retain(); } }
 
@@ -76,11 +73,7 @@ namespace cat {
 		CX_FORCE_INLINE CxInvasiveStrongPtr(CxInvasiveStrongPtr<T> &&in_src)
 			: mp_ptr(in_src.mp_ptr) { in_src.mp_ptr = 0; }
 
-		/**
-		 * @brief Assignment operator, makes sure to increment / decrement reference count.
-		 * @param in_src The source object to copy from.
-		 * @return A reference to the InvasiveStrongPtr.
-		 */
+		/** @brief Assignment op, makes sure to increment / decrement reference count. */
 		CX_INLINE CxInvasiveStrongPtr& operator=(const CxInvasiveStrongPtr<T> &in_src) {
 			if (in_src.mp_ptr) { in_src.mp_ptr->retain(); }			
 			releaseAndDeleteIfNeeded();
@@ -88,11 +81,7 @@ namespace cat {
 			return *this;			
 		}
 
-		/**
-		 * @brief Move-Assignment operator, does same as move constructor.
-		 * @param in_src The source object to copy from.
-		 * @return A reference to the InvasiveStrongPtr.
-		 */
+		/** @brief Move-Assignment operator, does same as move constructor. */
 		CX_FORCE_INLINE CxInvasiveStrongPtr& operator=(CxInvasiveStrongPtr<T> &&in_src) {
 			releaseAndDeleteIfNeeded();
 			mp_ptr = in_src.mp_ptr;
@@ -100,35 +89,41 @@ namespace cat {
 			return *this;			
 		}
 
-		/**
-		 * @brief Assignment operator, makes sure to increment / decrement reference count.
-		 * @param in_src The object to store as a pointer.
-		 * @return A reference to the InvasiveStrongPtr.
-		 */
-		CxInvasiveStrongPtr& operator=(T *in_ptr) {
+		/** @brief Assignment Op, makes sure to increment / decrement reference count. */
+		CX_INLINE CxInvasiveStrongPtr& operator=(T *in_ptr) {
 			if (in_ptr) { in_ptr->retain(); }			
 			releaseAndDeleteIfNeeded();
 			mp_ptr = in_ptr;			
 			return *this;			
 		}
 
-		/**
-		 * @brief Overloaded equality operator.
-		 * @param in_ptr The Other pointer to compare to.
-		 * @return True if the pointers point to the same object.
-		 */
+		/** @return True if the pointers point to the same object. */
 		CX_FORCE_INLINE CxBool operator==(const CxInvasiveStrongPtr<T> &in_ptr) const {
 			return mp_ptr == in_ptr.mp_ptr;
 		}
 
-		/**
-		 * @brief Overloaded not equals operator.
-		 * @param in_ptr The Other pointer to compare to.
-		 * @return True if the pointers point different objects.
-		 */
+		/** @return True if the pointers point different objects. */
 		CX_FORCE_INLINE CxBool operator!=(const CxInvasiveStrongPtr<T> &in_ptr) const {
 			return mp_ptr != in_ptr.mp_ptr;
-		}	
+		}
+
+		/** 
+		 * This overloaded operator is mainly used so we can still do
+		 * 'ptr != 0' or 'ptr == 0' as a null pointer test.
+		 * @return True if the pointer address is equal to the passed in value 
+		 **/
+		CX_FORCE_INLINE CxBool operator==(const T *in_src) const {
+			return mp_ptr == in_src;
+		}
+
+		/** 
+		 * This overloaded operator is mainly used so we can still do
+		 * 'ptr != 0' or 'ptr == 0' as a null pointer test.
+		 * @return True if the pointer address is equal to the passed in value 
+		 **/
+		CX_FORCE_INLINE CxBool operator!=(const T *in_src) const {
+			return mp_ptr != in_src;
+		}
 
 		/** @brief Checks and decrements reference count and deletes pointer if needed. */
 		CX_FORCE_INLINE ~CxInvasiveStrongPtr() {
@@ -148,27 +143,25 @@ namespace cat {
 		}
 
 	   /** @return The object being pointed to by this CxInvasiveStrongPtr pointer (const). */
-		CX_FORCE_INLINE const T * operator->() const { return mp_ptr; }
+		CX_FORCE_INLINE const T * operator->() const {
+			CXD_IF_ERR(!mp_ptr, "Calling CxISPtr->() on null pointer!");
+			return mp_ptr;
+		}
 
 		/** @return The object being pointed to by this CxInvasiveStrongPtr pointer. */
-		CX_FORCE_INLINE T * operator->() { return mp_ptr; }
+		CX_FORCE_INLINE T * operator->() {
+			CXD_IF_ERR(!mp_ptr, "Calling CxISPtr->() on null pointer!");
+			return mp_ptr;
+		}
 
 	   /** @return The object being pointed to by this CxInvasiveStrongPtr pointer (const). */
-		CX_FORCE_INLINE T * ptr() const { return mp_ptr; }
+		CX_FORCE_INLINE T * ptr() { return mp_ptr; }
+		CX_FORCE_INLINE const T * ptr() const { return mp_ptr; }
 
 		/** @return The number of references to the pointer. */
 		CX_FORCE_INLINE CxI32 retainCount() const {
 			return (mp_ptr) ? mp_ptr->retainCount() : 0;
 		}
-
-		/** @return true If the pointer is null, false otherwise. */
-		CX_FORCE_INLINE CxBool isNull() const { return mp_ptr == 0; }
-
-		/** @return true If the pointer is NOT null, false otherwise. */
-		CX_FORCE_INLINE CxBool notNull() const { return mp_ptr != 0; }	
-
-		/** @brief Set the pointer to be a null pointer. */
-		CX_FORCE_INLINE void setNull() { releaseAndDeleteIfNeeded(); }
 
 		/** @return A null pointer. */
 		CX_FORCE_INLINE static CxInvasiveStrongPtr<T> nullPtr() { return CxInvasiveStrongPtr<T>(); }

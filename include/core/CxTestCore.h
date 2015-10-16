@@ -6,6 +6,8 @@
 #include <cstdio>
 #include <iostream>
 
+#define CX_TESTING
+
 #define BEGIN_TEST (std::cout << ">>> BEGINNING " << __func__ << std::endl << std::flush)
 #define FINISH_TEST (std::cout << ">>> FINISHED " << __func__ << std::endl << std::endl << std::flush)
 #define CXD_ASS_FAILED(msg) (std::cout << "#----> ASSERT FAILED " << __func__ << ":" << __LINE__ << "(): " << msg << std::endl << std::flush)

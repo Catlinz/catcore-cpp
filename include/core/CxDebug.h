@@ -19,7 +19,8 @@
 
 
 #if defined(DEBUG)
-#  define IS_DEBUG 1
+#  define CX_DEBUG
+#  define CX_IS_DEBUG 1
 #  include <assert.h>
 #  include <stdio.h>
 
@@ -145,7 +146,7 @@
 #    define CXD2_ASSERT(exp)
 #  endif // DEBUG_2
 #else
-#  define IS_DEBUG 0
+#  define CX_IS_DEBUG 0
 #  define CXD_ASSERT(exp)
 #  define CXD_CRASH(fmt, ...)
 #  define CXD_ERR(fmt, ...)
