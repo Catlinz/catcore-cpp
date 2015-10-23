@@ -49,7 +49,7 @@ namespace cat {
 		virtual ~CxIODevice() {}
 
 		/** @return True if the device is at the end */
-		virtual CxBool atEnd() = 0;
+		virtual CxBool atEnd() const = 0;
 
 		/** @return True if the IODevice is open in a readable mode */
 		CX_FORCE_INLINE CxBool canRead() const { return m_mode.isSet(kRead); }

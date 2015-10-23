@@ -1,6 +1,7 @@
-#include "core/io/file/CxFile.h"
+#include "core/Cx.h"
 
-namespace cat {
-
-
-} // namespace cat
+#if defined(CX_WINDOWS)
+#  include "windows/CxWindowsFile.cpp"
+#else // POSIX
+#  include "posix/CxPOSIXFile.cpp"
+#endif
