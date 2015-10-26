@@ -13,10 +13,11 @@
 
 namespace cat {
 
-	namespace CxError {
+	namespace CxErr {
 		enum Code {
 			kNoError = 0,
 			kUnknownError,
+			kNullError,    /**< Tried to do something with a null resource/value */
 			
 			kInvalidValue,
 			kInvalidParameter,
@@ -29,16 +30,34 @@ namespace cat {
 			kInvalidName,
 			kInvalidFormat,
 			kInvalidProperty,
-			
+
 			kInvalidFunction,
 			kInvalidOperation,
 			
 			kInvalidPermissions,
-			kAccessDenied,
+			kAccessError,  /**< Failed to access a resource. */
+			kAccessDenied,  /**< Do not have permission to access resource. */
 			
 		   kInsufficientResources,
 			
 			kDeadlockDetected,
+
+			/* IO specific errors */
+			kIOReadError,  /**< Failed to read from the IO Device */
+			kIOWriteError, /**< Failed to write to the IO Device */
+			kIOSeekError,  /**< Failed to change position in the IO Device */
+			kIOFlushError, /**< Failed to flush the IO Device */
+			kIOInvalidMode, /**< Tried to open the IO Device in an invalid mode. */
+
+			/* File specific errors */
+			kFileOpenError,   /**< Failed to open the file */
+			kFilePathError,   /**< Something wrong with the file path */
+			kFileExists, /**< File already exists */
+			kFileClosed, /**< Tried to do something on a closed file */
+			kFileCopyError, /**< Error occurred when trying to copy file */
+			
+			
+			
 		};
 
 		/**
@@ -46,7 +65,7 @@ namespace cat {
 		 * @param in_err The error code to print out.
 		 * @return A constant string representing the error.
 		 */
-		const char * toString(CxError::Code in_err);
+		const CxChar * toStr(Code in_err);
 	}
 
 } // Namespace cat

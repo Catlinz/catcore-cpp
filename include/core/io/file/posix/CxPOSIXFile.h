@@ -49,23 +49,6 @@ namespace cat {
 			kCloseHandle = 0, /**< File handles passed in will be closed with close() */
 			kDontCloseHandle = 1  /**< File handles passed in will only be flushed by close() */
 		};
-
-		/** @brief An error enum for files */
-		enum FileError {
-			kNoError = 0,
-			kOpenError = 1,  /**< Failed to open the file */
-			kReadError = 2,  /**< Failed to read from the file */
-			kWriteError = 3, /**< Failed to write to the file */
-			kSeekError = 4,  /**< Failed to change position in the file */
-			kAccessError = 5, /**< Failed to access file */
-			kExistsError = 6, /**< File already exists */
-			kFlushError = 7, /**< Failed to flush a file */
-			kClosedError = 8, /**< Tried to do something on a closed file */
-			kPathError = 9, /**< Something wrong with the file path */
-			kNullError = 10, /**< Tried to do something with null file */
-			
-			kUnknownError = 20, /**< Something bad happened... */
-		};
 		
 		/** @brief Null file constructor. */
 		CX_INLINE CxFile() : CxIODevice(), mp_fd(0) {}
@@ -83,24 +66,30 @@ namespace cat {
 		virtual void close();
 
 		/**
-		 * @brief Make a copy of the file.
-		 * This method copies the current file to newName.  This file is closed 
-		 * before it is copied.  If there already exists a file in the 
-		 * destination, then the copy will fail.
+		 * @brief Make a deep copy of the file.
+		 * This method copies the current file to a new filename.  This file will
+		 * be closed to copy the file.  The copy will fail if the file we are 
+		 * copying to already exists.  If the copy partially succeeds, then the 
+		 * new file will still be returned, but the error on both files will be 
+		 * set to CxErr::kFileCopyError.
 		 * @param in_newName The new filename to copy the file to.
 		 * @return The new file if the file was copied, else a null file.
 		 */
 		CxFile copy(const CxChar *in_filename);
 
-		/** @return The last error encountered. */
-		CX_FORCE_INLINE FileError error() const { return m_err; }
+		/**
+		 * @brief Make a deep copy of a file.
+		 * @see copy(CxChar *)
+		 * @return The new file if the file was copied, else a null file.
+		 */
+		static CxFile copy(const CxChar *in_srcName, const CxChar *in_dstName);
 
 		/** @return True if the file specified by the path/filename exists. */
 		static CxBool exists(const CxChar *in_filename);
 		
 		/** @return True if the file exists. */
 		CX_FORCE_INLINE CxBool exists() const {
-			return exists(m_filename.ptr());
+			return exists(filename());
 		}
 
 		/** @return The name (full path) of the file */
@@ -116,6 +105,10 @@ namespace cat {
 
 		/**
 		 * @brief Method to open the IODevice for reading and/or writing.
+		 * Will fail if the file is already open in a different mode.  If neither
+		 * kAppend nor kTruncate are specified, then kWrite will default to 
+		 * append and kReadWrite will default to simply reading and writing (no
+		 * appending or truncation, and file must exist).
 		 * @param in_mode A combination of CxIOMode flags decribing the mode.
 		 * @return True if the IODevice was opened successfully.
 		 */
@@ -129,24 +122,6 @@ namespace cat {
 		 * @return The current position within the device or -1 if error.
 		 */
 		virtual CxI64 pos();
-
-		/** 
-		 * @brief Read data from the device.
-		 * @param out_data The buffer to read the data into.
-		 * @param in_maxBytes The max number of bytes to read.
-		 * @return The number of bytes read or -1 on error.
-		 */
-		virtual void read(void *out_data, CxI64 in_maxBytes);
-
-		/**
-		 * @brief Read a single line of data.
-		 * This method will read data up until it encounters a new line, the 
-		 * end of file, or until maxBytes are read.
-		 * @param out_data The buffer to read the data into.
-		 * @param in_maxBytes The max number of bytes to read.
-		 * @return The number of bytes read or -1 on error.
-		 */
-		virtual void readLine(void *out_data, CxI64 in_maxBytes);
 
 		/** 
 		 * @brief Reset the device to the beginning of the stream. 
@@ -167,17 +142,17 @@ namespace cat {
 		/** @return Get the size of the IODevice in bytes. */
 		virtual CxI64 size() const;
 
-		/**
-		 * @brief Method to write data to the IODevice.
-		 * @param in_data The data to write to the IODevice.
-		 * @param in_bytes The number of bytes to write.
-		 * @return The number of bytes written or -1 on error.
-		 */
-		virtual CxI64 write(void *in_data, CxI64 in_bytes);
-		
 	  protected:
 	   FILE *mp_fd;
 		CxMallocRef<CxChar> m_filename;
+
+		virtual CxI64 read_impl(void *out_data, CxI64 in_maxBytes);
+		virtual CxI64 readLine_impl(void *out_data, CxI64 in_maxChars);
+		virtual CxI64 write_impl(void *in_data, CxI64 in_bytes);
+
+	  private:
+		CxI64 readLineBinary_priv(CxChar *out_data, CxI64 in_maxChars);
+		CxI64 readLineText_priv(CxChar *out_data, CxI64 in_maxChars);
 		
 	};
 

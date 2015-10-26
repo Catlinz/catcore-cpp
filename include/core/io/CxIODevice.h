@@ -38,18 +38,20 @@ namespace cat {
 			kAppend = 1 << 2, /**< All data written to end of device */
 			kTruncate = 1 << 3, /**< Device is emptied when opened */
 			kText = 1 << 4, /**< Device is opened in text mode */
-			kUnbuffered = 1 << 5, /**< Don't use any internal buffering */
+			kBinary = 1 << 5,  /**< Device is opened in binary mode (default) */
+			kUnbuffered = 1 << 6, /**< Don't use any internal buffering */
 		};
 		CX_FLAGS(IOModeFlag, IOMode);
 
 		/** @brief Set all the default values. */
-		CX_FORCE_INLINE CxIODevice() : m_mode(kNotOpen) {}
+		CX_FORCE_INLINE CxIODevice()
+			: m_mode(kNotOpen), m_err(CxErr::kNoError) {}
 
 		/** @brief Virtual destructor for base classes. */
 		virtual ~CxIODevice() {}
 
 		/** @return True if the device is at the end */
-		virtual CxBool atEnd() const = 0;
+		virtual CxBool atEnd() const;
 
 		/** @return True if the IODevice is open in a readable mode */
 		CX_FORCE_INLINE CxBool canRead() const { return m_mode.isSet(kRead); }
@@ -57,14 +59,20 @@ namespace cat {
 		/** @return True if the IODevice is open in a writable mode */
 		CX_FORCE_INLINE CxBool canWrite() const { return m_mode.isSet(kWrite); }
 
+		/** @brief Clear the currently set error code. */
+		CX_FORCE_INLINE void clearError() { m_err = CxErr::kNoError; }
+
 		/** @brief Method to close the IODevice. */
 		CX_INLINE virtual void close() { m_mode = kNotOpen; }
 
+		/** @return The last error encountered. */
+		CX_FORCE_INLINE CxErr::Code error() const { return m_err; }
+		
 		/**
 		 * @brief Flush the output from a device if the device supports it.
 		 * @return True if the flush was successful.
 		 */
-		virtual CxBool flush() = 0;
+		virtual CxBool flush();
 
 		/**
 		 * @brief Read a character from the device.
@@ -99,7 +107,7 @@ namespace cat {
 		CxI64 peek(void *out_data, CxI64 in_maxBytes);
 
 		/** @return The current position within the device. */
-		virtual CxI64 pos() = 0;
+		virtual CxI64 pos();
 
 		/**
 		 * @brief Place the specified character onto the device.
@@ -113,33 +121,37 @@ namespace cat {
 		 * @param in_maxBytes The max number of bytes to read.
 		 * @return The number of bytes read or -1 on error.
 		 */
-		virtual void read(void *out_data, CxI64 in_maxBytes) = 0;
+		CxI64 read(void *out_data, CxI64 in_maxBytes);
 
 		/**
 		 * @brief Read a single line of data.
 		 * This method will read data up until it encounters a new line, the 
-		 * end of file, or until maxBytes are read.
+		 * end of file, or until maxChars are read.  If it reads a line, the 
+		 * data returned will end with a newline character and a null-terminating 
+		 * character.  If returns before finding a newline (maxChars hit), then 
+		 * will just end with the null-terminating character.
+		 * This method will replace '\r\n' line endings with '\n' line endings.
 		 * @param out_data The buffer to read the data into.
-		 * @param in_maxBytes The max number of bytes to read.
+		 * @param in_maxChars The max number of chars to read (should be at least 2)
 		 * @return The number of bytes read or -1 on error.
 		 */
-		virtual void readLine(void *out_data, CxI64 in_maxBytes) = 0;
+		void CxI64 readLine(CxChar *out_data, CxI64 in_maxChars);
 
 		/** 
 		 * @brief Reset the device to the beginning of the stream. 
 		 * @return True if the device was reset properly.
 		 */
-		virtual CxBool reset() = 0;
+		virtual CxBool reset();
 
 		/**
 		 * @brief Move to the given position in the IODevice.
 		 * @param in_pos The position (from the start of the device) to move to.
 		 * @return True if the seek was successfull.
 		 */
-		virtual CxBool seek(CxI64 in_pos) = 0;
+		virtual CxBool seek(CxI64 in_pos);
 
 		/** @return Get the size of the IODevice in bytes. */
-		virtual CxI64 size() const = 0;
+		virtual CxI64 size() const;
 
 		/**
 		 * @brief Method to write data to the IODevice.
@@ -147,10 +159,39 @@ namespace cat {
 		 * @param in_bytes The number of bytes to write.
 		 * @return The number of bytes written or -1 on error.
 		 */
-		virtual CxI64 write(void *in_data, CxI64 in_bytes) = 0;
+		CxI64 write(void *in_data, CxI64 in_bytes);
 		
 	  protected:
 	   IOMode m_mode;
+		CxErr::Code m_err;
+
+		/** 
+		 * @brief Read data from the device.
+		 * @param out_data The buffer to read the data into.
+		 * @param in_maxBytes The max number of bytes to read.
+		 * @return The number of bytes read or -1 on error.
+		 */
+		virtual CxI64 read_impl(void *out_data, CxI64 in_maxBytes) = 0;
+
+		/**
+		 * @brief Read a single line of data.
+		 * The implementation does not need to replace '\r\n' with '\n', 
+		 * and does not need to append a null terminating character as the
+		 * CxIODevice::readLine() method will do both.  Also, do not need to
+		 * worry about having space for the null-terminating character.
+		 * @param out_data The buffer to read the data into.
+		 * @param in_maxChars The max number of chars to read.
+		 * @return The number of chars read or -1 on error.
+		 */
+		virtual CxI64 readLine_impl(CxChar *out_data, CxI64 in_maxChars) = 0;
+
+		/**
+		 * @brief Method to write data to the IODevice.
+		 * @param in_data The data to write to the IODevice.
+		 * @param in_bytes The number of bytes to write.
+		 * @return The number of bytes written or -1 on error.
+		 */
+		virtual CxI64 write_impl(void *in_data, CxI64 in_bytes) = 0;
 		
 	};
 
