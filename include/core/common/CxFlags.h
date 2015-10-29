@@ -74,10 +74,13 @@ namespace cat {
 		CX_FORCE_INLINE void clear(E in_val) { m_bits &= (~in_val); }
 
 		/** @return True if the enum flag is set */
-	  CX_FORCE_INLINE CxBool isSet(E in_val) const { return (m_bits & in_val) != in_val; }
+	  CX_FORCE_INLINE CxBool isSet(E in_val) const { return (m_bits & in_val) != 0; }
 
 	  /** @return True if any of the flags in in_val are set */
 	  CX_FORCE_INLINE CxBool isAnySet(T in_val) const { return (m_bits & in_val) != 0; }
+
+	  /** @return True if any of the flags in in_val are set */
+	  CX_FORCE_INLINE CxBool isAllSet(T in_val) const { return (m_bits & in_val) == in_val; }
 
 		/** @brief Set the given enum flag */
 		CX_FORCE_INLINE CxFlags<E,T> & set(E in_val) { m_bits |= in_val;  return *this; }

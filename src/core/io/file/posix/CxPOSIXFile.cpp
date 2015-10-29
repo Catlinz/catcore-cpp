@@ -1,4 +1,4 @@
-#include "core/io/file/posix/CxPOSIXFile.h"
+#include "core/io/file/CxFile.h"
 #include "core/common/CxMem.h"
 #include <sys/stat.h>
 #include <unistd.h>
@@ -8,11 +8,36 @@ namespace cat {
 
 	CxFile::CxFile(const CxChar *in_filename)
 		: CxIODevice(), mp_fd(0) {
-		m_filename = CxMallocRef<CxChar>(str::copy(in_filename));
+		m_filename = CxMallocRef<CxChar>(sys::getPath(in_filename));
+	}
+
+	CxFile::CxFile(const CxChar *in_path, CxFile::UsePathFlag)
+		: CxIODevice(), mp_fd(0) {
+		m_filename = CxMallocRef<CxChar>(in_path);
+	}
+
+	CxFile::CxFile(CxFile &&in_src) : CxIODevice(), mp_fd(0) {
+		m_mode = in_src.m_mode;
+		m_filename = static_cast<CxMallocRef<CxChar> &&>(in_src.m_filename);
+		mp_fd = in_src.mp_fd;
+
+		in_src.mode = CxIODevice::kNotOpen;
+		in_src.mp_fd = 0;
 	}
 
 	CxFile::~CxFile() {
 	   close();
+	}
+
+	CxFile & CxFile::operator=(CxFile &&in_src) {
+		if (mp_fd) { close(); }
+		m_mode = in_src.m_mode;
+		m_filename = static_cast<CxMallocRef<CxChar> &&>(in_src.m_filename);
+		mp_fd = in_src.mp_fd;
+
+		in_src.mode = CxIODevice::kNotOpen;
+		in_src.mp_fd = 0;
+		return *this;
 	}
 
 	CxBool CxFile::atEnd() const {
@@ -32,26 +57,31 @@ namespace cat {
 			CXD_ERR("Cannot copy null file.");
 			m_err = CxErr::kNullError;  return CxFile();
 		}
-		if (exists(in_filename)) {
-			CXD_WARN("Cannot copy to '%s', file already exists!", in_filename);
-			m_err = CxErr::kFileExists;  return CxFile();
+		else if (in_filename == 0) {
+			CXD_ERR("Cannot copy TO null file.");
+			m_err = CxErr::kNullError;  return CxFile();
+		}
+
+		CxChar *path = sys::getPath(in_filename);
+		if (exists_priv(path) == CxErr::kTrueCode) {
+			CXD_WARN("Cannot copy to '%s', file already exists!", path);
+			m_err = CxErr::kFileExists;
+			mem::free(path);  return CxFile();
 		}
 
 		/* Try and open the new file for writing */
-		CxFile nf(in_filename);
+		CxFile nf(path, kUsePath);
 		if (!nf.open(CxIODevice::kWrite)) {
-			CXD_ERR("Failed to open file '%s' for writing!", in_filename);			
-			m_err = CxErr::kFileOpenError;  return CxFile();
+			CXD_ERR("Failed to open file '%s' for writing!", path);			
+			m_err = nf.error();  return CxFile();
 		}
 		
 		/* Close this file before we start */
-		CxIODevice::IOMode m = m_mode;
-		CxI64 f_pos = pos();
 		if (mp_fd != 0) { close(); }
 		
 		/* Open this file for reading */
 		if (!open(CxIODevice::kRead)) {
-			CXD_ERR("Failed to open file '%s' for reading!", m_filename.ptr());
+			CXD_ERR("Failed to open file '%s' for reading!", filename());
 		   return CxFile();
 		}
 
@@ -76,12 +106,32 @@ namespace cat {
 		return src.copy(in_dstName);
 	}
 
+	CxBool CxFile::exists() const {
+		CxErr::Code ret = exists_priv(filename());
+		if (ret == kTrueCode) { return false; }
+		else {
+			if (ret != kFalseCode) { m_err = ret; }
+			return false;
+		}
+	}
+
 	CxBool CxFile::exists(const CxChar *in_filename) {
+		CxChar *path = sys::getPath(in_filename);
+		CxErr::Code ret = exists_priv(path);
+		mem::free(path);
+		return (ret == CxErr::kTrueCode) ? true : false;
+	}
+
+	CxErr::Code CxFile::exists_priv(const CxChar *in_filename) const {
 		if (in_filename != 0) {
 			stat buffer;
-			return (stat(in_filename, &buffer) == 0);
+			if (stat(in_filename, &buffer) == 0) { return CxErr::kTrueCode; }
+			else { return CxErr::kFalseCode; }
 		}
-		else { return false; }
+		else {
+			CXD_WARN("Null file cannot exist.");
+			return CxErr::kNullError;
+		}
 	}
 
 	CxBool CxFile::flush() {
@@ -89,7 +139,7 @@ namespace cat {
 		   if (fflush(mp_fd) == 0) { return true; }
 			else {
 				CXD_ERR("Failed to flush file '%s'.", filename());
-				m_err = CxErr::kIOFlushError;
+				setErrorFromInternalCode(CxErr::kIOFlushError);
 				clearerr(mp_fd);
 				return false;
 			}
@@ -105,7 +155,7 @@ namespace cat {
 			CXD_ERR("Cannot open null file.");
 			m_err = CxErr::kNullError;  return false;
 		}
-
+		
 		if (m_mode != CxIODevice::kNotOpen) {
 			if (in_mode == m_mode) { return true; }
 			else {
@@ -142,18 +192,23 @@ namespace cat {
 			else { f_mode[2] = 'b'; }
 		}
 
-		mp_fd = fopen(filename(), in_mode);
+		mp_fd = fopen(filename(), f_mode);
 		if (mp_fd) {
 			m_mode = in_mode;  return true;
 		}
 		else {
 			CXD_ERR("Failed to open file '%s'.", filename());
-			m_err = CxErr::kFileOpenError;  return false;
+			setErrorFromInternalCode(CxErr::kFileOpenError);
+			return false;
 		}
 	}
 
 	CxI64 CxFile::pos() {
-		if (mp_fd != 0) { return ftell(mp_fd); }
+		if (mp_fd != 0) {
+			CxI64 p = ftell(mp_fd);
+			if (p  == -1) { setErrorFromInternalCode(CxErr::kIOSeekError); }
+			return p;
+		}
 		else {
 			m_err = CxErr::kFileClosed;  return -1;
 		}
@@ -187,6 +242,7 @@ namespace cat {
 	}
 
 	CxBool CxFile::reset() {
+		m_err = 0;
 		if (mp_fd) { rewind(mp_fd);  return true; }
 		else {
 			m_err = CxErr::kFileClosed;  return false;
@@ -198,8 +254,8 @@ namespace cat {
 			if (fseek(mp_fd, in_pos, SEEK_SET) == 0) { return true; }
 			else {
 				CXD_ERR("Failed to seek in file '%s'.", filename());
-				clearerr(mp_fd);
-				m_err = kSeekError;  return false;
+				setErrorFromInternalCode(CxErr::kIOSeekError);
+				clearerr(mp_fd);  return false;
 			}
 		}
 		else { m_err = CxErr::kFileClosed;  return false; }
@@ -212,22 +268,8 @@ namespace cat {
 				return f_info.st_size;
 			}
 			else {
-				CxI32 err_no = errno;
-				switch (err_no) {
-				case EACCES: m_err = CxErr::kAccessError;  break;
-					
-				case ELOOP:
-				case ENAMETOOLONG:
-				case ENOENT:
-				case ENOTDIR: m_err = CxErr::kFilePathError;  break;
-					
-				case EBADF:
-				case EFAULT:
-				case ENOMEM:
-				case EOVERFLOW: m_err = CxErr::kUnknownError;  break;
-				default: m_err = CxErr::kUnknownError;  break;
-				}
-				return 0;
+				setErrorFromInternalCode(CxErr::kUnknownError);
+				return -1;
 			}
 		}
 		else { return 0; }
@@ -297,4 +339,55 @@ namespace cat {
 		}
 		return chars_read;
 	}
+
+	void CxFile::setErrorFromInternalCode(CxErr::Code in_default) {
+		CxI32 err_no = errno;
+		switch (err_no) {
+		case EACCES:
+		case EAGAIN:
+		case EISDIR:
+		case EPERM:
+			m_err = CxErr::kAccessError;  break;
+					
+		case ELOOP:
+		case ENAMETOOLONG:
+		case ENOTDIR:
+		case EOVERFLOW:
+			m_err = CxErr::kFilePathError;  break;
+
+		case ENOENT:
+			m_err = CxErr::kFileNotFoundError;  break;
+
+		case EBADF:
+			m_err = CxErr::kInvalidHandle;  break;
+			
+		case ENOMEM:
+		case EDQUOT:
+			m_err = CxErr::kOutOfMemory;  break;
+			
+		case EEXIST:
+			m_err = CxErr::kFileExists;  break;
+
+		case EROFS:
+		case ETXTBSY:
+			m_err = CxErr::kIOWriteError;  break;
+			
+		case EFAULT:
+		case EFBIG:
+		case EMFILE:
+		case ENFILE:
+			m_err = CxErr::kInsufficientResources;  break;
+		default: m_err = in_default;  break;
+		}
+	}
+
+	CxChar * CxFile::getPath(const CxChar *in_filename) {
+		/* First, see if it is a relative path. */
+		if (*in_filename != '/') {
+			/* If relative, make absolute relative to cwd. */
+			const CxChar *cwd = sys::cwd();
+			
+		}
+	}
+	
 } // namespace cat

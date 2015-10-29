@@ -16,8 +16,10 @@ namespace cat {
 	namespace CxErr {
 		enum Code {
 			kNoError = 0,
-			kUnknownError,
+			kTrueCode,
+			kFalseCode,
 			kNullError,    /**< Tried to do something with a null resource/value */
+			kUnknownError,
 			
 			kInvalidValue,
 			kInvalidParameter,
@@ -39,6 +41,7 @@ namespace cat {
 			kAccessDenied,  /**< Do not have permission to access resource. */
 			
 		   kInsufficientResources,
+			kOutOfMemory,
 			
 			kDeadlockDetected,
 
@@ -55,6 +58,7 @@ namespace cat {
 			kFileExists, /**< File already exists */
 			kFileClosed, /**< Tried to do something on a closed file */
 			kFileCopyError, /**< Error occurred when trying to copy file */
+			kFileNotFoundError, /**< File was... not found. */
 			
 			
 			
