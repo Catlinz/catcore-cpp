@@ -117,6 +117,23 @@ namespace cat {
 		virtual CxBool flush();
 
 		/**
+		 * @brief Allocate and return entire file contents.
+		 * @see readAll()
+		 * Will fail if open in a write only mode, or if cannot open for 
+		 * reading.  If already open, will read the contents and leave file
+		 * open positioned at the end of the file, if not open, will close it
+		 * after reading.
+		 * @param out_bytes Optional storage for the number of bytes read (size of file).
+		 * @return A newly allocated buffer with the contents, or null.
+		 */
+		void * getContents(CxI64 *out_bytes = 0);
+
+		/** @return True if the file is open */
+		CX_FORCE_INLINE CxBool isOpen() const {
+			return m_mode != CxIODevice::kNotOpen;
+		}
+
+		/**
 		 * @brief Method to open the IODevice for reading and/or writing.
 		 * Will fail if the file is already open in a different mode.  If neither
 		 * kAppend nor kTruncate are specified, then kWrite will default to 
@@ -142,6 +159,16 @@ namespace cat {
 		 */
 		virtual CxBool reset();
 
+		/**
+		 * @brief Read all the contest of the file into the buffer.
+		 * The buffer must have enough space for the entire contents of 
+		 * the file.  If not enough room, will fail.  If file is not open
+		 * or not readable, will fail.
+		 * @param out_data The buffer to store the data into.
+		 * @return True if it was successfull, false otherwise.
+		 */
+		CxBool readAll(void *out_data, CxI64 in_maxBytes);
+		
 		/**
 		 * @brief Move to the given position in the file.
 		 * This method takes in either the number of bytes from the start of

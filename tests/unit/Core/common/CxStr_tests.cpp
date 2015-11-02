@@ -190,6 +190,34 @@ namespace cat {
 	}
 
 	/**
+	 * @tests str::endsWith(const CxChar *, const CxChar *)
+	 */
+	void testStrEndsWith() {
+		BEGIN_TEST;
+
+		CxChar *s0 = str::copy("Meow01");
+		ass_true(str::endsWith(s0, "1"));
+		ass_true(str::endsWith(s0, "01"));
+		ass_true(str::endsWith(s0, "w01"));
+		ass_true(str::endsWith(s0, "ow01"));
+		ass_true(str::endsWith(s0, "eow01"));
+		ass_true(str::endsWith(s0, "Meow01"));
+
+		ass_false(str::endsWith(s0, "10"));
+		ass_false(str::endsWith(s0, "a01"));
+		ass_false(str::endsWith(s0, "w01a"));
+		ass_false(str::endsWith(s0, "aow1"));
+		ass_false(str::endsWith(s0, "eow01a"));
+		ass_false(str::endsWith(s0, "aMeow01"));
+
+		ass_false(str::endsWith(0, 0));
+		ass_false(str::endsWith(s0, 0));
+		ass_false(str::endsWith(0, "sd"));
+		
+		FINISH_TEST;
+	}
+
+	/**
 	 * @tests str::eq(const CxChar *, const CxChar *)
 	 * @tests str::eq(const CxChar16 *, const CxChar *)
 	 * @tests str::eq(const CxChar16 *, const CxChar16 *)
@@ -590,7 +618,37 @@ namespace cat {
 		FINISH_TEST;
 	}
 
-		/**
+	/**
+	 * @tests str::startsWith(const CxChar *, const CxChar *)
+	 */
+	void testStrStartsWith() {
+		BEGIN_TEST;
+
+		CxChar *s0 = str::copy("Meow01");
+		ass_true(str::startsWith(s0, "M"));
+		ass_true(str::startsWith(s0, "Me"));
+		ass_true(str::startsWith(s0, "Meo"));
+		ass_true(str::startsWith(s0, "Meow"));
+		ass_true(str::startsWith(s0, "Meow0"));
+		ass_true(str::startsWith(s0, "Meow01"));
+
+		ass_false(str::startsWith(s0, "0M"));
+		ass_false(str::startsWith(s0, "M0"));
+		ass_false(str::startsWith(s0, "m"));
+		ass_false(str::startsWith(s0, "Mea"));
+		ass_false(str::startsWith(s0, "aMeo"));
+		ass_false(str::startsWith(s0, "Meowa"));
+		ass_false(str::startsWith(s0, "aMeow0"));
+		ass_false(str::startsWith(s0, "Meow01a"));
+
+		ass_false(str::startsWith(0, 0));
+		ass_false(str::startsWith(s0, 0));
+		ass_false(str::startsWith(0, "sd"));
+		
+		FINISH_TEST;
+	}
+
+	/**
 	 * @tests str::toI32(const CxChar16 *, CxI32)
 	 * @tests str::toI64(const CxChar16 *, CxI32)
 	 * @tests str::toU32(const CxChar16 *, CxI32)
@@ -850,6 +908,7 @@ int main(int argc, char **argv) {
 	cat::testStrAppend();
 	cat::testStrLen();
 	cat::testStrCopy();
+	cat::testStrEndsWith();
 	cat::testStrEq();
 	cat::testStrFree();
 	cat::testStrGreater();
@@ -858,6 +917,7 @@ int main(int argc, char **argv) {
 	cat::testStrReadInt16();
 	cat::testStrReadFloat();
 	cat::testStrReadFloat16();
+	cat::testStrStartsWith();
 	cat::testStrToInt();
 	cat::testStrToInt16();
 	cat::testStrToFloat();

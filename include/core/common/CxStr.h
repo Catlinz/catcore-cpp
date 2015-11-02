@@ -197,7 +197,7 @@ namespace cat {
 		 * If the length is less than the length of the string, a null char 
 		 * will still be appended at str[in_len].
 		 * @param in_str The string to copy.
-		 * @param in_len The length of the string to copy.
+2		 * @param in_len The length of the string to copy.
 		 * @return A new string that is the copy of the original.
 		 */
 		CX_FORCE_INLINE CxChar * copy(const CxChar *CX_RESTRICT in_str, CxI32 in_len) {
@@ -243,6 +243,16 @@ namespace cat {
 			}
 			else { return 0; }
 		}
+
+		/**
+		 * @brief Test if one string is the end of another string.
+		 * If either string is null, returns false.  If equal, returns true.
+		 * @param in_str The string to test.
+		 * @param in_end The end string to test for.
+		 * @return True if in_str starts with in_end.
+		 */
+		CxBool endsWith(const CxChar *CX_RESTRICT in_str,
+							 const CxChar *CX_RESTRICT in_end);
 
 		/**
 		 * @brief Test if two strings are equal or not.
@@ -436,6 +446,17 @@ namespace cat {
 		 */
 		CxI32 scan(const CxChar16 *CX_RESTRICT in_str,
 					  const CxChar16 *CX_RESTRICT in_format, ...);
+
+
+		/**
+		 * @brief Test if one string is the prefix of another string.
+		 * If either string is null, returns false.  If equal, returns true.
+		 * @param in_str The string to test.
+		 * @param in_prefix The prefix string to test for.
+		 * @return True if in_str starts with in_prefix.
+		 */
+		CxBool startsWith(const CxChar *CX_RESTRICT in_str,
+								const CxChar *CX_RESTRICT in_prefix);
 
 		/**
 		 * @brief Convert a string to an integer.

@@ -11,6 +11,24 @@
 #endif
 
 namespace cat {
+
+	CxBool str::endsWith(const CxChar *CX_RESTRICT in_str,
+								const CxChar *CX_RESTRICT in_end) {
+		if (in_str == 0 || in_end == 0) { return false; }
+
+		const CxI32 s_len = str::len(in_str);
+		const CxI32 e_len = str::len(in_end);
+
+		if (e_len <= s_len) {
+			const CxChar *CX_RESTRICT s = in_str + s_len - 1;
+			const CxChar *CX_RESTRICT e = in_end + e_len - 1;
+			for (CxI32 i = 0; i < e_len; ++i) {
+				if (*(s--) != *(e--)) { return false; }
+			}
+			return true;
+		}
+		else { return false; }
+	}
 	
 	CxBool str::eq(const CxChar *CX_RESTRICT in_str1,
 						const CxChar *CX_RESTRICT in_str2) {
@@ -80,6 +98,16 @@ namespace cat {
 			++in_str1;  ++in_str2;
 		}
 		return (*in_str2) != 0;
+	}
+
+	CxBool str::startsWith(const CxChar *CX_RESTRICT in_str,
+								  const CxChar *CX_RESTRICT in_prefix) {
+		if (in_str == 0 || in_prefix == 0) { return false; }
+		while (*in_str != 0) {
+			if (*in_str != *in_prefix) { return *in_prefix == '\0'; }
+			++in_str;  ++in_prefix;
+		}
+	   return *in_str == *in_prefix;
 	}
 
 #if defined(CX_WINDOWS)

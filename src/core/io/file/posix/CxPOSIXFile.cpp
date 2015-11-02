@@ -25,10 +25,6 @@ namespace cat {
 		in_src.mp_fd = 0;
 	}
 
-	CxFile::~CxFile() {
-	   close();
-	}
-
 	CxFile & CxFile::operator=(CxFile &&in_src) {
 		if (mp_fd) { close(); }
 		m_mode = in_src.m_mode;
@@ -100,12 +96,7 @@ namespace cat {
 		close();
 		return nf;
 	}
-
-	CxFile CxFile::copy(const CxChar *in_srcName, const CxChar *in_dstName) {
-		CxFile src(in_srcName);
-		return src.copy(in_dstName);
-	}
-
+	
 	CxBool CxFile::exists() const {
 		CxErr::Code ret = exists_priv(filename());
 		if (ret == kTrueCode) { return false; }
@@ -113,13 +104,6 @@ namespace cat {
 			if (ret != kFalseCode) { m_err = ret; }
 			return false;
 		}
-	}
-
-	CxBool CxFile::exists(const CxChar *in_filename) {
-		CxChar *path = sys::getPath(in_filename);
-		CxErr::Code ret = exists_priv(path);
-		mem::free(path);
-		return (ret == CxErr::kTrueCode) ? true : false;
 	}
 
 	CxErr::Code CxFile::exists_priv(const CxChar *in_filename) const {
@@ -380,14 +364,4 @@ namespace cat {
 		default: m_err = in_default;  break;
 		}
 	}
-
-	CxChar * CxFile::getPath(const CxChar *in_filename) {
-		/* First, see if it is a relative path. */
-		if (*in_filename != '/') {
-			/* If relative, make absolute relative to cwd. */
-			const CxChar *cwd = sys::cwd();
-			
-		}
-	}
-	
 } // namespace cat

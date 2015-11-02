@@ -11,12 +11,17 @@
  * @date May 9, 2015
  */
 
+#if !defined(DEBUG)
+#  if defined(_DEBUG) || defined(_DEBUG_) || defined(DEBUG_)
+#    define DEBUG
+#  endif
+#endif
+
 #if defined(DEBUG_2)
 #  if !defined(DEBUG)
 #    define DEBUG
 #  endif
 #endif
-
 
 #if defined(DEBUG)
 #  define CX_DEBUG
@@ -27,7 +32,7 @@
 #  define CXD_ASSERT(exp) assert(exp)
 
 #  define CXD_CRASH(fmt, ...)												\
-	do { if (IS_DEBUG) {														\
+	do { if (CX_IS_DEBUG) {													\
 			fprintf(stderr, "#----> FATAL %s:%d:%s(): " fmt "\n",	\
 					  __FILE__, __LINE__, __func__, __VA_ARGS__);	\
 			fflush(stderr);													\
@@ -36,7 +41,7 @@
 	} while (0)
 
 #  define CXD_ERR(fmt, ...)												\
-	do { if (IS_DEBUG) {														\
+	do { if (CX_IS_DEBUG) {														\
 			fprintf(stderr, "#----> ERROR %s:%d:%s(): " fmt "\n",	\
 					  __FILE__, __LINE__, __func__, __VA_ARGS__);	\
 			fflush(stderr);													\
@@ -44,7 +49,7 @@
 	} while (0)
 
 #  define CXD_WARN(fmt, ...)												\
-	do { if (IS_DEBUG) {														\
+	do { if (CX_IS_DEBUG) {														\
 			fprintf(stderr, "#--> Warning %s:%d:%s(): " fmt "\n",	\
 					  __FILE__, __LINE__, __func__, __VA_ARGS__);	\
 			fflush(stderr);													\
@@ -52,7 +57,7 @@
 	} while (0)
 
 #  define CXD_MSG(fmt, ...)												\
-	do { if (IS_DEBUG) {														\
+	do { if (CX_IS_DEBUG) {														\
 			fprintf(stdout, "#> %s:%d:%s(): " fmt "\n",				\
 					  __FILE__, __LINE__, __func__, __VA_ARGS__);	\
 			fflush(stdout);													\
@@ -60,10 +65,10 @@
 	} while (0)
 
 #  define CXD_OUT(fmt, ...)														\
-	do { if (IS_DEBUG) fprintf(stdout, fmt, __VA_ARGS__); } while (0)
+	do { if (CX_IS_DEBUG) fprintf(stdout, fmt, __VA_ARGS__); } while (0)
 
 #  define CXD_IF_CRASH(cond, fmt, ...)										\
-	do { if (IS_DEBUG) {															\
+	do { if (CX_IS_DEBUG) {															\
 			if (cond) {																\
 				fprintf(stderr, "#----> FATAL %s:%d:%s(): " fmt "\n",	\
 						  __FILE__, __LINE__, __func__, __VA_ARGS__);	\
@@ -74,7 +79,7 @@
 	} while (0)
 
 #  define CXD_IF_ERR(cond, fmt, ...)										\
-	do { if (IS_DEBUG) {															\
+	do { if (CX_IS_DEBUG) {															\
 			if (cond) {																\
 				fprintf(stderr, "#----> ERROR %s:%d:%s(): " fmt "\n",	\
 						  __FILE__, __LINE__, __func__, __VA_ARGS__);	\
@@ -84,7 +89,7 @@
 	} while (0)
 
 #  define CXD_IF_WARN(cond, fmt, ...)										\
-	do { if (IS_DEBUG) {															\
+	do { if (CX_IS_DEBUG) {															\
 			if (cond) {																\
 				fprintf(stderr, "#--> Warning %s:%d:%s(): " fmt "\n",	\
 						  __FILE__, __LINE__, __func__, __VA_ARGS__);	\
@@ -94,7 +99,7 @@
 	} while (0)
 
 #  define CXD_IF_MSG(cond, fmt, ...)											\
-	do { if (IS_DEBUG) {															\
+	do { if (CX_IS_DEBUG) {															\
 			if (cond) {																\
 				fprintf(stdout, "#> %s:%d:%s(): " fmt "\n",				\
 						  __FILE__, __LINE__, __func__, __VA_ARGS__);	\
@@ -104,36 +109,36 @@
 	} while (0)
 
 #  define CXD_IF_OUT(cond, fmt, ...)									\
-	do { if (IS_DEBUG) {													\
+	do { if (CX_IS_DEBUG) {													\
 			if (cond) { fprintf(stdout, fmt, __VA_ARGS__); }	\
 		}																		\
 	} while (0)
 
 /* Check for NaN */
-#  define CXD_ISNUM(x) do { if(IS_DEBUG) assert((x) == (x)); } while (0)
+#  define CXD_ISNUM(x) do { if(CX_IS_DEBUG) assert((x) == (x)); } while (0)
 
 /* Check for infinite float */
-#  define CXD_ISFINITE_F32(x) do { if(IS_DEBUG) assert((x) <= CX_MAX_F32 && (x) >= CX_MIN_F32); } while (0)
-#  define CXD_ISFINITE_F64(x) do { if(IS_DEBUG) assert((x) <= CX_MAX_F64 && (x) >= CX_MIN_F64); } while (0)
-#  define CXD_ISFINITE_REAL(x) do { if(IS_DEBUG) assert((x) <= CX_MAX_REAL && (x) >= CX_MIN_REAL); } while (0)
+#  define CXD_ISFINITE_F32(x) do { if(CX_IS_DEBUG) assert((x) <= CX_MAX_F32 && (x) >= CX_MIN_F32); } while (0)
+#  define CXD_ISFINITE_F64(x) do { if(CX_IS_DEBUG) assert((x) <= CX_MAX_F64 && (x) >= CX_MIN_F64); } while (0)
+#  define CXD_ISFINITE_REAL(x) do { if(CX_IS_DEBUG) assert((x) <= CX_MAX_REAL && (x) >= CX_MIN_REAL); } while (0)
 
 /* Check for NaN and infinite. */
 #  define CXD_ISVALID_F32(x)										\
-	do { if(IS_DEBUG) {												\
+	do { if(CX_IS_DEBUG) {												\
 			assert((x) == (x));										\
 			assert((x) <= CX_MAX_F32 && (x) >= CX_MIN_F32);	\
 		}																	\
 	} while (0)
 
 #  define CXD_ISVALID_F64(x)										\
-	do { if(IS_DEBUG) {												\
+	do { if(CX_IS_DEBUG) {												\
 			assert((x) == (x));										\
 			assert((x) <= CX_MAX_F64 && (x) >= CX_MIN_F64);	\
 		}																	\
 	} while (0)
 
 #  define CXD_ISVALID_REAL(x)											\
-	do { if(IS_DEBUG) {													\
+	do { if(CX_IS_DEBUG) {													\
 			assert((x) == (x));											\
 			assert((x) <= CX_MAX_REAL && (x) >= CX_MIN_REAL);	\
 		}																		\
@@ -153,6 +158,7 @@
 #  define CXD_WARN(fmt, ...)
 #  define CXD_MSG(fmt, ...)
 #  define CXD_OUT(fmt, ...)
+#  define CXD_IF_CRASH(cond, fmt, ...)
 #  define CXD_IF_ERR(cond, fmt, ...)
 #  define CXD_IF_WARN(cond, fmt, ...)
 #  define CXD_IF_MSG(cond, fmt, ...)

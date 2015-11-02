@@ -11,6 +11,8 @@
  * @date July 1, 2015
  */
 
+#include "core/Cx.h"
+
 namespace cat {
 
 	namespace CxErr {
@@ -58,10 +60,7 @@ namespace cat {
 			kFileExists, /**< File already exists */
 			kFileClosed, /**< Tried to do something on a closed file */
 			kFileCopyError, /**< Error occurred when trying to copy file */
-			kFileNotFoundError, /**< File was... not found. */
-			
-			
-			
+			kFileNotFound, /**< File was... not found. */
 		};
 
 		/**

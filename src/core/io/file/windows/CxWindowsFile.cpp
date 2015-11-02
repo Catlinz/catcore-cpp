@@ -32,7 +32,7 @@ namespace cat {
 		in_src.m_atEnd = false;  in_src.m_eof = true;
 	}
 	
-	CxFile::~CxFile() { close(); }
+
 
 	CxFile & CxFile::operator=(CxFile &&in_src) {
 		if (mp_fd) { close(); }
@@ -90,11 +90,6 @@ namespace cat {
 		}
 	}
 
-	CxFile CxFile::copy(const CxChar *in_srcName, const CxChar *in_dstName) {
-		CxFile src(in_srcName);
-		return src.copy(in_dstName);
-	}
-
 	CxBool CxFile::exists() const {
 		CxErr::Code ret = exists_priv(filename());
 		if (ret == kTrueCode) { return false; }
@@ -102,13 +97,6 @@ namespace cat {
 			if (ret != kFalseCode) { m_err = ret; }
 			return false;
 		}
-	}
-
-	CxBool CxFile::exists(const CxChar *in_filename) {
-		CxChar *path = sys::getPath(in_filename);
-		CxErr::Code ret = exists_priv(path);
-		mem::free(path);
-		return (ret == CxErr::kTrueCode) ? true : false;
 	}
 
 	CxErr::Code CxFile::exists_priv(const CxChar *in_filename) const {
