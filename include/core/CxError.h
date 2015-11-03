@@ -61,6 +61,10 @@ namespace cat {
 			kFileClosed, /**< Tried to do something on a closed file */
 			kFileCopyError, /**< Error occurred when trying to copy file */
 			kFileNotFound, /**< File was... not found. */
+
+			/* Thread specific errors */
+			kThreadJoinError,  /**< Error while joining with thread. */
+			kThreadLimitError, /**< Reached max thread limit */
 		};
 
 		/**

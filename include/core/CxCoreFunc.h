@@ -54,6 +54,18 @@ namespace cat {
 	}
 
 	/**
+	 * @brief Method to safetly delete a new'd object.
+	 * @param inout_array The object to delete.
+	 */
+	template<typename T>
+	CX_FORCE_INLINE void CxDelete(T*& inout_obj) {
+		if (inout_obj != 0) {
+			delete inout_obj;
+			inout_obj = 0;
+		}
+	}
+
+	/**
 	 * @brief Method to swap two values.
 	 * @param inout_v1 The first value to swap.
 	 * @param inout_v2 The second value to swap.
