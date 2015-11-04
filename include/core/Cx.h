@@ -23,6 +23,10 @@
 
 namespace cat {
 
+	/** @brief Enum flags for constructors of objects. */
+	enum CxInitFlag { kCxInit };
+	
+
 	/** @brief An enum that defines how data is copied (if at all) */
 	enum CxCopy {
 		kCxNoCopy = 0,

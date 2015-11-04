@@ -1,28 +1,35 @@
 #include "core/threading/posix/CxPOSIXMutex.h"
+#include "core/common/CxMem.h"
 
 namespace cat {
 
-	CxMutex& CxMutex::operator=(const CxMutex& in_src) {
-		if ((m_flags & kMutexStatic) != 0) { destroy(); }
-		
-		m_mutex = in_src.m_mutex;
-		m_flags = in_src.m_flags;
-		CXD_IF_ERR(((m_flags & kMutexStatic) != 0), "DO NOT COPY STATIC MUTEXES FFS!");
+	CxMutex::CxMutex(const CxMutex &) {
+		CXD_CRASH("Do not pass CxMutex by value!");
+	}
+
+	CxMutex & CxMutex::operator=(const CxMutex &) {
+		CXD_CRASH("Do not pass CxMutex by value!");
 		return *this;
 	}
 
 	void CxMutex::destroy() {
-		CxI32 error = pthread_mutex_destroy(&m_mutex);
-		CXD_IF_ERR((error != 0), "Failed to destroy CxMutex.  pthread_mutex_destroy failed with code %d.", error);
-		m_flags = 0;
+		if (mp_mutex != 0) {
+			CxI32 error = pthread_mutex_destroy(mp_mutex);
+			mem::free(mp_mutex);
+			CXD_IF_ERR((error != 0), "Failed to destroy CxMutex (%d).", error);
+		}
 	}
 
 	void CxMutex::initialize() {
-		if ((m_flags & kMutexInitialised) == 0) {
-			CxI32 error = pthread_mutex_init(&m_mutex, NIL);
-			CXD_IF_ERR((error != 0), "Failed to initialise CxMutex.  pthread_mutex_init failed with code %d.", error);
-			m_flags |= kMutexInitialized;
+		if (mp_mutex == 0) {
+			mp_mutex = (pthread_mutex_t *)mem::alloc(sizeof(pthread_mutex_t));
+			CxI32 error = pthread_mutex_init(mp_mutex, 0);
+			if (error != 0) {
+				CXD_ERR("Failed to initialise CxMutex (%d).", error);
+				mem::free(mp_mutex);
+			}
 		}
+		else { CXD_ERR("Cannot initialize mutex more than once."); }
 	}
 
 } // namespace cat
