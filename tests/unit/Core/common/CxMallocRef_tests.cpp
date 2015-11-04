@@ -8,7 +8,7 @@ namespace cat {
 	};
 
 	CxMallocRef<CxI32> testCreateFromFunc(CxI32 in_value) {
-		CxI32 *i = mem::alloc(sizeof(CxI32));
+		CxI32 *i = (CxI32 *)mem::alloc(sizeof(CxI32));
 		CxMallocRef<CxI32> ptr(i);
 		*ptr = in_value;
 		return ptr;
@@ -53,7 +53,7 @@ namespace cat {
 		CxMallocRef<CxChar> p0;
 		ass_true(p0.ptr() == 0 && p0.refCount() == 0);
 
-		CxI32 *i0 = mem::alloc(sizeof(CxI32));
+		CxI32 *i0 = (CxI32 *)mem::alloc(sizeof(CxI32));
 		*i0 = 1;
 		CxMallocRef<CxI32> p1(i0);
 		ass_true(p0.ptr() == i0 && p0.refCount() == 1);
@@ -74,7 +74,7 @@ namespace cat {
 		ass_false(p1 != i0);
 		ass_false(p1 == 0);
 
-		CxI32 *i1 = mem::alloc(sizeof(CxI32));
+		CxI32 *i1 = (CxI32 *)mem::alloc(sizeof(CxI32));
 		*i1 = 2;
 		CxMallocRef<CxI32> p4(i1);
 		ass_false(p1 == p4 || p4 == p1);
@@ -84,7 +84,7 @@ namespace cat {
 
 
 		/* Test array indexing operators */
-		CxI32 *i2 = mem::alloc(sizeof(CxI32)*10);
+		CxI32 *i2 = (CxI32 *)mem::alloc(sizeof(CxI32)*10);
 		for (CxI32 i = 0; i < 10; ++i) { *(i2 + i) = i + 3; }
 
 		CxMallocRef<CxI32> p5(i2);
@@ -113,7 +113,7 @@ namespace cat {
 		ass_true(*p5 == 6);  ass_true(*p6 == 6);
 
 		/* Test the pointer -> operators */
-		MemTestObj0 *m0 = mem::alloc(sizeof(MemTestObj0));
+		MemTestObj0 *m0 = (MemTestObj0 *)mem::alloc(sizeof(MemTestObj0));
 		m0->x = 1.0f;  m0->y = 2.2f;  m0->z = 4.5f;
 		
 		CxMallocRef<MemTestObj0> p7(m0);
@@ -150,7 +150,7 @@ namespace cat {
 		ass_true(p0.refCount() == 0);
 		ass_eq(CxMallocRef<CxI32>::_testNumDeletes, 0);
 
-		CxI32 i0 = mem::alloc(sizeof(CxI32));
+		CxI32 i0 = (CxI32 *)mem::alloc(sizeof(CxI32));
 		*i0 = 1;
 		CxMallocRef<CxI32> p1(i0);
 		ass_true(p1.ptr() == i0 && p1.refCount() == 1 && *p1 == 1);
@@ -194,8 +194,8 @@ namespace cat {
 		CxMallocRef<CxI32> p1(p0);
 		ass_true(p1.ptr() == 0 && p1.refCount() == 0);
 
-		CxI32 *i0 = mem::alloc(sizeof(CxI32));  *i0 = 1;
-		CxI32 *i1 = mem::alloc(sizeof(CxI32));  *i1 = 2;
+		CxI32 *i0 = (CxI32 *)mem::alloc(sizeof(CxI32));  *i0 = 1;
+		CxI32 *i1 = (CxI32 *)mem::alloc(sizeof(CxI32));  *i1 = 2;
 		CxMallocRef<CxI32> p2(i0);
 		CxMallocRef<CxI32> p3(p2);
 		ass_true(p2.ptr() == i0 && p3.ptr() == i0 &&
@@ -321,7 +321,7 @@ namespace cat {
 		ass_eq(CxMallocRef<CxI32>::_testNumDeletes, 0);
 
 		/* Test deleting non-null, 1 refrence */
-		CxI32 *i0 = mem::alloc(sizeof(CxI32));  *i0 = 2;
+		CxI32 *i0 = (CxI32 *)mem::alloc(sizeof(CxI32));  *i0 = 2;
 		CxMallocRef<CxI32> *p1 = new CxMallocRef<CxI32>(i0);
 		ass_true(p1->ptr() == i0 && p1->refCount() == 1);
 		ass_eq(CxMallocRef<CxI32>::_testNumDeletes, 0);

@@ -41,8 +41,8 @@ namespace cat {
 			m_bits = in_src.m_bits;  return *this;
 		}
 
-		CX_FORCE_INLINE CxU32 operator CxU32() const { return static_cast<CxU32>(m_bits); }
-		CX_FORCE_INLINE CxU32 operator CxI32() const { return static_cast<CxI32>(m_bits); }
+		CX_FORCE_INLINE  operator CxU32() const { return static_cast<CxU32>(m_bits); }
+		CX_FORCE_INLINE  operator CxI32() const { return static_cast<CxI32>(m_bits); }
 		
 		CX_FORCE_INLINE CxBool operator==(E in_val) const { return m_bits == in_val; }
 		CX_FORCE_INLINE CxBool operator==(const CxFlags<E,T> &in_f) const { return m_bits == in_f.m_bits; }

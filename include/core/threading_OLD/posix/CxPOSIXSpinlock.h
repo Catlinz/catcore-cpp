@@ -1,24 +1,22 @@
-#ifndef CX_CORE_THREADING_WINDOWS_CXWINDOWSSPINLOCK_H
-#define CX_CORE_THREADING_WINDOWS_CXWINDOWSSPINLOCK_H
+#ifndef CX_CORE_THREADING_POSIX_CXPOSIXSPINLOCK_H
+#define CX_CORE_THREADING_POSIX_CXPOSIXSPINLOCK_H
 /**
  * @copyright Copyright Catlin Zilinksi, 2015.  All rights reserved.
  *
- * @file CxWindowsSpinlock.h
- * @brief Contains the Windows definition of the Spinlock class for threading.
+ * @file CxPOSIXSpinlock.h
+ * @brief Contains the definition of the POSIX Spinlock for threading.
  *
  * @author Catlin Zilinski
- * @date June 28, 2015
+ * @date: June 28, 2015
  */
 
 #include "core/Cx.h"
-#include <Windows.h>
-
-#define CX_WINDOWS_SPINLOCK_TRIES 4000
+#include <pthread.h>
 
 namespace cat {
 
 	/**
-	 * @class CxWindowsSpinlock CxWindowsSpinlock.h "core/threading/windows/CxWindowsSpinlock.h"
+	 * @class CxSpinlock CxPOSIXSpinlock.h "core/threading/posix/CxPOSIXSpinlock.h"
 	 * A mutex that spins in place instead of getting a kernel level lock (expensive).
 	 * @version 2
 	 * @author Catlin Zilinski
@@ -26,19 +24,20 @@ namespace cat {
 	 */
 	class CxSpinlock {
 	  public:
+
 		enum FlagsEnum { kSpinlockStatic = 1 << 0, kSpinlockInitialized = 1 << 1 };
 
 		/** @brief Flags to pass to constructor to indicate behaviour. */
 		enum StaticEnum { kStatic = 1 << 0 };
 		enum InitializeEnum { kInitialize = 1 << 0 };
+			
 
-		
 		/** @brief Create an uninitialised CxSpinlock. */
-		CX_FORCE_INLINE CxSpinlock() : mp_spinlock(0), m_flags(0) {}
+		CX_FORCE_INLINE CxSpinlock() : m_flags(0) {}
 
 		/** @brief Create and initialise a new spinlock. */
 		CX_FORCE_INLINE CxSpinlock(CxSpinlock::InitializeEnum)
-			: mp_spinlock(0), m_flags(0) { initialize(); }
+			: m_flags(0) { initialize(); }
 
 		/** 
 		 * @brief Create and initialise a new static spinlock. 
@@ -46,12 +45,12 @@ namespace cat {
 		 * and as such will destroy itself when the destructor is called. 
 		 */
 		CX_FORCE_INLINE CxSpinlock(CxSpinlock::StaticEnum)
-			: mp_spinlock(0), m_flags(kSpinlockStatic) { initialize(); }
+			: m_flags(kSpinlockStatic) { initialize(); }
 
 		/** @brief Copy constructor (mainly does debug checking for copying. */
 		CX_FORCE_INLINE CxSpinlock(const CxSpinlock &in_src)
-			: mp_spinlock(in_src.mp_spinlock), m_flags(in_src.m_flags) {
-			CXD_IF_ERR(((m_flags & kSpinlockStatic) != 0), "DO NOT COPY STATIC MUTEXES FFS!");
+			: m_spinlock(in_src.m_spinlock), m_flags(in_src.m_flags) {
+			CXD_IF_ERR(((m_flags & kSpinlockStatic) != 0), "DO NOT COPY STATIC SPINLOCKS FFS!");
 		}
 
 		/** @brief Destroy the CxSpinlock if it is static. */
@@ -68,25 +67,24 @@ namespace cat {
 		/** @brief Initialise the spinlock before the first use */
 		void initialize();
 
-		/** @brief Lock the spinlock. */
-		CX_FORCE_INLINE void lock() { EnterCriticalSection(mp_spinlock); }
+		/**  @brief Lock the spinlock. */
+		CX_FORCE_INLINE void lock() { pthread_spin_lock(&m_spinlock); }
 
 		/**
-		 * @brief Try and lock the Spinlock, but don't wait.
+		 * @brief Try and lock the CxSpinlock, but don't wait.
 		 * @return True if now owns the lock.
 		 */
-		CX_FORCE_INLINE CxBool tryLock() { return TryEnterCriticalSection(mp_spinlock) != 0; }
+		CX_FORCE_INLINE CxBool trylock() { return (pthread_spin_trylock(&m_spinlock) == 0); }
 
-		/** @brief Unlock the Spinlock. */
-		CX_FORCE_INLINE void unlock() { LeaveCriticalSection(mp_spinlock); }
+		/** @brief Unlock the CxSpinlock. */
+		CX_FORCE_INLINE void unlock() { pthread_spin_unlock(&m_spinlock); }
 
 	  private:
-		
-		CRITICAL_SECTION* mp_spinlock;
+		pthread_spinlock_t m_spinlock;
 		CxI32 m_flags;
 	};
+
 } // namespace cat
 
-#endif // CX_CORE_THREADING_WINDOWS_CXWINDOWSSPINLOCK_H
-
+#endif // CX_CORE_THREADING_POSIX_CXPOSIXSPINLOCK_H
 

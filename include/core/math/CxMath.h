@@ -138,17 +138,17 @@ namespace cat {
 	CX_FORCE_INLINE CxBool CxIsFinite(CxF64 in_val) { return ::isfinite(in_val); }
 
 	/** @return The value of log_b(x) (log base b of x). */
-	CX_FORCE_INLINE CxF32 CxLog(CxF32 in_b, CxF32 in_x) { return ::log(in_x) / ::log(in_b); }
+	CX_FORCE_INLINE CxF32 CxLog(CxF32 in_b, CxF32 in_x) { return ::logf(in_x) / ::logf(in_b); }
 	/** @return The value of log_b(x) (log base b of x). */
 	CX_FORCE_INLINE CxF64 CxLog(CxF64 in_b, CxF64 in_x) { return ::log(in_x) / ::log(in_b); }
 
 	/** @return The natural logarithm (log base e) of x. */
-	CX_FORCE_INLINE CxF32 CxLogE(CxF32 in_x) {	return ::log(in_x); }
+	CX_FORCE_INLINE CxF32 CxLogE(CxF32 in_x) {	return ::logf(in_x); }
 	/** @return The natural logarithm (log base e) of x. */
 	CX_FORCE_INLINE CxF64 CxLogE(CxF64 in_x) {	return ::log(in_x); }
 
 	/** @return The log base 10 of x. */
-	CX_FORCE_INLINE CxF32 CxLog10(CxF32 in_x) { return ::log10(in_x); }
+	CX_FORCE_INLINE CxF32 CxLog10(CxF32 in_x) { return ::log10f(in_x); }
 	/** @return The log base 10 of x. */
 	CX_FORCE_INLINE CxF64 CxLog10(CxF64 in_x) { return ::log10(in_x); }
 

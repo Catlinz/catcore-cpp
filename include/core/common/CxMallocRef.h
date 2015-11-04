@@ -177,13 +177,17 @@ namespace cat {
 			}
 		}
 
-		static CxI32 _testNumDeletes = 0;
+		static CxI32 _testNumDeletes;
 #endif // CX_TESTING
 		
 	  private:
 		T *mp_ptr;
 		CxI32 *mp_refCount;
 	};
+
+#if defined(CX_TESTING)
+	template<typename T> CxI32 CxMallocRef<T>::_testNumDeletes = 0;
+#endif // CX_TESTING
 	
 } // namespace cat
 

@@ -43,7 +43,7 @@ namespace cat {
 			m_lock.lock();
 		   CxU64 id = m_next++;
 			if (m_next > m_last) {
-				m_isInvalid = true;
+				m_isValid = false;
 				if (id > m_last) { id = 0; }
 			}
 			m_lock.unlock();

@@ -51,7 +51,7 @@ namespace cat {
 		}
 		
 	  private:
-		CxSpinLock m_lock;
+		CxSpinlock m_lock;
 		CxU32 m_start, m_range;
 		CxU32 m_cur;
 	};
