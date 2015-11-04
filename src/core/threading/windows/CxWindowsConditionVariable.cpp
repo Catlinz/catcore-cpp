@@ -14,17 +14,18 @@ namespace cat {
 
 	void CxConditionVariable::destroy() {
 		if (mp_cv != 0) {
-			DeleteCriticalSection(mp_cv);
 			mem::free(mp_cv);
 		}
 		m_flags = 0;
 	}
 
 	void CxConditionVariable::initialize() {
-		if ((m_flags & kConditionVariableInitialised) == 0) {
+		if (mp_cv == 0) {
 			mp_cv = (CONDITION_VARIABLE*)mem::alloc(sizeof(CONDITION_VARIABLE));
 			InitializeConditionVariable(mp_cv);
-			m_flags |= kConditionVariableInitialized;
+		}
+		else {
+			CXD_ERR("Cannot initialise Condition Variable more than once.");
 		}
 	}
 	

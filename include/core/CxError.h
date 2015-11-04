@@ -72,7 +72,7 @@ namespace cat {
 		 * @param in_err The error code to print out.
 		 * @return A constant string representing the error.
 		 */
-		const CxChar * toStr(Code in_err);
+		const CxChar * str(Code in_err);
 	}
 
 } // Namespace cat

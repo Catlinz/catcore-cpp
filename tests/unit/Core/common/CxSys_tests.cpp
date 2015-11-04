@@ -50,7 +50,9 @@ namespace cat {
 		ass_true(str::startsWith(cwd, rdir));
 		
 #if defined (CX_WINDOWS)
-		ass_true(str::endsWith(cwd, "\\catcore-cpp\\tests\\unit\\Core\\test_bin\\"));
+		CxBool t1 = str::endsWith(cwd, "\\catcore-cpp\\tests\\unit\\Core\\test_bin\\");
+		CxBool t2 = str::endsWith(cwd, "\\catcore-cpp\\tests\\unit\\Core\\test_bin\\Debug\\");
+		ass_true((t1 || t2) && !(t1 && t2));
 		CxChar *ptr = (CxChar *)mem::find(cwd, '\\', sizeof(CxChar)*cwd_len);
 		ass_eq(*ptr, '\\');
 		ass_eq(*(ptr - 1), ':');
@@ -78,7 +80,8 @@ namespace cat {
 		CxChar *orig = str::copy(sys::cwd());
 		
 		CxChar tmp[512];
-		sys::setCwd("../../../../include");
+		while (!str::endsWith(sys::cwd(), "\\catcore-cpp\\tests\\")) { sys::setCwd("../"); }
+		sys::setCwd("../include");
 		ass_true(str::startsWith(sys::cwd(), root));
 #if defined (CX_WINDOWS)
 		ass_true(str::endsWith(sys::cwd(), "\\catcore-cpp\\include\\"));
@@ -129,6 +132,7 @@ namespace cat {
 	void testCxSysGetPath() {
 		BEGIN_TEST;
 
+		while (!str::endsWith(sys::cwd(), "\\catcore-cpp\\tests\\unit\\Core\\test_bin\\")) { sys::setCwd("../"); }
 		CxChar *p0 = sys::getPath("../../../../include");
 		ass_true(str::startsWith(p0, sys::rootDir()));
 #if defined (CX_WINDOWS)

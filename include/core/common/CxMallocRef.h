@@ -38,7 +38,7 @@ namespace cat {
 		CX_FORCE_INLINE CxMallocRef(T *in_ptr)
 			: mp_ptr(in_ptr), mp_refCount(0) {
 			if (in_ptr != 0) {
-				mp_refCount = mem::alloc(sizeof(CxI32));
+				mp_refCount = (CxI32 *)mem::alloc(sizeof(CxI32));
 				*mp_refCount = 1;
 			}
 		}
@@ -57,9 +57,10 @@ namespace cat {
 		/** @brief Assignment op, increments reference count */
 		CX_FORCE_INLINE CxMallocRef<T> & operator=(const CxMallocRef<T> &in_src) {
 			if (*this != in_src) {
-				in_src.retain();  release();
+				release();
 				mp_ptr = in_src.mp_ptr;
 				mp_refCount = in_src.mp_refCount;
+				retain();
 			}
 			return *this;
 		}
@@ -76,12 +77,12 @@ namespace cat {
 
 		/** @return True if the two pointers are equal */
 		CX_FORCE_INLINE CxBool operator==(const CxMallocRef<T> &in_ref) const {
-			return mp_ptr == in_ptr.mp_ptr;
+			return mp_ptr == in_ref.mp_ptr;
 		}
 
 		/** @return True if the two pointers are NOT equal */
 		CX_FORCE_INLINE CxBool operator!=(const CxMallocRef<T> &in_ref) const {
-			return mp_ptr != in_ptr.mp_ptr;
+			return mp_ptr != in_ref.mp_ptr;
 		}
 
 		/** 
@@ -152,8 +153,8 @@ namespace cat {
 		CX_INLINE void release() {
 			if (mp_refCount != 0) {
 				if (atomic::decr32(mp_refCount) == 0) {
-					free(mp_refCount);  mp_refCount = 0;
-					free(mp_ptr);  mp_ptr = 0;
+					free(mp_refCount);  free(mp_ptr);
+					mp_refCount = 0;  mp_ptr = 0;
 #if defined(CX_TESTING)
 					_testNumDeletes++;
 #endif // CX_TESTING

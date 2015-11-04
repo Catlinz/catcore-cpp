@@ -56,7 +56,7 @@ namespace cat {
 		CxI32 *i0 = (CxI32 *)mem::alloc(sizeof(CxI32));
 		*i0 = 1;
 		CxMallocRef<CxI32> p1(i0);
-		ass_true(p0.ptr() == i0 && p0.refCount() == 1);
+		ass_true(p1.ptr() == i0 && p1.refCount() == 1);
 
 		
 		/* Test equality operators */
@@ -91,7 +91,7 @@ namespace cat {
 		for (CxI32 i = 0; i < 10; ++i) { ass_eq(p5[i], i + 3); }
 
 		const CxMallocRef<CxI32> &p6 = p5;
-		ass_true(p6->ptr() == i2);
+		ass_true(p6.ptr() == i2);
 		for (CxI32 i = 0; i < 10; ++i) { ass_eq(p6[i], i + 3); }
 		
 
@@ -150,7 +150,7 @@ namespace cat {
 		ass_true(p0.refCount() == 0);
 		ass_eq(CxMallocRef<CxI32>::_testNumDeletes, 0);
 
-		CxI32 i0 = (CxI32 *)mem::alloc(sizeof(CxI32));
+		CxI32 *i0 = (CxI32 *)mem::alloc(sizeof(CxI32));
 		*i0 = 1;
 		CxMallocRef<CxI32> p1(i0);
 		ass_true(p1.ptr() == i0 && p1.refCount() == 1 && *p1 == 1);
@@ -220,30 +220,30 @@ namespace cat {
 					p0.refCount() == 0 && p4.refCount() == 0);
 				
 		p5 = static_cast< CxMallocRef<CxI32> && >(p6); /* null <- not null */
-		ass_true(p2.ptr() = i0 && p3.ptr() == i0 && p5.ptr() == i0 &&
+		ass_true(p2.ptr() == i0 && p3.ptr() == i0 && p5.ptr() == i0 &&
 					p2.refCount() == 3 && p3.refCount() == 3 && p5.refCount() == 3);
 		ass_true(p6.refCount() == 0 && p6.ptr() == 0);
 		ass_true(p4.refCount() == 0 && p4.ptr() == 0);
 
 		p4 = static_cast< CxMallocRef<CxI32> && >(p2); /* null <- not null */
-		ass_true(p4.ptr() = i0 && p3.ptr() == i0 && p5.ptr() == i0 &&
+		ass_true(p4.ptr() == i0 && p3.ptr() == i0 && p5.ptr() == i0 &&
 					p4.refCount() == 3 && p3.refCount() == 3 && p5.refCount() == 3);
 		ass_true(p2.refCount() == 0 && p2.ptr() == 0);
 
 		p3 = static_cast< CxMallocRef<CxI32> && >(p0); /* not null <- null */
-		ass_true(p4.ptr() = i0 && p5.ptr() == i0 &&
+		ass_true(p4.ptr() == i0 && p5.ptr() == i0 &&
 					p4.refCount() == 2 && p5.refCount() == 2);
 		ass_true(p0.ptr() == 0 && p3.ptr() == 0 &&
 					p0.refCount() == 0 && p3.refCount() == 0);
 
 		p4 = static_cast< CxMallocRef<CxI32> && >(p4); /* self assignment */
-		ass_true(p4.ptr() = i0 && p5.ptr() == i0 &&
+		ass_true(p4.ptr() == i0 && p5.ptr() == i0 &&
 					p4.refCount() == 2 && p5.refCount() == 2);
 
 		/* Test copy assignment operator */
 		CxMallocRef<CxI32> p7(i1);
 		CxMallocRef<CxI32> p8(p7);
-		ass_true(p7.ptr() = i1 && p8.ptr() == i1 &&
+		ass_true(p7.ptr() == i1 && p8.ptr() == i1 &&
 					p7.refCount() == 2 && p8.refCount() == 2);
 		
 		p3 = p1; /* null <- null */
@@ -251,35 +251,34 @@ namespace cat {
 					p1.refCount() == 0 && p3.refCount() == 0);
 
 		p3 = p4; /* null <- not null */
-		ass_true(p4.ptr() = i0 && p3.ptr() == i0 && p5.ptr() == i0 &&
+		ass_true(p4.ptr() == i0 && p3.ptr() == i0 && p5.ptr() == i0 &&
 					p4.refCount() == 3 && p3.refCount() == 3 && p5.refCount() == 3);
 
 		p4 = p0; /* not null <- null */
-		ass_true(p3.ptr() = i0 && p5.ptr() == i0 &&
+		ass_true(p3.ptr() == i0 && p5.ptr() == i0 &&
 					p3.refCount() == 2 && p5.refCount() == 2);
 		ass_true(p0.ptr() == 0 && p4.ptr() == 0 &&
 					p0.refCount() == 0 && p4.refCount() == 0);
 
 		p5 = p8; /* not null <- not null */
-	   ass_true(p3.ptr() = i0 && p3.refCount() == 1);
-		ass_true(p5.ptr() == i1 && p7.ptr() = i1 && p8.ptr() == i1 &&
+	   ass_true(p3.ptr() == i0 && p3.refCount() == 1);
+		ass_true(p5.ptr() == i1 && p7.ptr() == i1 && p8.ptr() == i1 &&
 					p5.refCount() == 3 && p7.refCount() == 3 && p8.refCount() == 3);
 
 		p7 = p5; /* not null <- not null (same) */
-		ass_true(p5.ptr() == i1 && p7.ptr() = i1 && p8.ptr() == i1 &&
+		ass_true(p5.ptr() == i1 && p7.ptr() == i1 && p8.ptr() == i1 &&
 					p5.refCount() == 3 && p7.refCount() == 3 && p8.refCount() == 3);
 
 		p7.release();
-		ass_true(p5.ptr() == i1 && p8.ptr() == i1 &&
-					p5.refCount() == 2 && p8.refCount() == 2);
-		ass_true(p7.refCount() == 0 && p7.ptr() == 0);
+		ass_true(p5.ptr() == i1 && p7.ptr() == i1 && p8.ptr() == i1 &&
+			p5.refCount() == 2 && p7.refCount() == 2 && p8.refCount() == 2);
 		
 		p8 = p5; /* not null <- not null (same) */
-		ass_true(p5.ptr() == i1 && p8.ptr() == i1 &&
-					p5.refCount() == 2 && p8.refCount() == 2);
+		ass_true(p5.ptr() == i1 && p7.ptr() == i1 && p8.ptr() == i1 &&
+			p5.refCount() == 2 && p7.refCount() == 2 && p8.refCount() == 2);
 
 		p3 = p3; /* Self assignment */
-		ass_true(p3.ptr() = i0 && p3.refCount() == 1);
+		ass_true(p3.ptr() == i0 && p3.refCount() == 1);
 		
 		/* Test last reference gone from assignment op */
 		ass_eq(CxMallocRef<CxI32>::_testNumDeletes, 0);
@@ -290,16 +289,16 @@ namespace cat {
 
 		/* Test last reference gone from move assignment op */
 		p5.release();
-		ass_true(p5.ptr() == i1 && p5.refCount() == 1);
-		ass_true(p8.ptr() == 0 && p8.refCount() == 0);
-		
+		ass_true(p5.ptr() == i1 && p7.ptr() == i1 && p8.ptr() == i1 &&
+			p5.refCount() == 1 && p7.refCount() == 1 && p8.refCount() == 1);
+
 		ass_eq(CxMallocRef<CxI32>::_testNumDeletes, 1);
 		p8 = static_cast< CxMallocRef<CxI32> && >(p0);
 		ass_true(p0.ptr() == 0 && p8.ptr() == 0 &&
 					p0.refCount() == 0 && p8.refCount() == 0);
 		ass_eq(CxMallocRef<CxI32>::_testNumDeletes, 2);
 
-		i1 = i2 = 0;
+		i1 = i0 = 0;
 
 		FINISH_TEST;
 	}
@@ -329,18 +328,15 @@ namespace cat {
 		ass_eq(CxMallocRef<CxI32>::_testNumDeletes, 1);
 
 		/* Test deleting non-null, +1 references */
-		i0 = mem::alloc(sizeof(CxI32));  *i0 = 3;
+		i0 = (CxI32 *)mem::alloc(sizeof(CxI32));  *i0 = 3;
 		p1 = new CxMallocRef<CxI32>(i0);
 		p0 = new CxMallocRef<CxI32>(*p1);
 		ass_true(p1->ptr() == i0 && p1->refCount() == 2 &&
 					p0->ptr() == i0 && p0->refCount() == 2);
 		delete p1;
-		ass_true(p0->ptr() == i0 && p0->refCount() == 2);
-		ass_true(p1->ptr() == 0 && p1->refCount() == 0);
+		ass_true(p0->ptr() == i0 && p0->refCount() == 1);
 		ass_eq(CxMallocRef<CxI32>::_testNumDeletes, 1);
 		delete p0;
-		ass_true(p0->ptr() == 0 && p0->refCount() == 0);
-		ass_true(p1->ptr() == 0 && p1->refCount() == 0);
 		ass_eq(CxMallocRef<CxI32>::_testNumDeletes, 2);
 
 		i0 = 0;
@@ -357,43 +353,43 @@ namespace cat {
 		/* Test returning new from function */
 		CxMallocRef<CxI32> p0 = testCreateFromFunc(4);
 	   ass_eq(CxMallocRef<CxI32>::_testNumDeletes, 0);
-		ass_true(p0 != 0 && p0->refCount() == 1 && *p0 == 4);
+		ass_true(p0 != 0 && p0.refCount() == 1 && *p0 == 4);
 
 		CxMallocRef<CxI32> p1 = testCreateFromFunc(8);
 		ass_eq(CxMallocRef<CxI32>::_testNumDeletes, 0);
-		ass_true(p1 != 0 && p1->refCount() == 1 && *p1 == 8);
+		ass_true(p1 != 0 && p1.refCount() == 1 && *p1 == 8);
 
 		p0 = testCreateFromFunc(-39);
 		ass_eq(CxMallocRef<CxI32>::_testNumDeletes, 1);
-		ass_true(p0 != 0 && p0->refCount() == 1 && *p0 == -39);
+		ass_true(p0 != 0 && p0.refCount() == 1 && *p0 == -39);
 
 		/* Test passing to function, no return */
 		testPassToFunc(p0, 2, 89);
 		ass_eq(CxMallocRef<CxI32>::_testNumDeletes, 1);
-		ass_true(p0 != 0 && p0->refCount() == 1 && *p0 == 89);
+		ass_true(p0 != 0 && p0.refCount() == 1 && *p0 == 89);
 
 		/* Test passing to function and returning */
 		p0 = testPassToFuncAndReturn(p0, 2, 99);
 		ass_eq(CxMallocRef<CxI32>::_testNumDeletes, 1);
-		ass_true(p0 != 0 && p0->refCount() == 1 && *p0 == 99);
+		ass_true(p0 != 0 && p0.refCount() == 1 && *p0 == 99);
 
 		p1 = testPassToFuncAndReturn(p0, 2, 234);
 		ass_eq(CxMallocRef<CxI32>::_testNumDeletes, 2);
-		ass_true(p0 != 0 && p0->refCount() == 2 && *p0 == 234);
-		ass_true(p1 != 0 && p1->refCount() == 2 && *p1 == 234);
+		ass_true(p0 != 0 && p0.refCount() == 2 && *p0 == 234);
+		ass_true(p1 != 0 && p1.refCount() == 2 && *p1 == 234);
 
 		p1 = testPassToFuncAndReturn(testCreateFromFunc(34), 1, 53);
 		ass_eq(CxMallocRef<CxI32>::_testNumDeletes, 2);
-		ass_true(p0 != 0 && p0->refCount() == 1 && *p0 == 234);
-		ass_true(p1 != 0 && p1->refCount() == 1 && *p1 == 53);
+		ass_true(p0 != 0 && p0.refCount() == 1 && *p0 == 234);
+		ass_true(p1 != 0 && p1.refCount() == 1 && *p1 == 53);
 
 		ass_eq(CxMallocRef<CxI32>::_testNumDeletes, 2);
 		p1 = CxMallocRef<CxI32>();
 		ass_eq(CxMallocRef<CxI32>::_testNumDeletes, 3);
 		p0 = CxMallocRef<CxI32>();
 		ass_eq(CxMallocRef<CxI32>::_testNumDeletes, 4);
-		ass_true(p0 == 0 && p0->refCount() == 0);
-		ass_true(p1 == 0 && p1->refCount() == 0);
+		ass_true(p0 == 0 && p0.refCount() == 0);
+		ass_true(p1 == 0 && p1.refCount() == 0);
 		
 		
 		FINISH_TEST;

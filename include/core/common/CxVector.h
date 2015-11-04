@@ -1424,6 +1424,14 @@ namespace cat {
 			: CxPODVector<T *>(in_src0, in_src1) {}			
 		CX_FORCE_INLINE CxVector(CxVector<T *> &&in_src)					
 			: CxPODVector<T *>(in_src) {}
+		CxVector<T *> & operator=(const CxVector<T *> &in_src) {
+				 CxPODVector<T *>::operator=(in_src);
+				 return *this;
+		}
+		CxVector<T *> & operator=(CxVector<T *> &&in_src) {
+			 CxPODVector<T *>::operator=(in_src);
+			 return *this;
+		}
 		CX_FORCE_INLINE CxBool operator==(const CxVector<T *> &in_vec) const {	
 			return _CxBaseVector<T *>::operator==(in_vec);					
 		}																						
@@ -1549,6 +1557,14 @@ namespace cat {
 		  : CxPODVector<ARG_TYPE>(in_src0, in_src1) {}							\
 	  CX_FORCE_INLINE CxVector(CxVector<ARG_TYPE> &&in_src)					\
 		  : CxPODVector<ARG_TYPE>(in_src) {}										\
+		CxVector<ARG_TYPE> & operator=(const CxVector<ARG_TYPE> &in_src) { \
+		 CxPODVector<ARG_TYPE>::operator=(in_src); \
+		return *this; \
+	} \
+	CxVector<ARG_TYPE> & operator=(CxVector<ARG_TYPE> &&in_src) { \
+		CxPODVector<ARG_TYPE>::operator=(in_src); \
+		return *this; \
+	} \
 	  CX_FORCE_INLINE CxBool operator==(const CxVector<ARG_TYPE> &in_vec) const {	\
 		  return _CxBaseVector<ARG_TYPE>::operator==(in_vec);					\
 	  }																						\

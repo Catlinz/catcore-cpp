@@ -54,7 +54,7 @@ namespace cat {
 	}
 
 	CxBool CxThread::start() {
-		mp_winHandle = CreateThread(0, 0, cx_thread_start_entry__, (void *)this, 0, &m_handle);
+		mp_winHandle = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)cx_thread_start_entry__, (void *)this, 0, &m_handle);
 		if (mp_winHandle == 0) {
 			DWORD error = GetLastError();
 			switch(error) {
@@ -67,7 +67,7 @@ namespace cat {
 				m_err = CxErr::kInvalidAddress;  break;
 			case ERROR_NOT_ENOUGH_MEMORY:
 				m_err = CxErr::kOutOfMemory;  break;
-			default: m_err = CxEr::kUnknownError; break;
+			default: m_err = CxErr::kUnknownError; break;
 			}
 			CXD_ERR("Failed to start thread (%d) ('%s').", error, CxErr::str(m_err));
 			CloseHandle(mp_winHandle);  mp_winHandle = 0;
@@ -76,7 +76,7 @@ namespace cat {
 		else { return true; }
 	}
 
-	CxI64 CxThread::wait() {
+	CxI32 CxThread::wait() {
 		if (mp_winHandle == 0) {
 			mp_winHandle = OpenThread(SYNCHRONIZE, 0, m_handle);
 		}

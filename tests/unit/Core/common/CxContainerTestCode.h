@@ -2536,7 +2536,7 @@ namespace cat {
 		appendToCxContainerClassPtr(v1, 2);
 		ass_eq(v0->at(3), 2);
 
-		v1.setNull();
+		v1 = 0;
 		ass_eq(v0->retainCount(), 1);
 
 		v1 = v0;
@@ -2545,7 +2545,7 @@ namespace cat {
 		CxDeleteISPtr(v0);
 		ass_zero(v0);
 
-		v1.setNull();
+		v1 = 0;
 	}
 	
 } // namespace cat

@@ -120,6 +120,15 @@ namespace cat {
 		 * THIS SHOULD ONLY EVER BE CALLED BY THE ENTRY FUNCTIONS.
 		 */
 		void exit(CxI32 in_exitStatus);
+
+		/**
+		* @brief Method for subclasses to implement.
+		* This method is the method called by the thread that is created
+		* by the start() method.  The return value of this method will be
+		* used as the exit code for the thread.
+		* @return The exit code for the thread.
+		*/
+		virtual CxI32 run() { return 0; }
 		
 		/**
 		 * @brief Start the thread.
@@ -152,27 +161,22 @@ namespace cat {
 		CxErr::Code m_err;
 
 		/** 
-		 * @brief Method for subclasses to implement.
-		 * This method is the method called by the thread that is created
-		 * by the start() method.  The return value of this method will be
-		 * used as the exit code for the thread.
-		 * @return The exit code for the thread.
-		 */
-		virtual CxI32 run() = 0;
-
-		/** 
 		 * @brief Sets the status but only if in a specified previous status.
 		 * @param in_cur The current status the thread has to be in.
 		 * @param in_new The new status IF the current status is in_cur.
 		 * @return True if the status was set.
 		 */
-		CX_INLINE void switchStatus(Status in_cur, Status in_prev) {
+		CX_INLINE CxBool switchStatus(Status in_cur, Status in_prev) {
 			if (m_status == in_cur) { m_status = in_prev;  return true; }
 			else { return false; }
 		}
 	};
 
+#if defined(CX_WINDOWS)
+	DWORD cx_thread_start_entry__(void *in_data);
+#else // POSIX
 	void * cx_thread_start_entry__(void *in_data);
+#endif
 }
 
 #endif // CX_CORE_THREADING_CXTHREAD_H

@@ -64,7 +64,7 @@ namespace cat {
 		void destroy();
 		
 		/** @brief Initialise the mutex before the first use */
-		void initialize();
+		void initialize(CxU32 in_count);
 
 		/** @brief Wait at the barrier */
 		CX_FORCE_INLINE CxBool wait() {
@@ -73,8 +73,8 @@ namespace cat {
 		}
 
 	  private:
-		
 		SYNCHRONIZATION_BARRIER *mp_barrier;
+		CxU32 m_count;
 	};
 } // namespace cat
 

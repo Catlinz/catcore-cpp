@@ -70,7 +70,7 @@ namespace cat {
 		 * @brief Try and lock the Spinlock, but don't wait.
 		 * @return True if now owns the lock.
 		 */
-		CX_FORCE_INLINE CxBool tryLock() { return TryEnterCriticalSection(mp_spin); }
+		CX_FORCE_INLINE CxBool tryLock() { return TryEnterCriticalSection(mp_spin) != 0; }
 
 		/** @brief Unlock the Spinlock. */
 		CX_FORCE_INLINE void unlock() { LeaveCriticalSection(mp_spin); }
