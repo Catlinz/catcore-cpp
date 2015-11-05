@@ -69,6 +69,8 @@ Info.plist
 # Files in a build directory #
 build-*/
 **/test_bin/*
+tests/**/build/*
+test/**/bin/*
 
 # Files created by Visual Studio #
 *.pdb
