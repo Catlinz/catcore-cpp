@@ -1,5 +1,4 @@
 #include "core/threading/CxThread.h"
-#include "core/common/CxAtomic.h"
 
 namespace cat {
 	
@@ -39,10 +38,6 @@ namespace cat {
 	void CxThread::exit(CxI32 in_exitStatus) {
 		m_exitStatus = in_exitStatus;
 		ExitThread((CxI32)in_exitStatus);
-	}
-
-	void CxThread::quit() {
-		atomic::or32(m_msgs, kShouldQuitMsg);
 	}
 
 	CxThread* CxThread::self() {

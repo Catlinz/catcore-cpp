@@ -753,6 +753,9 @@ namespace cat {
 		 */
 		CX_FORCE_INLINE T takeFirst() { return takeAt(0); }
 
+		/** @brief Set all allocated memory to specified byte value. */
+		void zero(CxU8 in_byte = 0);
+
 	  private:
 		CX_FORCE_INLINE void priv_removeAt(CxI32 in_idx) {
 			/* Shift everything down by one */
@@ -1060,6 +1063,13 @@ namespace cat {
 		else {
 			CXD_ERR("Cannot take [%d] from CxVector[0...%d]!", in_idx, m_size-1);
 			return m_invalidValue;
+		}
+	}
+
+	template <typename T>
+	void CxVector<T>::zero(CxU8 in_byte) {
+		if (mp_vec != 0) {
+			mem::set(mp_vec, in_byte, sizeof(T)*m_capacity);
 		}
 	}
 

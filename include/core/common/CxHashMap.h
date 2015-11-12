@@ -228,15 +228,15 @@ namespace cat {
 			CX_FORCE_INLINE CxBool operator!=(const Itr &in_itr) const { return mp_node != in_itr.mp_node; }
 
 			/** @return A const pointer to the value for the map entry */
-			CX_FORCE_INLINE V * operator->() const { return &(mp_node->value); }
+			CX_FORCE_INLINE V * operator->() { return &(mp_node->value); }
 
-			/** @return A const reference to the value for the map entry */
-			CX_FORCE_INLINE V & operator*() const { return mp_node->value; }
+			/** @return A reference to the value for the map entry */
+			CX_FORCE_INLINE V & operator*() { return mp_node->value; }
 
 			/** @return The key for the map entry */
 			CX_FORCE_INLINE const K & key() const { return mp_node->key; }
 			/** @return The value for the map entry */
-			CX_FORCE_INLINE const V & value() const { return mp_node->value; }
+			CX_FORCE_INLINE V & value() { return mp_node->value; }
 
 			/** @brief Get an iterator i positions forward (or back if negative). */
 			Itr operator+(CxI32 in_i) const;

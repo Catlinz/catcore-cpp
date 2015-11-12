@@ -1,7 +1,6 @@
 #include <unistd.h>
 #include <sched.h>
 #include "core/threading/CxThread.h"
-#include "core/common/CxAtomic.h"
 
 namespace cat {
 	
@@ -30,10 +29,6 @@ namespace cat {
 		CxMemAddr a;
 		a.addr = (CxAddr)m_exitStatus;
 		pthread_exit(a.ptr);
-	}
-
-	void CxThread::quit() {
-		atomic::or32(m_msgs, kShouldQuitMsg);
 	}
 
 	CxThread* CxThread::self() {

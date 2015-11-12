@@ -86,6 +86,12 @@ namespace cat {
 		/** @return True if the two threads reference the DIFFERENT threads. */
 		CxBool operator!=(const CxThread &in_t2) const;
 
+		/** 
+		 * @brief Set the exit code for the thread and exit.
+		 * THIS SHOULD ONLY EVER BE CALLED BY THE ENTRY FUNCTIONS.
+		 */
+		void exit(CxI32 in_exitStatus);
+
 		/** @return The exit status for the thread object (or -1 if invalid). */
 		CX_FORCE_INLINE CxI32 exitStatus() const { return m_exitStatus; }
 
@@ -102,9 +108,9 @@ namespace cat {
 		/**
 		 * @brief Indicate to the thread that it should quit.
 		 * This method may or may not tell the thread to quit, it depends on the 
-		 * threads run() implementation.
+		 * threads run() and quit() implementations.
 		 */
-		void quit();
+		virtual void quit() {}
 
 		/** @return A handle to the currently running thread. */
 		static CxThread * self();
@@ -114,12 +120,6 @@ namespace cat {
 
 		/** @brief Set the thread status.  (Should only be called by the thread) */
 		CX_FORCE_INLINE void setStatus(Status in_status) { m_status = in_status; }
-
-		/** 
-		 * @brief Set the exit code for the thread and exit.
-		 * THIS SHOULD ONLY EVER BE CALLED BY THE ENTRY FUNCTIONS.
-		 */
-		void exit(CxI32 in_exitStatus);
 
 		/**
 		* @brief Method for subclasses to implement.

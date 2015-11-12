@@ -12,7 +12,9 @@
  */
 
 #include "core/Cx.h"
+#include "core/common/CxMem.h"
 #include "core/threading/CxSpinlock.h"
+#include "core/threading/CxMutex.h"
 
 namespace cat {
 
@@ -30,7 +32,7 @@ namespace cat {
 	 * @version 2
 	 * @since Mar 18, 2015
 	 */
-	template<class T>
+	template<typename T, class L = CxSpinLock>
 	class CxDualQueue {
 	  public:
 		/** @brief An enum of possible messages for the writers to give to the reader */
@@ -53,6 +55,7 @@ namespace cat {
 			: mp_queue(0), mp_read(0), mp_write(0), m_capacity(0),
 			  m_rStart(0), m_rEnd(0), m_wStart(0), m_wEnd(0) {
 			expandQueue(in_capacity);
+			m_lock.initialize();
 		}
 
 		/**
@@ -145,6 +148,9 @@ namespace cat {
 		 */
 		void expandQueue(CxI32 in_capacity);
 
+		/** @return A reference to the mutex or spinlock used to lock the queue. */
+		CX_FORCE_INLINE L & getLock() { return m_lock; }
+
 		/** @return True if there are any messages waiting (no lock) */
 		CX_FORCE_INLINE void hasMessages() const { return m_messages != 0; }
 		
@@ -158,6 +164,9 @@ namespace cat {
 
 		/**  @return True if the write queue is empty (no locking). */
 		CX_FORCE_INLINE CxBool isWriteEmpty() const { return m_wStart == m_wEnd; }
+
+		/** @brief Lock the mutex / spinlock used by this queue. */
+		CX_FORCE_INLINE void lock() { m_lock.lock(); }
 
 		/** @return A reference to the first item in the read queue. */
 		CX_FORCE_INLINE T& peekRead() { return mp_read[m_rStart]; }
@@ -210,6 +219,10 @@ namespace cat {
 			}
 			return false;
 		}
+		CX_FORCE_INLINE CxBool push(const T& in_item, CxNoLock) {
+			if (m_wEnd < m_capacity) { mp_write[m_wEnd++] = in_item; return true; }
+			return false;
+		}
 
 		/**
 		 * @brief Swap the read and write queues (Locks).
@@ -233,6 +246,14 @@ namespace cat {
 			mp_write = tmp;
 			m_lock.unlock();
 		}
+
+		/** @brief Unlock the mutex / spinlock used by this queue. */
+		CX_FORCE_INLINE unlock() { m_lock.unlock(); }
+
+		/** @brief Set all allocated memory to the specified byte value (DOESNT LOCK). */
+		CX_FORCE_INLINE zero(CxU8 in_byte = 0) {
+			if (mp_queue != 0) { mem::set(mp_queue, in_byte, sizeof(T)*m_capacity*2); }
+		}
 		
 	  private:
 		T* mp_queue; /**< The actual queue */
@@ -240,7 +261,7 @@ namespace cat {
 		T* mp_read; /**< The queue to read from */
 		T* mp_write; /**< The queue to write to */
 
-		CxSpinlock m_lock;
+		L m_lock;
 
 		CxI32 m_capacity; /**< The size of each queue */
 		CxI32 m_rStart; /**< First elem in read queue */
@@ -255,6 +276,7 @@ namespace cat {
 	CxDualQueue<T>::CxDualQueue(const CxDualQueue<T>& in_src)
 		: mp_queue(0), mp_read(0), mp_write(0), m_capacity(0),
 		  m_rStart(0), m_rEnd(0), m_wStart(0), m_wEnd(0) {
+		if (in_src.mp_queue != 0) { m_lock.initialize(); }
 		*this = in_src;
 	}
 
@@ -264,6 +286,7 @@ namespace cat {
 		  m_capacity(in_src.m_capacity),
 		  m_rStart(in_src.m_rStart), m_rEnd(in_src.m_rEnd), m_wStart(in_src.m_wStart), m_wEnd(in_src.m_wEnd) {
 		in_src.mp_queue = 0;
+		if (mp_queue != 0) { m_lock.initialize(); }
 	}
 	
 	template<class T>
