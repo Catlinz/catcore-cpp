@@ -88,7 +88,7 @@ namespace cat {
 		CxDualQueue<T>& operator=(CxDualQueue<T> &&in_src);
 
 		/**  @return The capacity of the CxDualQueue. */
-		inline int capacity() const {
+		CX_FORCE_INLINE CxI32 capacity() const {
 			return m_capacity;
 		}
 
