@@ -61,7 +61,7 @@ namespace cat {
 		void initialize();
 
 		/** @brief Wait on the specified mutex until signalled. */
-		CX_FORCE_INLINE void wait(CxMutex& in_mutex) {
+		CX_FORCE_INLINE void wait(CxMutex &in_mutex) {
 			pthread_cond_wait(mp_cv, in_mutex.mp_mutex);
 		}
 
