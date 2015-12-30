@@ -90,7 +90,20 @@ namespace cat {
 		 */
 		CX_FORCE_INLINE void * copy(void *CX_RESTRICT inout_dest,
 											 const void *CX_RESTRICT in_src, CxU32 in_bytes) {
-			return memcpy(inout_dest, in_src, in_bytes);
+			return ::memcpy(inout_dest, in_src, in_bytes);
+		}
+
+		/**
+		 * @brief Copy memory two a new buffer.
+		 * @param in_src The memory location to copy from.
+		 * @param in_bytes The number of bytes to copy.
+		 * @return A newly allocated pointer to a copy of in_src.
+		 */
+		CX_FORCE_INLINE void * copy(const void *CX_RESTRICT in_src, CxU32 in_bytes) {
+			if (in_src != 0 && in_bytes != 0) {
+				return ::memcpy(::malloc(in_bytes), in_src, in_bytes);
+			}
+			else { return 0; }
 		}
 
 		/**

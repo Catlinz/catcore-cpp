@@ -102,7 +102,7 @@ namespace cat {
 		}
 
 		/** @return The name of the device. */
-		CX_FORCE_INLINE const CxChar16 * name() const { return mp_name; }
+		CX_FORCE_INLINE const CxU8 * name() const { return mp_name; }
 
 		/**
 		 * @brief Static method to get a list of all display devices.
@@ -118,13 +118,13 @@ namespace cat {
 		static CxDisplayDevice & primaryDisplay();
 
 	  protected:
-		CxDisplayDevice(const CxChar16 *in_id, const CxChar16 *in_name, CxI32 in_flags = 0);
+		CxDisplayDevice(const wchar_t *in_id, const wchar_t *in_name, CxI32 in_flags = 0);
 		
 	  private:
-		CxChar16 *mp_id;
-		CxChar16						*mp_name; /**< The name of the display device. */
-		CxDisplayMode				 m_currentMode; /**< The current display mode for the device. */
-		CxVector<CxDisplayMode>	 m_modes; /**< The available display modes for the device. */
+		wchar_t *mp_id;
+		CxU8 *mp_name; /**< The name of the display device. */
+		CxDisplayMode m_currentMode; /**< The current display mode for the device. */
+		CxVector<CxDisplayMode> m_modes; /**< The available display modes for the device. */
 
 		CxI32 m_flags;
 

@@ -12,8 +12,7 @@
 
 namespace cat {
 
-	CxBool str::endsWith(const CxChar *CX_RESTRICT in_str,
-								const CxChar *CX_RESTRICT in_end) {
+	CxBool str::endsWith(const CxChar *CX_RESTRICT in_str, const CxChar *CX_RESTRICT in_end) {
 		if (in_str == 0 || in_end == 0) { return false; }
 
 		const CxI32 s_len = str::len(in_str);
@@ -30,8 +29,7 @@ namespace cat {
 		else { return false; }
 	}
 	
-	CxBool str::eq(const CxChar *CX_RESTRICT in_str1,
-						const CxChar *CX_RESTRICT in_str2) {
+	CxBool str::eq(const CxChar *CX_RESTRICT in_str1, const CxChar *CX_RESTRICT in_str2) {
 		/* Check for null strings */
 		if (in_str1 == 0 || in_str2 == 0) { return in_str1 == in_str2; }
 		while (*(in_str1) != 0) {
@@ -40,28 +38,8 @@ namespace cat {
 		return (*in_str2) == 0;
 	}
 
-	CxBool str::eq(const CxChar16 *CX_RESTRICT in_str16,
-						const CxChar *CX_RESTRICT in_str8) {
-		/* Check for null strings */
-		if (in_str16 == 0 || in_str8 == 0) { return (CxAddr)in_str16 == (CxAddr)in_str8; }
-		while (*(in_str16) != 0) {
-			if (*(in_str16++) != (CxChar16)*(in_str8++)) { return false; }
-		}
-		return (*in_str8) == 0;
-	}
-
-	CxBool str::eq(const CxChar16 *CX_RESTRICT in_str1,
-						const CxChar16 *CX_RESTRICT in_str2) {
-		/* Check for null strings */
-		if (in_str1 == 0 || in_str2 == 0) { return in_str1 == in_str2;}
-		while (*(in_str1) != 0) {
-			if (*(in_str1++) != *(in_str2++)) { return false; }
-		}
-		return (*in_str2) == 0;
-	}
-
-	CxBool str::eq(const CxChar *CX_RESTRICT in_str1,
-						const CxChar *CX_RESTRICT in_str2, CxI32 in_len) {
+	CxBool str::eq(const CxChar *CX_RESTRICT in_str1, const CxChar *CX_RESTRICT in_str2,
+						CxI32 in_len) {
 		/* Check for null or empty strings */
 		if (in_len == 0) { return true; }
 
@@ -78,28 +56,6 @@ namespace cat {
 		return true;
 	}
 
-	CxBool str::greater(const CxChar16 *CX_RESTRICT in_str1,
-						const CxChar16 *CX_RESTRICT in_str2) {
-		/* Check for null strings */
-		if (in_str1 == 0 || in_str2 == 0) { return in_str1 > in_str2;}
-		while (*(in_str1) != 0) {
-			if (*in_str1 != *in_str2) { return *in_str1 > *in_str2; }
-			++in_str1;  ++in_str2;
-		}
-		return false;
-	}
-
-	CxBool str::less(const CxChar16 *CX_RESTRICT in_str1,
-					const CxChar16 *CX_RESTRICT in_str2) {
-		/* Check for null strings */
-		if (in_str1 == 0 || in_str2 == 0) { return in_str1 < in_str2;}
-		while (*(in_str1) != 0) {
-			if (*in_str1 != *in_str2) { return *in_str1 < *in_str2; }
-			++in_str1;  ++in_str2;
-		}
-		return (*in_str2) != 0;
-	}
-
 	CxBool str::startsWith(const CxChar *CX_RESTRICT in_str,
 								  const CxChar *CX_RESTRICT in_prefix) {
 		if (in_str == 0 || in_prefix == 0) { return false; }
@@ -109,6 +65,8 @@ namespace cat {
 		}
 	   return *in_str == *in_prefix;
 	}
+} // namespace cat
+
 
 #if defined(CX_WINDOWS)
 #  include "windows/CxWindowsStr.cpp"
@@ -116,5 +74,3 @@ namespace cat {
 #  include "gnuc/CxGNUCStr.cpp"
 #endif
 	
-} // namespace cat
-

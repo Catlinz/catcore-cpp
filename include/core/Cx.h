@@ -25,9 +25,8 @@ namespace cat {
 
 	/** @brief Enum flags for constructors + methods of objects. */
 	enum CxInitFlag { kCxInit };
-	enum CxNoLock { kCxNoLock; }
-	enum CxLock { kCxLock; }
-	
+	enum CxNoLock { kCxNoLock };
+	enum CxLock { kCxLock };
 	
 
 	/** @brief An enum that defines how data is copied (if at all) */

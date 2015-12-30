@@ -32,7 +32,7 @@ namespace cat {
 	 * @version 2
 	 * @since Mar 18, 2015
 	 */
-	template<typename T, class L = CxSpinLock>
+	template<typename T, class L = CxSpinlock>
 	class CxDualQueue {
 	  public:
 		/** @brief An enum of possible messages for the writers to give to the reader */
@@ -62,13 +62,13 @@ namespace cat {
 		 * @brief Copy constructor, tries to copy the queue.
 		 * @param in_src The source queue to create a copy of.
 		 */
-		CxDualQueue(const CxDualQueue<T>& in_src);
+		CxDualQueue(const CxDualQueue<T,L>& in_src);
 
 		/**
 		 * @brief Move constructor, tries to steal the queue.
 		 * @param in_src The source queue to move data from.
 		 */
-		CxDualQueue(CxDualQueue<T> &&in_src);
+		CxDualQueue(CxDualQueue<T,L> &&in_src);
 
 		/**  @brief Destroy the data in the queue. */
 		~CxDualQueue();
@@ -78,14 +78,14 @@ namespace cat {
 		 * @param in_src The CxDualQueue to copy from.
 		 * @return A reference to this CxDualQueue.
 		 */
-		CxDualQueue<T>& operator=(const CxDualQueue<T>& in_src);
+		CxDualQueue<T,L>& operator=(const CxDualQueue<T,L>& in_src);
 
 		/**
 		 * @brief Steals the contents of the source queue.
 		 * @param in_src The CxDualQueue to move data from.
 		 * @return A reference to this CxDualQueue.
 		 */
-		CxDualQueue<T>& operator=(CxDualQueue<T> &&in_src);
+		CxDualQueue<T,L>& operator=(CxDualQueue<T,L> &&in_src);
 
 		/**  @return The capacity of the CxDualQueue. */
 		CX_FORCE_INLINE CxI32 capacity() const {
@@ -248,10 +248,10 @@ namespace cat {
 		}
 
 		/** @brief Unlock the mutex / spinlock used by this queue. */
-		CX_FORCE_INLINE unlock() { m_lock.unlock(); }
+		CX_FORCE_INLINE void unlock() { m_lock.unlock(); }
 
 		/** @brief Set all allocated memory to the specified byte value (DOESNT LOCK). */
-		CX_FORCE_INLINE zero(CxU8 in_byte = 0) {
+		CX_FORCE_INLINE void zero(CxU8 in_byte = 0) {
 			if (mp_queue != 0) { mem::set(mp_queue, in_byte, sizeof(T)*m_capacity*2); }
 		}
 		
@@ -272,16 +272,16 @@ namespace cat {
 		CxI32 m_messages;  /**< Gives the writers ability to request actions */
 	};
 
-	template<class T>
-	CxDualQueue<T>::CxDualQueue(const CxDualQueue<T>& in_src)
+	template<typename T, class L>
+	CxDualQueue<T,L>::CxDualQueue(const CxDualQueue<T,L>& in_src)
 		: mp_queue(0), mp_read(0), mp_write(0), m_capacity(0),
 		  m_rStart(0), m_rEnd(0), m_wStart(0), m_wEnd(0) {
 		if (in_src.mp_queue != 0) { m_lock.initialize(); }
 		*this = in_src;
 	}
 
-	template<class T>
-	CxDualQueue<T>::CxDualQueue(CxDualQueue<T> &&in_src)
+	template<typename T, class L>
+	CxDualQueue<T,L>::CxDualQueue(CxDualQueue<T,L> &&in_src)
 		: mp_queue(in_src.mp_queue), mp_read(in_src.mp_read), mp_write(in_src.mp_write),
 		  m_capacity(in_src.m_capacity),
 		  m_rStart(in_src.m_rStart), m_rEnd(in_src.m_rEnd), m_wStart(in_src.m_wStart), m_wEnd(in_src.m_wEnd) {
@@ -289,15 +289,15 @@ namespace cat {
 		if (mp_queue != 0) { m_lock.initialize(); }
 	}
 	
-	template<class T>
-	CxDualQueue<T>::~CxDualQueue() {
+	template<typename T, class L>
+	CxDualQueue<T,L>::~CxDualQueue() {
 	   if (mp_queue != 0) { delete[] mp_queue; mp_queue = 0; }
 		mp_read = mp_write = 0;
 		m_capacity = 0;
 	}
 
-	template<class T>
-	CxDualQueue<T>& CxDualQueue<T>::operator=(const CxDualQueue<T>& in_src) {
+	template<typename T, class L>
+	CxDualQueue<T,L>& CxDualQueue<T,L>::operator=(const CxDualQueue<T,L>& in_src) {
 		const CxI32 new_cap = in_src.capacity();
 		clear();
 		expandQueue(new_cap);
@@ -324,8 +324,8 @@ namespace cat {
 		return *this;
 	}
 
-	template<class T>
-	CxDualQueue<T>& CxDualQueue<T>::operator=(CxDualQueue<T> &&in_src) {
+	template<typename T, class L>
+	CxDualQueue<T,L>& CxDualQueue<T,L>::operator=(CxDualQueue<T,L> &&in_src) {
 		m_lock.lock();
 		in_src.m_lock.lock();
 
@@ -348,13 +348,13 @@ namespace cat {
 		return *this;
 	}
 
-	template<class T>
-	void CxDualQueue<T>::eraseAll() {
+	template<typename T, class L>
+	void CxDualQueue<T,L>::eraseAll() {
 		eraseAllRead();  eraseAllWrite();
 	}
 
-	template<class T>
-	void CxDualQueue<T>::eraseAllRead() {
+	template<typename T, class L>
+	void CxDualQueue<T,L>::eraseAllRead() {
 		const CxI32 end = m_rEnd;
 		for (CxI32 i = m_rStart; i < end; ++i) {
 			if (mp_read[i] != 0) { delete (mp_read[i]); mp_read[i] = 0; }
@@ -362,8 +362,8 @@ namespace cat {
 		m_rStart = m_rEnd = 0;
 	}
 
-	template<class T>
-	void CxDualQueue<T>::eraseAllWrite() {
+	template<typename T, class L>
+	void CxDualQueue<T,L>::eraseAllWrite() {
 		m_lock.lock();
 		const CxI32 end = m_wEnd;
 		for (CxI32 i = m_wStart; i < end; ++i) {
@@ -373,8 +373,8 @@ namespace cat {
 		m_lock.unlock();
 	}
 
-	template<class T>
-	void CxDualQueue<T>::expandQueue(CxI32 in_capacity) {
+	template<typename T, class L>
+	void CxDualQueue<T,L>::expandQueue(CxI32 in_capacity) {
 		if (in_capacity > m_capacity) {
 			/* First, create the storage for the new queue */
 			T * new_q = new T[in_capacity*2];
@@ -404,8 +404,8 @@ namespace cat {
 		}
 	}
 
-	template<class T>
-	void CxDualQueue<T>::processMessages() {
+	template<typename T, class L>
+	void CxDualQueue<T,L>::processMessages() {
 		/* First, grab the messages */
 		m_lock.lock();
 		const CxI32 msgs = m_messages;

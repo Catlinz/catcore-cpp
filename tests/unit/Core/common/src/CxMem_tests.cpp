@@ -105,10 +105,12 @@ namespace cat {
 
 	/**
 	 * @tests mem::copy(void *, const void *, CxU32)
+	 * @tests mem::copy(const void *, CxU32)
 	 */
 	void testMemCopy() {
 		BEGIN_TEST;
 
+		/* Test mem::copy(void *, const void *, CxU32) */
 		CxI32 *a0 = (CxI32 *)mem::alloc(sizeof(CxI32)*5);
 		CxI32 *a1 = (CxI32 *)mem::alloc(sizeof(CxI32)*4);
 
@@ -126,6 +128,21 @@ namespace cat {
 		mem::free(a0);
 		mem::free(a1);
 		a2 = 0;
+
+		/* Test mem::copy(const void *, CxU32) */
+		CxI32 *a3 = (CxI32 *)mem::alloc(sizeof(CxI32)*100);
+		for (CxI32 i = 0; i < 100; ++i) { a3[i] = i*3; }
+
+		CxI32 *a4 = (CxI32 *)mem::copy(a3, sizeof(CxI32)*100);
+		for (CxI32 i = 0; i < 100; ++i) { ass_eq(a4[i], i*3); }
+
+		CxI32 *a5 = mem::copy(0, 34);
+		ass_zero(a5);
+		a5 = mem::copy(a3, 0);
+		ass_zero(a5);
+
+		mem::free(a3);
+		mem::free(a4);
 
 		FINISH_TEST;
 	}

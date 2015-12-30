@@ -1,5 +1,6 @@
 #include "device/display/windows/CxWindowsDisplayDevice.h"
-#include "core/common/CxStr.h"
+#include "core/common/CxUtf8.h"
+#include <wchar.h>
 
 namespace cat {
 
@@ -7,20 +8,26 @@ namespace cat {
 	
 	CxDisplayDevice::CxDisplayDevice() : mp_id(0), mp_name(0), m_flags(0) {}
 
-	CxDisplayDevice::CxDisplayDevice(const CxChar16 *in_id, const CxChar16 *in_name, CxI32 in_flags)
+	CxDisplayDevice::CxDisplayDevice(const wchar_t *in_id, const wchar_t *in_name, CxI32 in_flags)
 		: mp_id(0), mp_name(0), m_flags(in_flags) {
-		mp_id = str::copy(in_id);
-		mp_name = str::copy(in_name);
+
+		CxU32 id_len = (in_id != 0) ? (wcslen(in_id) + 1) : 0;
+		mp_id = (wchar_t *)mem::copy(in_id, sizeof(wchar_t*)*id_len);
+		
+		mp_name = utf8::fromWideChars(in_name);
 	}
 	
 	CxDisplayDevice::CxDisplayDevice(const CxDisplayDevice &in_src)
 		: mp_id(0), mp_name(0), m_flags(0) { *this = in_src; }
 	
 	CxDisplayDevice & CxDisplayDevice::operator=(const CxDisplayDevice &in_src) {
-		str::free(mp_id);
-		str::free(mp_name);
-		mp_id = str::copy(in_src.mp_id);
-		mp_name = str::copy(in_src.mp_name);
+		mem::free(mp_id);
+		utf8::free(mp_name);
+		
+		CxI32 id_len = (in_src.mp_id != 0) ? wcslen(in_src.mp_id) + 1 : 0;
+		mp_id = (wchar_t *)mem::copy(in_src.mp_id, sizeof(wchar_t*)*id_len);
+
+		mp_name = utf8::copy(in_src.mp_name);
 		m_currentMode = in_src.m_currentMode;
 		m_modes = in_src.m_modes;
 		m_flags = in_src.m_flags;
@@ -28,8 +35,8 @@ namespace cat {
 	}
 
 	CxDisplayDevice::~CxDisplayDevice() {
-		str::free(mp_id);
-		str::free(mp_name);
+		mem::free(mp_id);
+		utf8::free(mp_name);
 		m_flags = 0;
 	}
 
@@ -40,30 +47,28 @@ namespace cat {
 			const CxDisplayMode &cm = currentDisplayMode();
 		
 			m_modes = CxVector<CxDisplayMode>(16);
-			DEVMODE dm;
+			DEVMODEW dm;
 		   CxBool succeeded = true;
 			CxI32 dm_count = 0;
 
 			/* Loop through all the display modes and add them to the list */
 			while (succeeded) {
-				mem::zero(&dm, sizeof(DEVMODE));
-				dm.dmSize = sizeof(DEVMODE);
+				mem::zero(&dm, sizeof(DEVMODEW));
+				dm.dmSize = sizeof(DEVMODEW);
 
-				succeeded = (EnumDisplaySettings(mp_id, dm_count++, &dm) == TRUE);
+				succeeded = (EnumDisplaySettingsW(mp_id, dm_count++, &dm) == TRUE);
 				if (succeeded) {
-					/* Make sure to flag the current display mode when we 
-					 * find it */
-					CxI32 flags = 0;
-					if (dm.dmPelsWidth == cm.horizRes() &&
-						 dm.dmPelsHeight == cm.vertRes() &&
-						 dm.dmBitsPerPel == cm.depth() &&
-						 dm.dmDisplayFrequency == cm.refreshRate()) {
-						flags = CxDisplayMode::kIsCurrentDisplayMode;
+					/* Test to make sure is valid display mode */
+					if (dm.dmPelsWidth > 0 && dm.dmPelsHeight > 0) {
+						/* Make sure to flag the current display mode when we find it */
+						CxI32 flags = 0;
+						if (dm.dmPelsWidth == cm.horizRes() && dm.dmPelsHeight == cm.vertRes() &&
+							 dm.dmBitsPerPel == cm.depth() && dm.dmDisplayFrequency == cm.refreshRate()) {
+							flags = CxDisplayMode::kIsCurrentDisplayMode;
+						}
+						m_modes <<  CxDisplayMode(dm.dmPelsWidth, dm.dmPelsHeight, dm.dmBitsPerPel,
+														  dm.dmDisplayFrequency, flags);
 					}
-					
-					m_modes <<  CxDisplayMode(dm.dmPelsWidth, dm.dmPelsHeight,
-													  dm.dmBitsPerPel,
-													  dm.dmDisplayFrequency, flags);
 				}
 			}
 
@@ -80,11 +85,11 @@ namespace cat {
 
 	const CxDisplayMode & CxDisplayDevice::fetchCurrentDisplayMode() {
 		if (mp_id != 0) {
-			DEVMODE dm;
-			mem::zero(&dm, sizeof(DEVMODE));
-			dm.dmSize = sizeof(DEVMODE);
+			DEVMODEW dm;
+			mem::zero(&dm, sizeof(DEVMODEW));
+			dm.dmSize = sizeof(DEVMODEW);
 
-			if (EnumDisplaySettings(mp_id, ENUM_CURRENT_SETTINGS, &dm)) {
+			if (EnumDisplaySettingsW(mp_id, ENUM_CURRENT_SETTINGS, &dm)) {
 				m_currentMode = CxDisplayMode(dm.dmPelsWidth, dm.dmPelsHeight,
 														dm.dmBitsPerPel,
 														dm.dmDisplayFrequency,
@@ -157,31 +162,18 @@ namespace cat {
 
 		CxBool adpt_good = true;
 		CxI32 adpt_idx = 0;
-		DISPLAY_DEVICE adapter;
+		DISPLAY_DEVICEW adapter;
 
 		/* Loop over all the display adapters */
 		while (adpt_good) {
-			mem::zero(&adapter, sizeof(DISPLAY_DEVICE));
-			adapter.cb = sizeof(DISPLAY_DEVICE);
+			mem::zero(&adapter, sizeof(DISPLAY_DEVICEW));
+			adapter.cb = sizeof(DISPLAY_DEVICEW);
 
-			adpt_good = (EnumDisplayDevices(0, adpt_idx++, &adapter, 0) == TRUE);
-			if (adpt_good) { /* Have an adapter to get the displays on */
-				CxBool dsp_good = true;
-				CxI32 dsp_idx = 0;
-				DISPLAY_DEVICE disp;
-
-				/* Loop over all the displays on the adapter */
-				while (dsp_good) {
-					mem::zero(&disp, sizeof(DISPLAY_DEVICE));
-					disp.cb = sizeof(DISPLAY_DEVICE);
-
-					dsp_good = (EnumDisplayDevices(adapter.DeviceName, dsp_idx++, &disp, 0) == TRUE);
-					if (dsp_good && (disp.StateFlags & DISPLAY_DEVICE_ACTIVE) != 0) {
-						/* Have display */
-						const CxI32 flags = ((disp.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) != 0) ? CxDisplayDevice::kIsPrimaryDisplay : 0;
-						inout_devices << CxDisplayDevice(disp.DeviceName, disp.DeviceString, flags);
-					}
-				}
+			adpt_good = (EnumDisplayDevicesW(0, adpt_idx++, &adapter, 0) == TRUE);
+			if ((adapter.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP) != 0) {
+				const CxI32 flags = ((adapter.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) != 0)
+							? CxDisplayDevice::kIsPrimaryDisplay : 0;
+				inout_devices << CxDisplayDevice(adapter.DeviceName, adapter.DeviceString, flags);
 			}
 		}
 	}
@@ -191,30 +183,17 @@ namespace cat {
 			/* Get the primary display */
 			CxBool adpt_good = true;
 			CxI32 adpt_idx = 0;
-			DISPLAY_DEVICE adapter;
+			DISPLAY_DEVICEW adapter;
 
 			/* Loop over all the display adapters */
 			while (adpt_good) {
-				mem::zero(&adapter, sizeof(DISPLAY_DEVICE));
-				adapter.cb = sizeof(DISPLAY_DEVICE);
+				mem::zero(&adapter, sizeof(DISPLAY_DEVICEW));
+				adapter.cb = sizeof(DISPLAY_DEVICEW);
 
-				adpt_good = (EnumDisplayDevices(0, adpt_idx++, &adapter, 0) == TRUE);
-				if (adpt_good) { /* Have an adapter to get the displays on */
-					CxBool dsp_good = true;
-					CxI32 dsp_idx = 0;
-					DISPLAY_DEVICE disp;
-
-					/* Loop over all the displays on the adapter */
-					while (dsp_good) {
-						mem::zero(&disp, sizeof(DISPLAY_DEVICE));
-						disp.cb = sizeof(DISPLAY_DEVICE);
-
-						dsp_good = (EnumDisplayDevices(adapter.DeviceName, dsp_idx++, &disp, 0) == TRUE);
-						if (dsp_good && (disp.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) != 0) {
-							s_primaryDisplay =  CxDisplayDevice(disp.DeviceName, disp.DeviceString,
-																			CxDisplayDevice::kIsPrimaryDisplay);
-						}
-					}
+				adpt_good = (EnumDisplayDevicesW(0, adpt_idx++, &adapter, 0) == TRUE);
+				if ((adapter.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) != 0) {
+					s_primaryDisplay = CxDisplayDevice(adapter.DeviceName, adapter.DeviceString,
+																  CxDisplayDevice::kIsPrimaryDisplay);
 				}
 			}
 		}

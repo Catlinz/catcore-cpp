@@ -52,7 +52,7 @@ namespace cat {
 		const CxI32 max_len = m_maxLn;
 		const CxI32 p_len = m_prefixLn;
 		
-		CxChar *str = str::alloc8(m_maxLn);
+		CxChar *str = str::alloc(m_maxLn);
 		mem::copy(str, mp_prefix, sizeof(CxChar)*p_len);
 
 		const CxI64 val = atomic::incr64(m_count);

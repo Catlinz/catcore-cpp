@@ -108,7 +108,7 @@ namespace cat {
 		CX_FORCE_INLINE CxI32 size() const { return m_count; }
 
 		/** @brief Set all the allocated memory to the specified byte value (default 0)*/
-		CX_FORCE_INLINE zero(CxU8 in_byte = 0) {
+		CX_FORCE_INLINE void zero(CxU8 in_byte = 0) {
 			if (mp_queue != 0) { mem::set(mp_queue, in_byte, sizeof(T)*m_capacity); }
 		}
 		
