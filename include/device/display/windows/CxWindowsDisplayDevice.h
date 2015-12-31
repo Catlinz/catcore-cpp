@@ -44,9 +44,21 @@ namespace cat {
 		/** @brief Copy constructor, copies the name */
 		CxDisplayDevice(const CxDisplayDevice &in_src);
 
+		/** @brief Move assignment operator, steals data. */
+		CxDisplayDevice(CxDisplayDevice &&in_src);
+
 		/** @brief Overloaded assignment operator, copies the name. */
 		CxDisplayDevice & operator=(const CxDisplayDevice &in_src);
 
+		/** @brief Move-assignment operator, steals data */
+		CxDisplayDevice & operator=(CxDisplayDevice &&in_src);
+
+		/** @brief Simply tests the id or name for equality */
+		CxBool operator==(const CxDisplayDevice &in_src) const;
+
+		/** @brief Simply tests the id or name for equality */
+		CxBool operator!=(const CxDisplayDevice &in_src) const;
+		
 		/** @brief Destructor free's up the memory. */
 		~CxDisplayDevice();
 
@@ -78,12 +90,21 @@ namespace cat {
 		 * The criteria in determining the best match is first to find the 
 		 * one with the closest color depth match, then to find the one
 		 * with the smallest total difference between the width and height.
-		 * The method will never choose a display mode larger than the
-		 * requested mode.
 		 * @param in_mode The Display mode to find the closest one to.
 		 * @return The closest display mode to the requested one.
 		 */
 		CxDisplayMode getClosestDisplayMode(const CxDisplayMode &in_mode);
+
+		/**
+		 * @brief Like getClosestDisplayMode() but will never choose a larger mode.
+		 * This method works exactly like getClosestDisplayMode, except that it will
+		 * never choose a display mode such that the depth, vRes or hRes are greater than
+		 * then that of the requested mode.
+		 * @see getClosestDisplayMode()
+		 * @param in_mode The Display mode to find the closest one to.
+		 * @return The closest display mode to the requested one.
+		 */
+		CxDisplayMode getClosestDisplayModeLessOrEq(const CxDisplayMode &in_mode);
 
 		/**
 		 * @brief Get a list of all the available display modes.

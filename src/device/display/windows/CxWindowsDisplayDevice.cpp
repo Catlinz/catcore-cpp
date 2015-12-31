@@ -10,7 +10,6 @@ namespace cat {
 
 	CxDisplayDevice::CxDisplayDevice(const wchar_t *in_id, const wchar_t *in_name, CxI32 in_flags)
 		: mp_id(0), mp_name(0), m_flags(in_flags) {
-
 		CxU32 id_len = (in_id != 0) ? (wcslen(in_id) + 1) : 0;
 		mp_id = (wchar_t *)mem::copy(in_id, sizeof(wchar_t*)*id_len);
 		
@@ -19,6 +18,16 @@ namespace cat {
 	
 	CxDisplayDevice::CxDisplayDevice(const CxDisplayDevice &in_src)
 		: mp_id(0), mp_name(0), m_flags(0) { *this = in_src; }
+
+	CxDisplayDevice::CxDisplayDevice(CxDisplayDevice &&in_src)
+		: mp_id(in_src.mp_id), mp_name(in_src.mp_name), m_currentMode(in_src.m_currentMode),
+		  m_flags(in_src.m_flags) {
+		if (in_src.m_modes.count() > 0) {
+			m_modes = static_cast< CxVector<CxDisplayMode> && >(in_src.m_modes);
+		}
+		in_src.mp_id = 0;  in_src.mp_name = 0;
+		in_src.m_flags = 0;
+	}
 	
 	CxDisplayDevice & CxDisplayDevice::operator=(const CxDisplayDevice &in_src) {
 		mem::free(mp_id);
@@ -32,6 +41,33 @@ namespace cat {
 		m_modes = in_src.m_modes;
 		m_flags = in_src.m_flags;
 		return *this;
+	}
+
+	CxDisplayDevice & CxDisplayDevice::operator=(CxDisplayDevice &&in_src) {
+		mem::free(mp_id);
+		utf8::free(mp_name);
+
+		mp_id = in_src.mp_id;
+		mp_name = in_src.mp_name;
+		m_currentMode = in_src.m_currentMode;
+		if (in_src.m_modes.count() > 0) {
+			m_modes = static_cast< CxVector<CxDisplayMode> && >(in_src.m_modes);
+		}
+		m_flags = in_src.m_flags;
+		in_src.mp_id = 0;  in_src.mp_name = 0;
+		in_src.m_flags = 0;
+		return *this;
+	}
+
+	CxBool CxDisplayDevice::operator==(const CxDisplayDevice &in_src) const {
+		if (mp_id == 0 || in_src.mp_id == 0) { return mp_id == in_src.mp_id; }
+		else { return wcscmp(mp_id, in_src.mp_id) == 0; }
+	}
+
+	
+	CxBool CxDisplayDevice::operator!=(const CxDisplayDevice &in_src) const {
+		if (mp_id == 0 || in_src.mp_id == 0) { return mp_id != in_src.mp_id; }
+		else { return wcscmp(mp_id, in_src.mp_id) != 0; }
 	}
 
 	CxDisplayDevice::~CxDisplayDevice() {
@@ -108,49 +144,11 @@ namespace cat {
 	}
 
 	CxDisplayMode CxDisplayDevice::getClosestDisplayMode(const CxDisplayMode &in_mode) {
-		const CxVector<CxDisplayMode> &modes = getDisplayModes();
+		return CxDisplayMode::getBestMatch(in_mode, getDisplayModes());
+	}
 
-		const CxI32 nm_modes = modes.count();
-		if (nm_modes != 0) {
-			CxI32 res_diff = CX_MAX_I32;
-			CxI32 depth_diff = CX_MAX_I32;
-			CxI32 refresh = 0;
-			CxI32 closest_idx = -1;
-
-			for (CxI32 i = 0; i < nm_modes; ++i) {
-				const CxDisplayMode &mode = modes[i];
-				
-				const CxI32 d_diff = in_mode.depth() - mode.depth();
-				if (d_diff >= 0 && d_diff <= depth_diff) {
-					/* Depth is a valid choice */
-					const CxI32 h_diff = in_mode.horizRes() - mode.horizRes();
-					const CxI32 v_diff = in_mode.vertRes() - mode.vertRes();
-
-					if (h_diff >= 0 && v_diff >= 0) {
-						/* Resolution is valid choice */
-
-						const CxI32 r_diff = h_diff + v_diff;
-						if ((d_diff < depth_diff) ||  /* Closer depth, or */
-							 (r_diff < res_diff) ||      /* Closer resolution, or */
-							 (mode.refreshRate() > refresh)) { /* Better refresh */
-							/* Choose this one for now */
-							res_diff = r_diff;
-							depth_diff = d_diff;
-							refresh = mode.refreshRate();
-							closest_idx = i;
-						}
-					}
-				}
-			}
-
-			/* If have mode, return it */
-			if (closest_idx != -1) {
-				return modes[closest_idx];
-			}
-		}
-		
-		/* If modes <= available, return invalid display mode */
-		return CxDisplayMode();			
+	CxDisplayMode CxDisplayDevice::getClosestDisplayModeLessOrEq(const CxDisplayMode &in_mode) {
+		return CxDisplayMode::getBestMatchLessOrEq(in_mode, getDisplayModes());
 	}
 
 	void CxDisplayDevice::getAllDisplayDevices(CxVector<CxDisplayDevice> &inout_devices) {

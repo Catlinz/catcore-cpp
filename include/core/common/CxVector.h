@@ -489,15 +489,17 @@ namespace cat {
 		CX_FORCE_INLINE CxVector() : _CxBaseVector<T>() {}
 		
 		/**
-		 * @brief Create a new vector with the specified size.
-		 * The values are initialise with the default values.
-		 * @param in_size The initial size of the vector.
+		 * @brief Create a new vector with the specified capacity.
+		 * The size of the vector will be zero, this will just initialise
+		 * the vector with the specified capacity.
+		 * @param in_size The initial capacity of the vector.
 		 */
-		CxVector(CxI32 in_size);
+		CxVector(CxI32 in_capacity);
 
 		/**
 		 * @brief Create a new vector with the specified size.
-		 * The values are initialised with the specified fill value.
+		 * The size of the resulting vector will be in_size and
+		 * the values will be set to in_value.
 		 * @param in_size The initialise size of the vector.
 		 * @param in_value The value to fill the vector with.
 		 */
@@ -769,8 +771,8 @@ namespace cat {
 	};
 
 	template <typename T>
-	CX_FORCE_INLINE CxVector<T>::CxVector(CxI32 in_size) : _CxBaseVector<T>() {
-		resize(in_size);
+	CX_FORCE_INLINE CxVector<T>::CxVector(CxI32 in_capacity) : _CxBaseVector<T>() {
+		reserve(in_capacity);
 	}
 
 	template <typename T>
@@ -1112,7 +1114,7 @@ namespace cat {
 		/** @brief Create an empty null vector. */
 		CX_FORCE_INLINE CxPODVector() : _CxBaseVector<T>() {}
 
-		CxPODVector(CxI32 in_size);
+		CxPODVector(CxI32 in_capacity);
 		CxPODVector(CxI32 in_size, const T &in_value);
 		CxPODVector(T *in_array, CxI32 in_size, CxCopy inopt_copy = kCxCopy);
 		CxPODVector(const CxPODVector<T> &in_src);
@@ -1175,8 +1177,8 @@ namespace cat {
 	};
 	
 	template <typename T>
-	CX_FORCE_INLINE CxPODVector<T>::CxPODVector(CxI32 in_size)
-		: _CxBaseVector<T>() { resize(in_size); }
+	CX_FORCE_INLINE CxPODVector<T>::CxPODVector(CxI32 in_capacity)
+		: _CxBaseVector<T>() { reserve(in_capacity); }
 
 	template <typename T>
 	CX_FORCE_INLINE CxPODVector<T>::CxPODVector(CxI32 in_size, const T &in_value)
@@ -1423,7 +1425,7 @@ namespace cat {
 	  public:
 		typedef typename CxInvasiveStrongPtr< CxPODVector<T *> > Ptr;	
 		CX_FORCE_INLINE CxVector() : CxPODVector<T *>() {}				
-		CX_FORCE_INLINE CxVector(CxI32 in_size) : CxPODVector<T *>(in_size) {}	
+		CX_FORCE_INLINE CxVector(CxI32 in_capacity) : CxPODVector<T *>(in_capacity) {}	
 		CX_FORCE_INLINE CxVector(CxI32 in_size, const T &in_value)			
 			: CxPODVector<T *>(in_size, in_value) {}							
 		CX_FORCE_INLINE CxVector(T * *in_array, CxI32 in_size, CxCopy inopt_copy = kCxCopy) 
@@ -1556,7 +1558,7 @@ namespace cat {
 	  public:																				\
 	  typedef CxInvasiveStrongPtr< CxPODVector<ARG_TYPE> > Ptr;				\
 	  CX_FORCE_INLINE CxVector() : CxPODVector<ARG_TYPE>() {}				\
-	  CX_FORCE_INLINE CxVector(CxI32 in_size) : CxPODVector<ARG_TYPE>(in_size) {} \
+	  CX_FORCE_INLINE CxVector(CxI32 in_capacity) : CxPODVector<ARG_TYPE>(in_capacity) {} \
 	  CX_FORCE_INLINE CxVector(CxI32 in_size, const ARG_TYPE &in_value)	\
 		  : CxPODVector<ARG_TYPE>(in_size, in_value) {}							\
 	  CX_FORCE_INLINE CxVector(ARG_TYPE *in_array, CxI32 in_size, CxCopy inopt_copy = kCxCopy) \
