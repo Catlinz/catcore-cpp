@@ -168,6 +168,11 @@ namespace cat {
 		/** @brief Lock the mutex / spinlock used by this queue. */
 		CX_FORCE_INLINE void lock() { m_lock.lock(); }
 
+		/** @brief Do a pop() but without returning anything. */
+		CX_FORCE_INLINE void nextRead() {
+			if (m_rStart != m_rEnd) { ++m_rStart; }
+		}
+
 		/** @return A reference to the first item in the read queue. */
 		CX_FORCE_INLINE T& peekRead() { return mp_read[m_rStart]; }
 
@@ -182,7 +187,7 @@ namespace cat {
 		 */
 		CX_FORCE_INLINE T pop() {
 			T item = mp_read[m_rStart];
-			if (m_rStart != m_rEnd) { ++m_rStart; }
+		   nextRead();
 			return item;
 		}
 
@@ -255,7 +260,7 @@ namespace cat {
 			if (mp_queue != 0) { mem::set(mp_queue, in_byte, sizeof(T)*m_capacity*2); }
 		}
 		
-	  private:
+	  protected:
 		T* mp_queue; /**< The actual queue */
 
 		T* mp_read; /**< The queue to read from */
